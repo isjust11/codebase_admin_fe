@@ -1,7 +1,6 @@
 'use client'
 // 
 import { Inter } from 'next/font/google';
-import { toast } from 'sonner';
 import { Provider } from 'react-redux';
 import { store } from '@/store';
 import '../globals.css';

@@ -20,7 +20,7 @@ export default async function LocaleLayout({children}: Props) {
   return (
     <html lang={locale}>
       <head>
-        <title>Order</title>
+        <title>Base - Admin web system</title>
       </head>
       <body
          className={`${inter.variable} font-sans dark:bg-gray-900`}
