@@ -34,15 +34,15 @@ function AuthSuccessPage() {
           localStorage.setItem(AppConstants.User, JSON.stringify(userInfo.user));
           const roleId = userInfo.user.roles[0].id;
           const feature = await getFeaturesByRole(roleId);
-          
+
           if (!isMounted) return;
-          
+
           localStorage.setItem(AppConstants.Feature, JSON.stringify(feature));
           toast.success('Đăng nhập thành công');
           router.push('/');
         } catch (error) {
           if (!isMounted) return;
-          
+
           console.error('Error fetching token info:', error);
           toast.error('Có lỗi xảy ra khi xử lý đăng nhập');
           router.push('/login');
@@ -53,7 +53,7 @@ function AuthSuccessPage() {
         }
       } else {
         if (!isMounted) return;
-        
+
         toast.error('Không tìm thấy token đăng nhập');
         router.push('/login');
         setIsProcessing(false);
@@ -67,19 +67,29 @@ function AuthSuccessPage() {
     };
   }, [searchParams, router]);
 
-  if (isProcessing) {
-    return (
-      <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
-        <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-          <h1 className="text-2xl font-bold text-green-600 mb-4">Đăng nhập thành công</h1>
-          <p className="text-gray-600 mb-4">Đang xử lý thông tin đăng nhập...</p>
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto"></div>
-        </div>
-      </div>
-    );
-  }
+  return (
+    <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
+      <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
 
-  return null;
+        {
+          isProcessing ? (
+            <>
+              <h1 className="text-2xl font-bold text-blue-700 mb-4">Đang xử lý đăng nhập</h1>
+              <p className="text-gray-600 mb-4">Đang xử lý thông tin đăng nhập...</p>
+            </>
+
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold text-fuchsia-700 mb-4">Đăng nhập thành công!</h1>
+              <p className="text-gray-600 mb-4">Đang điều hướng tới trang chủ...</p>
+            </>
+          )
+        }
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-fuchsia-700 mx-auto"></div>
+      </div>
+    </div>
+  );
+
 }
 
 export default function Success() {

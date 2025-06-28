@@ -19,24 +19,28 @@ import { toast } from 'sonner';
 import Link from 'next/link';
 import { register, resendEmail } from '@/services/auth-api';
 import { RegisterCode, RegisterResultDto } from '@/types/dto/RegisterResultDto';
-
-
-const formSchema = z.object({
-  username: z.string().min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự')
-    .max(20, 'Tên đăng nhập phải có tối đa 20 ký tự'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-  confirmPassword: z.string(),
-  fullName: z.string().optional(),
-  email: z.string().email('Email không hợp lệ').max(50, 'Email phải có tối đa 50 ký tự'),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: 'Mật khẩu xác nhận không khớp',
-  path: ['confirmPassword'],
-});
+import { useTranslations } from 'next-intl';
+import { SITE } from '@/config/config';
 
 export default function RegisterPage() {
+  const t = useTranslations("RegisterPage");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const [isSendEmail, setIsSendEmail] = useState(false);
+
+  // Schéma de validation với các key đa ngôn ngữ
+  const formSchema = z.object({
+    username: z.string().min(3, t('validation.usernameMin'))
+      .max(20, t('validation.usernameMax')),
+    password: z.string().min(6, t('validation.passwordMin')),
+    confirmPassword: z.string(),
+    fullName: z.string().optional(),
+    email: z.string().email(t('validation.emailInvalid')).max(50, t('validation.emailMax')),
+  }).refine((data) => data.password === data.confirmPassword, {
+    message: t('validation.passwordMismatch'),
+    path: ['confirmPassword'],
+  });
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -60,7 +64,7 @@ export default function RegisterPage() {
       });
       if (response.code === RegisterCode.Ok) {
         setIsSendEmail(true);
-        toast.success(`Đã gửi email xác thực đến email ${values.email} vui lòng kiểm tra email`);
+        toast.success(t('messages.emailSent', { email: values.email }));
       } else if (response.code === RegisterCode.AccountValidated) {
         toast.info(response.message);
         router.push('/login');
@@ -75,7 +79,7 @@ export default function RegisterPage() {
       }
 
     } catch (error: any) {
-      toast.error('Lỗi đăng ký: ' + error.response.data.message);
+      toast.error(t('messages.registerError', { message: error.response.data.message }));
     } finally {
       setIsLoading(false);
     }
@@ -86,9 +90,9 @@ export default function RegisterPage() {
     try {
       await resendEmail(form.getValues('email') || '');
       setIsSendEmail(true);
-      toast.success(`Đã gửi email xác thực đến email ${form.getValues('email')} vui lòng kiểm tra email`);
+      toast.success(t('messages.emailSent', { email: form.getValues('email') }));
     } catch (error: any) {
-      toast.error('Lỗi gửi email xác thực: ' + error.response.data.message);
+      toast.error(t('messages.resendEmailError', { message: error.response.data.message }));
     } finally {
       setIsLoading(false);
     }
@@ -99,18 +103,20 @@ export default function RegisterPage() {
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         {isSendEmail ? (
           <div className="text-center">
-            <h1 className="text-2xl font-bold">Đã gửi email xác thực</h1>
+            <h1 className="text-2xl font-bold">{t('emailSentTitle')}</h1>
             <p className="text-gray-500 mt-2">
-              Vui lòng kiểm tra email để xác thực tài khoản
+              {t('emailSentDescription')}
             </p>
-            <Button disabled={isLoading} onClick={handleResendEmail} className="mt-4 w-full bg-primary text-white">{isLoading ? 'Đang gửi email...' : 'Gửi lại email xác thực'}</Button>
+            <Button disabled={isLoading} onClick={handleResendEmail} className="mt-4 w-full bg-primary text-white">
+              {isLoading ? t('sendingEmail') : t('resendEmailButton')}
+            </Button>
           </div>
         ) : (
           <>
             <div className="mb-5 sm:mb-8">
-              <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">Đăng ký tài khoản</h1>
+              <h1 className="mb-2 font-semibold text-fuchsia-800 text-title-sm dark:text-white/90 sm:text-title-md">{t('registerTitle')}</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
-                Đăng ký để sử dụng Easy Order
+                {t('description', { siteName: SITE.name })}
               </p>
             </div>
 
@@ -121,11 +127,11 @@ export default function RegisterPage() {
                   name="username"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Tên đăng nhập<span className="text-error-500">*</span></FormLabel>
+                      <FormLabel>{t('username')}<span className="text-error-500">*</span></FormLabel>
                       <FormControl>
-                        <Input className='input-focus' placeholder="Nhập tên đăng nhập" {...field} />
+                        <Input className='input-focus' placeholder={t('usernamePlaceholder')} {...field} />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className='text-red-500' />
                     </FormItem>
                   )}
                 />
@@ -135,11 +141,11 @@ export default function RegisterPage() {
                   name="fullName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Họ và tên</FormLabel>
+                      <FormLabel>{t('fullName')}</FormLabel>
                       <FormControl>
-                        <Input className='input-focus' placeholder="Nhập họ và tên" {...field} />
+                        <Input className='input-focus' placeholder={t('fullNamePlaceholder')} {...field} />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className='text-red-500' />
                     </FormItem>
                   )}
                 />
@@ -149,11 +155,11 @@ export default function RegisterPage() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email<span className="text-error-500">*</span></FormLabel>
+                      <FormLabel>{t('email')}<span className="text-error-500">*</span></FormLabel>
                       <FormControl>
-                        <Input className='input-focus' placeholder="Nhập địa chỉ email" {...field} />
+                        <Input className='input-focus' placeholder={t('emailPlaceholder')} {...field} />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className='text-red-500' />
                     </FormItem>
                   )}
                 />
@@ -163,16 +169,16 @@ export default function RegisterPage() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Mật khẩu<span className="text-error-500">*</span></FormLabel>
+                      <FormLabel>{t('password')}<span className="text-error-500">*</span></FormLabel>
                       <FormControl>
                         <Input
                           className='input-focus'
                           type="password"
-                          placeholder="Nhập mật khẩu"
+                          placeholder={t('passwordPlaceholder')}
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className='text-red-500' />
                     </FormItem>
                   )}
                 />
@@ -182,35 +188,35 @@ export default function RegisterPage() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Xác nhận mật khẩu<span className="text-error-500">*</span></FormLabel>
+                      <FormLabel>{t('confirmPassword')}<span className="text-error-500">*</span></FormLabel>
                       <FormControl>
                         <Input
                           className='input-focus'
                           type="password"
-                          placeholder="Xác nhận mật khẩu"
+                          placeholder={t('confirmPasswordPlaceholder')}
                           {...field}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className='text-red-500' />
                     </FormItem>
                   )}
                 />
 
                 <Button
                   type="submit"
-                  className="w-full py-3 text-sm font-normal text-white transition-colors bg-brand-500 rounded-lg hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500"
+                  className="w-full py-5 text-sm font-normal text-white transition-colors bg-fuchsia-700 rounded-lg hover:bg-fuchsia-600 dark:bg-fuchsia-400 dark:hover:bg-fuchsia-500"
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
+                  {isLoading ? t('registering') : t('registerButton')}
                 </Button>
               </form>
             </Form>
 
             <div className="text-center mt-5">
               <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-                Đã có tài khoản?{' '}
-                <Link href="/login" className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
-                  Đăng nhập
+                {t('hasAccount')}{' '}
+                <Link href="/login" className="text-fuchsia-500 hover:text-fuchsia-600 dark:text-fuchsia-400">
+                  {t('login')}
                 </Link>
               </p>
             </div>

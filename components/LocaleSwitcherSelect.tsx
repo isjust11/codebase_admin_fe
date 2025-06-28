@@ -1,7 +1,7 @@
 'use client';
 
-import {useState, useTransition} from 'react';
-import {Locale} from '@/i18n/config';
+import { useState, useTransition } from 'react';
+import { Locale } from '@/i18n/config';
 import { LanguagesIcon } from 'lucide-react';
 import { setUserLocale } from '@/services/base/locale';
 import { Dropdown } from '@/components/ui/dropdown/Dropdown';
@@ -9,13 +9,15 @@ import { DropdownItem } from '@/components/ui/dropdown/DropdownItem';
 
 type Props = {
   defaultValue: string;
-  items: Array<{value: string; label: string}>;
+  items: Array<{ value: string; label: string, icon: React.ReactNode }>;
+  position: "top" | "bottom";
   // label: string;
 };
 
 export default function LocaleSwitcherSelect({
   defaultValue,
   items,
+  position = "bottom"
   // label
 }: Props) {
   const [isPending, startTransition] = useTransition();
@@ -37,7 +39,7 @@ export default function LocaleSwitcherSelect({
     closeDropdown();
   }
 
-  const currentItem = items.find(item => item.value === defaultValue);
+  const currentItem = items.find(item => item.value === defaultValue) ?? items[0];
 
   return (
     <div className="relative">
@@ -46,33 +48,35 @@ export default function LocaleSwitcherSelect({
         onClick={toggleDropdown}
         disabled={isPending}
       >
-        <LanguagesIcon className="h-5 w-5" />
+        {currentItem.icon}
       </button>
-      
+
       <Dropdown
         isOpen={isOpen}
         onClose={closeDropdown}
-        className="absolute -right-[120px] mt-[17px] flex w-[200px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark lg:right-0"
+        className={`absolute ${position === "top"
+            ? "bottom-full mb-2"
+            : "top-full mt-2"
+          } -right-[120px] flex w-[200px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark lg:right-0`}
       >
-        
+
         <ul className="flex flex-col">
           {items.map((item) => (
             <li key={item.value}>
               <DropdownItem
                 onItemClick={() => onChange(item.value)}
-                className={`flex items-center gap-3 rounded-lg p-3 px-4.5 py-3 hover:bg-gray-100 dark:hover:bg-white/5 ${
-                  item.value === defaultValue ? 'bg-gray-50 dark:bg-white/10' : ''
-                }`}
+                className={`flex items-center gap-3 rounded-lg p-3 px-4.5 py-3 hover:bg-gray-100 dark:hover:bg-white/5 ${item.value === defaultValue ? 'bg-gray-50 dark:bg-white/10' : ''
+                  }`}
               >
                 <div className="flex items-center gap-3 w-full">
-                  <LanguagesIcon className="h-5 w-5 text-gray-500" />
+                  {item.icon}
                   <span className="text-gray-800 dark:text-white/90 font-medium">
                     {item.label}
                   </span>
                   {item.value === defaultValue && (
                     <div className="ml-auto">
                       <svg
-                        className="h-4 w-4 text-green-500"
+                        className="h-4 w-4 text-fuchsia-800"
                         fill="currentColor"
                         viewBox="0 0 20 20"
                       >

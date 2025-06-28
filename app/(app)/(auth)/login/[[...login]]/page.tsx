@@ -24,20 +24,23 @@ import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { decrypt, encrypt } from '@/lib/utils';
 import { AppConstants } from '@/constants';
-
-// Schéma de validation
-const formSchema = z.object({
-  username: z.string().min(3, 'Tên đăng nhập phải có ít nhất 3 ký tự'),
-  password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-  remember: z.boolean().optional(),
-});
+import { SITE } from '@/config/config';
+import { useTranslations } from 'next-intl';
 
 export default function LoginPage() {
+  const t = useTranslations("LoginPage");
   const [isLoading, setIsLoading] = useState(false);
   const [isForgotPasswordLoading, setIsForgotPasswordLoading] = useState(false);
   const router = useRouter();
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+  // Schéma de validation với các key đa ngôn ngữ
+  const formSchema = z.object({
+    username: z.string().min(3, t('validation.usernameMin')),
+    password: z.string().min(6, t('validation.passwordMin')),
+    remember: z.boolean().optional(),
+  });
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -56,7 +59,7 @@ export default function LoginPage() {
           form.setValue('remember', remember === 'true');
           form.setValue('username', localStorage.getItem(AppConstants.Username) || '');
           const password = localStorage.getItem(AppConstants.Password);
-          // form.setValue('password', decrypt(password || ''));
+          form.setValue('password', decrypt(password || ''));
         }
       }
       loadData();
@@ -69,7 +72,7 @@ export default function LoginPage() {
       const response = await forgotPassword(form.getValues('username'));
       toast.success(response.message);
     } catch (_error) {
-      toast.error('Lỗi khi gửi email');
+      toast.error(t('messages.emailError'));
     } finally {
       setIsLoading(false);
     }
@@ -90,7 +93,7 @@ export default function LoginPage() {
         localStorage.removeItem(AppConstants.Username);
         localStorage.removeItem(AppConstants.Password);
       }
-      toast.success('Đăng nhập thành công');
+      toast.success(t('messages.loginSuccess'));
       router.push('/');
     } catch (error: any) {
       console.error('Lỗi đăng nhập:', error);
@@ -114,9 +117,9 @@ export default function LoginPage() {
     <div className="flex flex-col flex-1 lg:w-1/2 w-full">
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
         <div className="mb-5 sm:mb-8">
-          <h1 className="mb-2 font-semibold text-gray-800 text-title-sm dark:text-white/90 sm:text-title-md">Đăng nhập</h1>
+          <h1 className="mb-2 font-semibold text-fuchsia-800 text-title-sm dark:text-white/90 sm:text-title-md">{t('loginTitle')}</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Đăng nhập vào tài khoản Easy Order của bạn
+            {t('description', { siteName: SITE.name })}
           </p>
         </div>
         <div>
@@ -124,21 +127,28 @@ export default function LoginPage() {
             <Button
               type="button"
               variant="outline"
-              className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+              className="inline-flex items-center justify-center gap-3 py-5 text-sm font-normal
+               text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-yellow-200 hover:text-gray-800
+                dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10
+               ring-1 ring-amber-50"
               onClick={handleGoogleLogin}
             >
               <FcGoogle className="mr-2 h-4 w-4" />
-              Đăng nhập với Google
+              {t('loginWithGoogle')}
             </Button>
 
             <Button
               type="button"
               variant="outline"
-              className="inline-flex items-center justify-center gap-3 py-3 text-sm font-normal text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-gray-200 hover:text-gray-800 dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10"
+              className="inline-flex items-center justify-center 
+              gap-3 py-5 text-sm font-normal text-gray-700 transition-colors
+               bg-gray-100 rounded-lg px-7 hover:bg-blue-200 hover:text-gray-800
+                dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10  ring-1 ring-amber-50
+                dark:ring-gray-25"
               onClick={handleFacebookLogin}
             >
               <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
-              Đăng nhập với Facebook
+              {t('loginWithFacebook')}
             </Button>
           </div>
           <div className="relative py-3 sm:py-5">
@@ -147,7 +157,7 @@ export default function LoginPage() {
             </div>
             <div className="relative flex justify-center text-sm">
               <span className="p-2 text-gray-400 bg-white dark:bg-gray-900 sm:px-5 sm:py-2">
-                Hoặc
+                {t('or')}
               </span>
             </div>
           </div>
@@ -158,11 +168,11 @@ export default function LoginPage() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Tên đăng nhập<span className="text-error-500">*</span></FormLabel>
+                    <FormLabel>{t('username')}<span className="text-error-500">*</span></FormLabel>
                     <FormControl>
-                      <Input className='input-focus' placeholder="Nhập tên đăng nhập" {...field} />
+                      <Input className='input-focus' placeholder={t('usernamePlaceholder')} {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className='text-red-500'/>
                   </FormItem>
                 )}
               />
@@ -172,16 +182,16 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mật khẩu<span className="text-error-500">*</span></FormLabel>
+                    <FormLabel>{t('password')}<span className="text-error-500">*</span></FormLabel>
                     <FormControl>
                       <Input
                         className='input-focus'
                         type="password"
-                        placeholder="Nhập mật khẩu của bạn"
+                        placeholder={t('passwordPlaceholder')}
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage />
+                    <FormMessage className='text-red-500'/>
                   </FormItem>
                 )}
               />
@@ -194,28 +204,28 @@ export default function LoginPage() {
                       <Checkbox id="remember" checked={field.value} onCheckedChange={field.onChange} />
                     )}
                   />
-                  <Label htmlFor="remember" className='block font-normal text-gray-700 text-theme-sm dark:text-gray-400'>Nhớ tài khoản</Label>
+                  <Label htmlFor="remember" className='block font-normal text-gray-700 text-theme-sm dark:text-gray-400'>{t('rememberMe')}</Label>
                 </div>
-                <p className={`text-sm text-brand-500 hover:text-brand-600 dark:text-brand-400 cursor-pointer ${isLoading ? 'pointer-events-none' : ''}`}
+                <p className={`text-sm text-fuchsia-500 hover:text-fuchsia-600 dark:text-fuchsia-400 cursor-pointer ${isLoading ? 'pointer-events-none' : ''}`}
                   onClick={() => isForgotPasswordLoading ? null : handleForgotPassword()}>
-                  {isForgotPasswordLoading ? 'Đang gửi email...' : 'Quên mật khẩu?'}
+                  {isForgotPasswordLoading ? t('sendingEmail') : t('forgotPassword')}
                 </p>
               </div>
               <Button
                 type="submit"
-                className="w-full py-3 text-sm font-normal text-white transition-colors bg-brand-500 rounded-lg hover:bg-brand-600 dark:bg-brand-400 dark:hover:bg-brand-500"
+                className="w-full py-5 text-sm font-normal text-white transition-colors bg-fuchsia-700 rounded-lg hover:bg-fuchsia-600 dark:bg-fuchsia-400 dark:hover:bg-fuchsia-500"
                 disabled={isLoading}
               >
-                {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
+                {isLoading ? t('loggingIn') : t('loginButton')}
               </Button>
             </form>
           </Form>
 
           <div className="mt-5">
             <p className="text-sm font-normal text-center text-gray-700 dark:text-gray-400 sm:text-start">
-              Bạn chưa có tài khoản?{' '}
-              <Link href="/register" className="text-brand-500 hover:text-brand-600 dark:text-brand-400">
-                Đăng ký
+              {t('noAccount')}{' '}
+              <Link href="/register" className="text-fuchsia-500 hover:text-fuchsia-600 dark:text-fuchsia-400">
+                {t('register')}
               </Link>
             </p>
           </div>

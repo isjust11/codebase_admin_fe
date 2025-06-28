@@ -1,20 +1,12 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback, Suspense } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "@/contexts/SidebarContext";
 import {
-  BoxCubeIcon,
-  CalenderIcon,
   ChevronDownIcon,
-  GridIcon,
   HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  UserCircleIcon,
 } from "@/public/icons/index";
 import SidebarWidget from "./SidebarWidget";
 import { useAuth } from "@/contexts/AuthContext";

@@ -1,34 +1,146 @@
 {
-  "AppLayout": {
-    "home": "Start",
-    "logout": "Abmelden",
-    "profile": "Profil"
-  },
   "HomePage": {
     "title": "Start"
   },
   "LocaleSwitcher": {
-    "de": "Deutsch",
     "en": "English",
-    "label": "Sprache",
     "vi": "Tiếng Việt"
   },
   "LoginPage": {
-    "credentials": "Anmeldedaten: jane@doe.com / next-intl",
-    "description": "Bitte geben Sie Ihre Daten ein.",
+    "loginTitle": "Đăng nhập",
+    "description": "Đăng nhập vào tài khoản {siteName} của bạn",
+    "username": "Tên đăng nhập",
+    "password": "Mật khẩu",
+    "usernamePlaceholder": "Nhập tên đăng nhập",
+    "passwordPlaceholder": "Nhập mật khẩu của bạn",
+    "rememberMe": "Nhớ tài khoản",
+    "forgotPassword": "Quên mật khẩu?",
+    "sendingEmail": "Đang gửi email...",
+    "loginButton": "Đăng nhập",
+    "loggingIn": "Đang đăng nhập...",
+    "loginWithGoogle": "Đăng nhập với Google",
+    "loginWithFacebook": "Đăng nhập với Facebook",
+    "or": "Hoặc",
+    "noAccount": "Bạn chưa có tài khoản?",
+    "register": "Đăng ký",
+    "validation": {
+      "usernameMin": "Tên đăng nhập phải có ít nhất 3 ký tự",
+      "passwordMin": "Mật khẩu phải có ít nhất 6 ký tự"
+    },
+    "messages": {
+      "loginSuccess": "Đăng nhập thành công",
+      "emailSent": "Email đã được gửi thành công",
+      "emailError": "Lỗi khi gửi email"
+    }
+  },
+  "RegisterPage": {
+    "registerTitle": "Đăng ký tài khoản",
+    "description": "Đăng ký để sử dụng {siteName}",
+    "username": "Tên đăng nhập",
+    "fullName": "Họ và tên",
     "email": "Email",
-    "invalidCredentials": "Bitte überprüfen Sie Ihre Anmeldedaten.",
-    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    "invalidPassword": "Bitte geben Sie ein Passwort ein.",
-    "login": "Anmelden",
-    "password": "Passwort",
-    "title": "Willkommen zurück"
+    "password": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "usernamePlaceholder": "Nhập tên đăng nhập",
+    "fullNamePlaceholder": "Nhập họ và tên",
+    "emailPlaceholder": "Nhập địa chỉ email",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "confirmPasswordPlaceholder": "Xác nhận mật khẩu",
+    "registerButton": "Đăng ký",
+    "registering": "Đang đăng ký...",
+    "hasAccount": "Đã có tài khoản?",
+    "login": "Đăng nhập",
+    "emailSentTitle": "Đã gửi email xác thực",
+    "emailSentDescription": "Vui lòng kiểm tra email để xác thực tài khoản",
+    "resendEmailButton": "Gửi lại email xác thực",
+    "sendingEmail": "Đang gửi email...",
+    "validation": {
+      "usernameMin": "Tên đăng nhập phải có ít nhất 3 ký tự",
+      "usernameMax": "Tên đăng nhập phải có tối đa 20 ký tự",
+      "passwordMin": "Mật khẩu phải có ít nhất 6 ký tự",
+      "emailInvalid": "Email không hợp lệ",
+      "emailMax": "Email phải có tối đa 50 ký tự",
+      "passwordMismatch": "Mật khẩu xác nhận không khớp"
+    },
+    "messages": {
+      "emailSent": "Đã gửi email xác thực đến email {email} vui lòng kiểm tra email",
+      "registerError": "Lỗi đăng ký: {message}",
+      "resendEmailError": "Lỗi gửi email xác thực: {message}"
+    }
   },
-  "ProfilePage": {
-    "title": "Profil"
+  "ResetPasswordPage": {
+    "title": "Thiết lập mật khẩu mới",
+    "password": "Mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "confirmPasswordPlaceholder": "Nhập mật khẩu",
+    "updateButton": "Cập nhật",
+    "updating": "Đang cập nhật...",
+    "validation": {
+      "passwordMin": "Mật khẩu phải có ít nhất 6 ký tự",
+      "passwordMismatch": "Mật khẩu xác nhận không khớp"
+    },
+    "messages": {
+      "updateSuccess": "Cập nhật mật khẩu thành công",
+      "updateError": "Cập nhật mật khẩu thất bại: {message}"
+    }
   },
-  "UsersPage": {
-    "avatar":  "Ảnh đại diện"
+  "DashboardPage": {
+    "recentActivity": "Hoạt động gần đây",
+    "time": "Thời gian",
+    "activity": "Hoạt động",
+    "performer": "Người thực hiện",
+    "status": "Trạng thái",
+    "completed": "Hoàn thành",
+    "modules": {
+      "tables": {
+        "title": "Quản lý bàn",
+        "description": "Thêm, sửa, xóa và quản lý các bàn trong nhà hàng"
+      },
+      "foodItems": {
+        "title": "Quản lý món ăn",
+        "description": "Quản lý danh sách món ăn, giá cả và danh mục"
+      },
+      "orders": {
+        "title": "Quản lý đơn hàng",
+        "description": "Xem và quản lý các đơn đặt hàng"
+      },
+      "users": {
+        "title": "Quản lý nhân viên",
+        "description": "Quản lý thông tin và phân quyền nhân viên"
+      },
+      "media": {
+        "title": "Quản lý media",
+        "description": "Quản lý hình ảnh và video"
+      }
+    },
+    "sampleActivity": {
+      "addFoodItem": "Thêm món ăn mới"
+    }
+  },
+  "TablesPage": {
+    "pageTitle": "Danh sách bàn",
+    "title": "Danh sách bàn",
+    "image": "Hình ảnh",
+    "tableName": "Tên bàn",
+    "capacity": "Số người",
+    "description": "Mô tả",
+    "status": "Trạng thái",
+    "actions": "Thao tác",
+    "noDescription": "Không có mô tả",
+    "noStatus": "Không có",
+    "selectAll": "Chọn tất cả",
+    "openMenu": "Mở menu",
+    "viewDetails": "Xem chi tiết",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "addNewTable": "Thêm bàn mới",
+    "qrCodes": "QR Codes",
+    "messages": {
+      "loadError": "Có lỗi xảy ra khi tải danh sách bàn",
+      "deleteSuccess": "Bàn đã được xóa thành công",
+      "deleteError": "Có lỗi xảy ra khi xóa bàn"
+    }
   },
   "RolesPage": {
     "description":  "Mô tả",

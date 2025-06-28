@@ -5,7 +5,8 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-
+import { SITE } from '@/config/config';
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 export default function AuthLayout({
   children,
 }: {
@@ -30,10 +31,13 @@ export default function AuthLayout({
                   />
                 </Link>
                 <p className="text-center text-gray-400 dark:text-white/60">
-                  Quản trị hệ thống đa năng phù hợp cho nhiều website
+                  {SITE.description}
                 </p>
               </div>
             </div>
+          </div>
+          <div className="fixed top-6 right-6 z-50 hidden sm:block">
+            <LocaleSwitcher position="bottom" />
           </div>
           <div className="fixed bottom-6 right-6 z-50 hidden sm:block">
             <ThemeTogglerTwo />
