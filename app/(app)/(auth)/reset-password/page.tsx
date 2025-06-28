@@ -11,20 +11,24 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
-
-const formSchema = z.object({
-    password: z.string().min(6, 'Mật khẩu phải có ít nhất 6 ký tự'),
-    confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-    message: 'Mật khẩu xác nhận không khớp',
-    path: ['confirmPassword'],
-});
+import { useTranslations } from 'next-intl';
 
 function ResetPasswordContent() {
+    const t = useTranslations("ResetPasswordPage");
     const searchParams = useSearchParams();
     const router = useRouter();
     const token = searchParams.get('token');
     const [isLoading, setIsLoading] = useState(false);
+
+    // Schéma de validation với các key đa ngôn ngữ
+    const formSchema = z.object({
+        password: z.string().min(6, t('validation.passwordMin')),
+        confirmPassword: z.string(),
+    }).refine((data) => data.password === data.confirmPassword, {
+        message: t('validation.passwordMismatch'),
+        path: ['confirmPassword'],
+    });
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -32,14 +36,15 @@ function ResetPasswordContent() {
             confirmPassword: '',
         },
     });
+
     const handleResetPassword = async (values: z.infer<typeof formSchema>) => {
         try {
             setIsLoading(true);
             await verifyResetPassword(token || '', values.password);
-            toast.success('Cập nhật mật khẩu thành công');
+            toast.success(t('messages.updateSuccess'));
             router.push('/login');
         } catch (error: any) {
-            toast.error('Cập nhật mật khẩu thất bại: ' + error.response.data.message);
+            toast.error(t('messages.updateError', { message: error.response.data.message }));
         } finally {
             setIsLoading(false);
         }
@@ -48,7 +53,7 @@ function ResetPasswordContent() {
     return (
         <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
             <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-                <h1 className="text-2xl font-bold mb-4">Thiết lập mật khẩu mới</h1>
+                <h1 className="text-2xl font-bold mb-4">{t('title')}</h1>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(handleResetPassword)} className="space-y-6">
                         <FormField
@@ -56,11 +61,11 @@ function ResetPasswordContent() {
                             name="password"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Mật khẩu</FormLabel>
+                                    <FormLabel>{t('password')}</FormLabel>
                                     <FormControl>
-                                        <Input className='input-focus' type="password" placeholder="Nhập mật khẩu" {...field} />
+                                        <Input className='input-focus' type="password" placeholder={t('passwordPlaceholder')} {...field} />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className='text-red-500' />
                                 </FormItem>
                             )}
                         />
@@ -70,20 +75,20 @@ function ResetPasswordContent() {
                             name="confirmPassword"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Xác nhận mật khẩu</FormLabel>
+                                    <FormLabel>{t('confirmPassword')}</FormLabel>
                                     <FormControl>
-                                        <Input type="password" placeholder="Nhập mật khẩu" {...field} />
+                                        <Input type="password" placeholder={t('confirmPasswordPlaceholder')} {...field} />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage className='text-red-500' />
                                 </FormItem>
                             )}
                         />
                         <Button
                             type="submit"
-                            className="w-full"
+                            className="w-full py-5 text-sm font-normal text-white transition-colors bg-fuchsia-700 rounded-lg hover:bg-fuchsia-600 dark:bg-fuchsia-400 dark:hover:bg-fuchsia-500"
                             disabled={isLoading}
                         >
-                            {isLoading ? 'Đang cập nhật...' : 'Cập nhật'}
+                            {isLoading ? t('updating') : t('updateButton')}
                         </Button>
                     </form>
                 </Form>

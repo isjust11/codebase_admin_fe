@@ -10,36 +10,39 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import Link from 'next/link';
-
-const managementModules = [
-  {
-    title: 'Quản lý bàn',
-    description: 'Thêm, sửa, xóa và quản lý các bàn trong nhà hàng',
-    href: '/manager/tables'
-  },
-  {
-    title: 'Quản lý món ăn',
-    description: 'Quản lý danh sách món ăn, giá cả và danh mục',
-    href: '/manager/food-items'
-  },
-  {
-    title: 'Quản lý đơn hàng',
-    description: 'Xem và quản lý các đơn đặt hàng',
-    href: '/manager/orders'
-  },
-  {
-    title: 'Quản lý nhân viên',
-    description: 'Quản lý thông tin và phân quyền nhân viên',
-    href: '/manager/users'
-  },
-  {
-    title: 'Quản lý media',
-    description: 'Quản lý hình ảnh và video',
-    href: '/manager/media'
-  }
-];
+import { useTranslations } from 'next-intl';
 
 export default function ManagerDashboard() {
+  const t = useTranslations("DashboardPage");
+
+  const managementModules = [
+    {
+      title: t('modules.tables.title'),
+      description: t('modules.tables.description'),
+      href: '/manager/tables'
+    },
+    {
+      title: t('modules.foodItems.title'),
+      description: t('modules.foodItems.description'),
+      href: '/manager/food-items'
+    },
+    {
+      title: t('modules.orders.title'),
+      description: t('modules.orders.description'),
+      href: '/manager/orders'
+    },
+    {
+      title: t('modules.users.title'),
+      description: t('modules.users.description'),
+      href: '/manager/users'
+    },
+    {
+      title: t('modules.media.title'),
+      description: t('modules.media.description'),
+      href: '/manager/media'
+    }
+  ];
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -54,22 +57,22 @@ export default function ManagerDashboard() {
       </div>
 
       <div className="mt-8">
-        <h2 className="text-2xl font-semibold mb-4">Hoạt động gần đây</h2>
+        <h2 className="text-2xl font-semibold mb-4">{t('recentActivity')}</h2>
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Thời gian</TableHead>
-              <TableHead>Hoạt động</TableHead>
-              <TableHead>Người thực hiện</TableHead>
-              <TableHead>Trạng thái</TableHead>
+              <TableHead>{t('time')}</TableHead>
+              <TableHead>{t('activity')}</TableHead>
+              <TableHead>{t('performer')}</TableHead>
+              <TableHead>{t('status')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             <TableRow>
               <TableCell className="font-medium">10:30 AM</TableCell>
-              <TableCell>Thêm món ăn mới</TableCell>
+              <TableCell>{t('sampleActivity.addFoodItem')}</TableCell>
               <TableCell>Admin</TableCell>
-              <TableCell>Hoàn thành</TableCell>
+              <TableCell>{t('completed')}</TableCell>
             </TableRow>
           </TableBody>
         </Table>

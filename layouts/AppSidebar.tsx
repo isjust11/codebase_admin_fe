@@ -1,20 +1,12 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback, Suspense } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useSidebar } from "@/contexts/SidebarContext";
 import {
-  BoxCubeIcon,
-  CalenderIcon,
   ChevronDownIcon,
-  GridIcon,
   HorizontaLDots,
-  ListIcon,
-  PageIcon,
-  PieChartIcon,
-  PlugInIcon,
-  UserCircleIcon,
 } from "@/public/icons/index";
 import SidebarWidget from "./SidebarWidget";
 import { useAuth } from "@/contexts/AuthContext";
@@ -93,16 +85,30 @@ const AppSidebar: React.FC = () => {
 
   useEffect(() => {
     // Check if the current path matches any submenu item
+    // Chỉ chạy khi có đủ dữ liệu
+    if (!menuTypes || !features || menuTypes.length === 0 || features.length === 0) {
+      return;
+    }
+
     let submenuMatched = false;
-    const menuTypesCode = menuTypes?.map((x)=>x.code);
-    menuTypesCode?.forEach((menuType) => {
-      const items = features?.map(convertFeatureToNavItem).filter((x)=>x.type == menuType);
-      items?.forEach((nav, index) => {
-        if (nav.subItems) {
+    
+    // Lặp qua từng menu type
+    menuTypes.forEach((menuType) => {
+      // Lọc features theo menu type
+      const items = features
+        .map(convertFeatureToNavItem)
+        .filter((x) => x.type === menuType.code);
+      
+      console.log(`Menu type ${menuType.code}:`, items.length, 'items');
+      
+      items.forEach((nav, index) => {
+        if (nav.subItems && nav.subItems.length > 0) {
           nav.subItems.forEach((subItem) => {
+            console.log(`Checking subItem: ${subItem.path} vs current: ${pathname}`);
             if (isActive(subItem.path)) {
+              console.log(`Found match! Opening submenu for ${menuType.code} at index ${index}`);
               setOpenSubmenu({
-                type: menuType,
+                type: menuType.code,
                 index,
               });
               submenuMatched = true;
@@ -112,8 +118,9 @@ const AppSidebar: React.FC = () => {
       });
     });
 
-    // If no submenu matched, close any open submenu
+    // Chỉ đóng submenu nếu không tìm thấy match và có submenu đang mở
     if (!submenuMatched) {
+      console.log('No submenu matched, closing current submenu');
       setOpenSubmenu(null);
     }
   }, [pathname, menuTypes, features, isActive]);
@@ -149,22 +156,22 @@ const AppSidebar: React.FC = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2  border-s-fuchsia-600"></div>
       </div>
     );
   }
 
   const renderMenuItems = (
     navItems: NavItem[],
-    menuType: string
+    menuTypeCode: string
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems && nav.subItems.length > 0 ? (
             <button
-              onClick={() => handleSubmenuToggle(index, menuType)}
-              className={`menu-item group  ${openSubmenu?.type === menuType && openSubmenu?.index === index
+              onClick={() => handleSubmenuToggle(index, menuTypeCode)}
+              className={`menu-item group  ${openSubmenu?.type === menuTypeCode && openSubmenu?.index === index
                 ? "menu-item-active"
                 : "menu-item-inactive"
                 } cursor-pointer ${!isExpanded && !isHovered
@@ -173,7 +180,7 @@ const AppSidebar: React.FC = () => {
                 }`}
             >
               <span
-                className={` ${openSubmenu?.type === menuType && openSubmenu?.index === index
+                className={` ${openSubmenu?.type === menuTypeCode && openSubmenu?.index === index
                   ? "menu-item-icon-active"
                   : "menu-item-icon-inactive"
                   }`}
@@ -185,9 +192,9 @@ const AppSidebar: React.FC = () => {
               )}
               {(isExpanded || isHovered || isMobileOpen) && (
                 <ChevronDownIcon
-                  className={`ml-auto w-5 h-5 transition-transform duration-200  ${openSubmenu?.type === menuType &&
+                  className={`ml-auto w-5 h-5 transition-transform duration-200  ${openSubmenu?.type === menuTypeCode &&
                     openSubmenu?.index === index
-                    ? "rotate-180 text-brand-500"
+                    ? "rotate-180 text-fuchsia-600"
                     : ""
                     }`}
                 />
@@ -217,13 +224,13 @@ const AppSidebar: React.FC = () => {
           {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
             <div
               ref={(el) => {
-                subMenuRefs.current[`${menuType}-${index}`] = el;
+                subMenuRefs.current[`${menuTypeCode}-${index}`] = el;
               }}
               className="overflow-hidden transition-all duration-300"
               style={{
                 height:
-                  openSubmenu?.type === menuType && openSubmenu?.index === index
-                    ? `${subMenuHeight[`${menuType}-${index}`]}px`
+                  openSubmenu?.type === menuTypeCode && openSubmenu?.index === index
+                    ? `${subMenuHeight[`${menuTypeCode}-${index}`]}px`
                     : "0px",
               }}
             >
@@ -271,16 +278,16 @@ const AppSidebar: React.FC = () => {
     </ul>
   );
 
-  const handleSubmenuToggle = (index: number, menuType: string) => {
+  const handleSubmenuToggle = (index: number, menuTypeCode: string) => {
     setOpenSubmenu((prevOpenSubmenu) => {
       if (
         prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
+        prevOpenSubmenu.type === menuTypeCode &&
         prevOpenSubmenu.index === index
       ) {
         return null;
       }
-      return { type: menuType, index };
+      return { type: menuTypeCode, index };
     });
   };
  
@@ -322,7 +329,7 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <Image
-              src="/images/logo/logo-icon.svg"
+              src="/images/logo/icon.svg"
               alt="Logo"
               width={32}
               height={32}
@@ -347,7 +354,7 @@ const AppSidebar: React.FC = () => {
                     <HorizontaLDots />
                   )}
                 </h2>
-                {renderMenuItems(features?.map(convertFeatureToNavItem).filter((x)=>x.type == type.code) ?? [], type.name)}
+                {renderMenuItems(features?.map(convertFeatureToNavItem).filter((x)=>x.type == type.code) ?? [], type.code)}
               </div>
             ))
 

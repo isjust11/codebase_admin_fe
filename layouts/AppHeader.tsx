@@ -2,7 +2,7 @@
 import { ThemeToggleButton } from "@/components/common/ThemeToggleButton";
 import NotificationDropdown from "@/components/header/NotificationDropdown";
 import UserDropdown from "@/components/header/UserDropdown";
-import LocaleSwitcher from "@/components/LocaleSwitcher";
+import { LocaleSwitcher } from "@/components/LocaleSwitcher";
 import { useSidebar } from "@/contexts/SidebarContext";
 import { MobileCloseIcon, MobileOpenIcon, SquareIcon, ViewMoreIcon } from "@/public/icons";
 import Image from "next/image";
@@ -111,7 +111,7 @@ const AppHeader: React.FC = () => {
           } items-center justify-between w-full gap-4 px-5 py-4 lg:flex shadow-theme-md lg:justify-end lg:px-0 lg:shadow-none`}
         >
           <div className="flex items-center gap-2 2xsm:gap-3">
-            <LocaleSwitcher />
+            <LocaleSwitcher position="bottom"/>
             {/* <!-- Dark Mode Toggler --> */}
             <ThemeToggleButton />
             {/* <!-- Dark Mode Toggler --> */}

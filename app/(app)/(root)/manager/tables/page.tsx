@@ -17,8 +17,10 @@ import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image'
 import { Category } from '@/types/category';
 import { Action } from '@/types/actions';
+import { useTranslations } from 'next-intl';
 
 export default function TablesManagement() {
+  const t = useTranslations("TablesPage");
   
   const [tables, setTables] = useState<TableType[]>([]);
   const [pageCount, setPageCount] = useState(0);
@@ -34,7 +36,7 @@ export default function TablesManagement() {
       setTables(response.data);
       setPageCount(response.total);
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi tải danh sách bàn');
+      toast.error(t('messages.loadError'));
     }
   };
 
@@ -56,9 +58,9 @@ export default function TablesManagement() {
       await deleteTable(tableId);
       setTables(tables.filter(table => table.id !== tableId));
       fetchTables(pageIndex, pageSize,search);
-      toast.success('Bàn đã được xóa thành công');
+      toast.success(t('messages.deleteSuccess'));
     } catch (_error) {
-      toast.error('Có lỗi xảy ra khi xóa bàn');
+      toast.error(t('messages.deleteError'));
     }
   };
 
@@ -73,14 +75,14 @@ export default function TablesManagement() {
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       enableSorting: false,
@@ -88,7 +90,7 @@ export default function TablesManagement() {
     },
      {
           accessorKey: "imageUrl",
-          header: "Hình ảnh",
+          header: t('image'),
           cell: ({ row }) => {
             const imageUrl = mergeImageUrl(row.getValue("imageUrl") as string)
             return (
@@ -115,7 +117,7 @@ export default function TablesManagement() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tên bàn
+            {t('tableName')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -123,35 +125,35 @@ export default function TablesManagement() {
     },
     {
       accessorKey: "capacity",
-      header:"Số người",
+      header: t('capacity'),
     },
     {
       accessorKey: "description",
-      header:"Mô tả",
+      header: t('description'),
       cell: ({ row }) => {
         const description = row.getValue("description") as string
         return (
           <div className="text-sm text-gray-500">
-            <span dangerouslySetInnerHTML={{ __html: description || 'Không có mô tả' }}></span>
+            <span dangerouslySetInnerHTML={{ __html: description || t('noDescription') }}></span>
           </div>
         )
       }
     },
     {
       accessorKey: "tableStatus",
-      header: "Trạng thái",
+      header: t('status'),
       cell: ({ row }) => {
         const status = row.getValue("tableStatus") as Category
         return (
           <div className={`capitalize`}>
-            {status?.name??'Không có'}
+            {status?.name ?? t('noStatus')}
           </div>
         )
       },
     },
     {
       id: "actions",
-      header: 'Thao tác',
+      header: t('actions'),
       cell: ({ row }) => {
         const table = row.original
         return (
@@ -159,7 +161,7 @@ export default function TablesManagement() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Mở menu</span>
+                    <span className="sr-only">{t('openMenu')}</span>
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -167,17 +169,17 @@ export default function TablesManagement() {
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                     onClick={() => router.push(`/manager/tables/${table.id}`)}>
                     <BadgeInfo className="mr-2 h-4 w-4" />
-                    Xem chi tiết
+                    {t('viewDetails')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
                     onClick={() => router.push(`/manager/tables/update/${table.id}`)}
                   >
                     <Pencil className="mr-2 h-4 w-4" />
-                    Chỉnh sửa
+                    {t('edit')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(table.id)}>
                     <Trash className="mr-2 h-4 w-4" />
-                    Xóa
+                    {t('delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -192,7 +194,7 @@ export default function TablesManagement() {
         onClick: () => {
           router.push('/manager/tables/create')
         },
-        title: "Thêm bàn mới",
+        title: t('addNewTable'),
         className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
       },
       {
@@ -200,16 +202,16 @@ export default function TablesManagement() {
         onClick: () => {
           router.push('/manager/tables/qrcodes')
         },
-        title: " QR Codes",
+        title: t('qrCodes'),
         className: "bg-yellow-400 hover:bg-yellow-500 dark:hover:bg-red-800 rounded-md transition-colors text-red-500",
       },
     ]
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Danh sách bàn" />
+      <PageBreadcrumb pageTitle={t('pageTitle')} />
       <div className="space-y-6">
-        <ComponentCard title="Danh sách bàn" listAction={lstActions}>
+        <ComponentCard title={t('title')} listAction={lstActions}>
           <DataTable 
             columns={columns} 
             data={tables}

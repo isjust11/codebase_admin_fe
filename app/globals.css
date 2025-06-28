@@ -202,7 +202,7 @@
 }
 
 @utility menu-item-active {
-  @apply bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400;
+  @apply bg-fuchsia-50 text-fuchsia-500 dark:bg-fuchsia-500/[0.12] dark:text-fuchsia-400;
 }
 
 @utility menu-item-inactive {
@@ -214,7 +214,7 @@
 }
 
 @utility menu-item-icon-active {
-  @apply text-brand-500 dark:text-brand-400;
+  @apply text-fuchsia-500 dark:text-fuchsia-400;
 }
 
 @utility menu-item-icon-inactive {
@@ -226,7 +226,7 @@
 }
 
 @utility menu-item-arrow-active {
-  @apply rotate-180 text-brand-500 dark:text-brand-400;
+  @apply rotate-180 text-fuchsia-500 dark:text-fuchsia-400;
 }
 
 @utility menu-item-arrow-inactive {
@@ -238,7 +238,7 @@
 }
 
 @utility menu-dropdown-item-active {
-  @apply bg-brand-50 text-brand-500 dark:bg-brand-500/[0.12] dark:text-brand-400;
+  @apply bg-fuchsia-50 text-fuchsia-500 dark:bg-fuchsia-500/[0.12] dark:text-fuchsia-400;
 }
 
 @utility menu-dropdown-item-inactive {
@@ -246,15 +246,15 @@
 }
 
 @utility menu-dropdown-badge {
-  @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-brand-500 dark:text-brand-400;
+  @apply block rounded-full px-2.5 py-0.5 text-xs font-medium uppercase text-fuchsia-500 dark:text-fuchsia-400;
 }
 
 @utility menu-dropdown-badge-active {
-  @apply bg-brand-100 dark:bg-brand-500/20;
+  @apply bg-fuchsia-100 dark:bg-fuchsia-500/20;
 }
 
 @utility menu-dropdown-badge-inactive {
-  @apply bg-brand-50 group-hover:bg-brand-100 dark:bg-brand-500/15 dark:group-hover:bg-brand-500/20;
+  @apply bg-fuchsia-50 group-hover:bg-fuchsia-100 dark:bg-fuchsia-500/15 dark:group-hover:bg-fuchsia-500/20;
 }
 
 @utility no-scrollbar {
@@ -342,7 +342,7 @@
 
 .flatpickr-months .flatpickr-prev-month:hover svg,
 .flatpickr-months .flatpickr-next-month:hover svg {
-  @apply stroke-brand-500;
+  @apply stroke-fuchsia-500;
 }
 .flatpickr-calendar.arrowTop:before,
 .flatpickr-calendar.arrowTop:after {
@@ -461,7 +461,7 @@ span.flatpickr-weekday,
 .flatpickr-day.startRange.nextMonthDay,
 .flatpickr-day.endRange.nextMonthDay {
   background: #465fff;
-  @apply border-brand-500! bg-brand-500! hover:border-brand-500! hover:bg-brand-500!;
+  @apply border-fuchsia-500! bg-fuchsia-500! hover:border-fuchsia-500! hover:bg-fuchsia-500!;
 }
 .flatpickr-day.selected.startRange + .endRange:not(:nth-child(7n + 1)),
 .flatpickr-day.startRange.startRange + .endRange:not(:nth-child(7n + 1)),
@@ -525,7 +525,7 @@ span.flatpickr-weekday,
   @apply hidden;
 }
 .fc-addEventButton-button {
-  @apply rounded-lg! border-0! bg-brand-500! px-4! py-2.5! text-sm! font-medium! hover:bg-brand-600! focus:shadow-none!;
+  @apply rounded-lg! border-0! bg-fuchsia-500! px-4! py-2.5! text-sm! font-medium! hover:bg-fuchsia-600! focus:shadow-none!;
 }
 .fc-toolbar-title {
   @apply text-lg! font-medium! text-gray-800 dark:text-white/90;
@@ -594,7 +594,7 @@ span.flatpickr-weekday,
   @apply border-error-50 bg-error-50;
 }
 .event-fc-color.fc-bg-primary {
-  @apply border-brand-50 bg-brand-50;
+  @apply border-fuchsia-50 bg-fuchsia-50;
 }
 .event-fc-color.fc-bg-warning {
   @apply border-orange-50 bg-orange-50;
@@ -606,7 +606,7 @@ span.flatpickr-weekday,
   @apply bg-error-500;
 }
 .event-fc-color.fc-bg-primary .fc-daygrid-event-dot {
-  @apply bg-brand-500;
+  @apply bg-fuchsia-500;
 }
 .event-fc-color.fc-bg-warning .fc-daygrid-event-dot {
   @apply bg-orange-500;
@@ -705,13 +705,13 @@ span.flatpickr-weekday,
   @apply bg-gray-50! dark:bg-gray-900!;
 }
 .jvectormap-region.jvectormap-element {
-  @apply fill-gray-300! hover:fill-brand-500! dark:fill-gray-700! dark:hover:fill-brand-500!;
+  @apply fill-gray-300! hover:fill-fuchsia-500! dark:fill-gray-700! dark:hover:fill-fuchsia-500!;
 }
 .jvectormap-marker.jvectormap-element {
   @apply stroke-gray-200! dark:stroke-gray-800!;
 }
 .jvectormap-tip {
-  @apply bg-brand-500! border-none! px-2! py-1!;
+  @apply bg-fuchsia-500! border-none! px-2! py-1!;
 }
 .jvectormap-zoomin,
 .jvectormap-zoomout {
@@ -719,17 +719,17 @@ span.flatpickr-weekday,
 }
 
 .form-check-input:checked ~ span {
-  @apply border-[6px] border-brand-500 bg-brand-500 dark:border-brand-500;
+  @apply border-[6px] border-fuchsia-500 bg-fuchsia-500 dark:border-fuchsia-500;
 }
 
 .taskCheckbox:checked ~ .box span {
-  @apply opacity-100 bg-brand-500;
+  @apply opacity-100 bg-fuchsia-500;
 }
 .taskCheckbox:checked ~ p {
   @apply text-gray-400 line-through;
 }
 .taskCheckbox:checked ~ .box {
-  @apply border-brand-500 bg-brand-500 dark:border-brand-500;
+  @apply border-fuchsia-500 bg-fuchsia-500 dark:border-fuchsia-500;
 }
 
 .task {

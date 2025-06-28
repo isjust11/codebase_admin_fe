@@ -1,28 +1,147 @@
 {
-  "AppLayout": {
-    "home": "Start",
-    "logout": "Abmelden",
-    "profile": "Profil"
-  },
+
   "HomePage": {
     "title": "Start"
   },
   "LocaleSwitcher": {
-    "de": "Deutsch",
     "en": "English",
-    "label": "Sprache",
     "vi": "Tiếng Việt"
   },
   "LoginPage": {
-    "credentials": "Anmeldedaten: jane@doe.com / next-intl",
-    "description": "Bitte geben Sie Ihre Daten ein.",
+    "loginTitle": "Log In",
+    "description": "Sign in to your {siteName} account",
+    "username": "Username",
+    "password": "Password",
+    "usernamePlaceholder": "Enter your username",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "forgotPassword": "Forgot password?",
+    "sendingEmail": "Sending email...",
+    "loginButton": "Log In",
+    "loggingIn": "Logging in...",
+    "loginWithGoogle": "Sign in with Google",
+    "loginWithFacebook": "Sign in with Facebook",
+    "or": "Or",
+    "noAccount": "Don't have an account?",
+    "register": "Sign up",
+    "validation": {
+      "usernameMin": "Username must be at least 3 characters",
+      "passwordMin": "Password must be at least 6 characters"
+    },
+    "messages": {
+      "loginSuccess": "Login successful",
+      "emailSent": "Email sent successfully",
+      "emailError": "Error sending email"
+    }
+  },
+  "RegisterPage": {
+    "registerTitle": "Create Account",
+    "description": "Sign up to use {siteName}",
+    "username": "Username",
+    "fullName": "Full Name",
     "email": "Email",
-    "invalidCredentials": "Bitte überprüfen Sie Ihre Anmeldedaten.",
-    "invalidEmail": "Bitte geben Sie eine gültige E-Mail-Adresse ein.",
-    "invalidPassword": "Bitte geben Sie ein Passwort ein.",
-    "login": "Anmelden",
-    "password": "Passwort",
-    "title": "Willkommen zurück"
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "usernamePlaceholder": "Enter your username",
+    "fullNamePlaceholder": "Enter your full name",
+    "emailPlaceholder": "Enter your email address",
+    "passwordPlaceholder": "Enter your password",
+    "confirmPasswordPlaceholder": "Confirm your password",
+    "registerButton": "Sign Up",
+    "registering": "Signing up...",
+    "hasAccount": "Already have an account?",
+    "login": "Log In",
+    "emailSentTitle": "Verification Email Sent",
+    "emailSentDescription": "Please check your email to verify your account",
+    "resendEmailButton": "Resend Verification Email",
+    "sendingEmail": "Sending email...",
+    "validation": {
+      "usernameMin": "Username must be at least 3 characters",
+      "usernameMax": "Username must be at most 20 characters",
+      "passwordMin": "Password must be at least 6 characters",
+      "emailInvalid": "Invalid email address",
+      "emailMax": "Email must be at most 50 characters",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "messages": {
+      "emailSent": "Verification email sent to {email}, please check your email",
+      "registerError": "Registration error: {message}",
+      "resendEmailError": "Error sending verification email: {message}"
+    }
+  },
+  "ResetPasswordPage": {
+    "title": "Set New Password",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "passwordPlaceholder": "Enter password",
+    "confirmPasswordPlaceholder": "Enter password",
+    "updateButton": "Update",
+    "updating": "Updating...",
+    "validation": {
+      "passwordMin": "Password must be at least 6 characters",
+      "passwordMismatch": "Passwords do not match"
+    },
+    "messages": {
+      "updateSuccess": "Password updated successfully",
+      "updateError": "Password update failed: {message}"
+    }
+  },
+  "DashboardPage": {
+    "recentActivity": "Recent Activity",
+    "time": "Time",
+    "activity": "Activity",
+    "performer": "Performer",
+    "status": "Status",
+    "completed": "Completed",
+    "modules": {
+      "tables": {
+        "title": "Table Management",
+        "description": "Add, edit, delete and manage tables in the restaurant"
+      },
+      "foodItems": {
+        "title": "Food Item Management",
+        "description": "Manage food items, prices and categories"
+      },
+      "orders": {
+        "title": "Order Management",
+        "description": "View and manage orders"
+      },
+      "users": {
+        "title": "Staff Management",
+        "description": "Manage staff information and permissions"
+      },
+      "media": {
+        "title": "Media Management",
+        "description": "Manage images and videos"
+      }
+    },
+    "sampleActivity": {
+      "addFoodItem": "Add new food item"
+    }
+  },
+  "TablesPage": {
+    "pageTitle": "Table List",
+    "title": "Table List",
+    "image": "Image",
+    "tableName": "Table Name",
+    "capacity": "Capacity",
+    "description": "Description",
+    "status": "Status",
+    "actions": "Actions",
+    "noDescription": "No description",
+    "noStatus": "None",
+    "selectAll": "Select all",
+    "openMenu": "Open menu",
+    "viewDetails": "View details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "addNewTable": "Add new table",
+    "qrCodes": "QR Codes",
+    "messages": {
+      "loadError": "Error loading table list",
+      "deleteSuccess": "Table deleted successfully",
+      "deleteError": "Error deleting table"
+    }
   },
   "ProfilePage": {
     "title": "Profil"
