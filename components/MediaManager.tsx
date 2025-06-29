@@ -22,6 +22,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Modal } from './ui/modal';
 
 interface MediaManagerProps {
   onSelect?: (media: Media | Media[]) => void;
@@ -30,7 +31,7 @@ interface MediaManagerProps {
 }
 
 export function MediaManager({ onSelect, selectedMedia, multiple = false }: MediaManagerProps) {
-  const [media, setMedia] = useState<Media[]>([]);
+  const [medias, setMedias] = useState<Media[]>([]);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -53,7 +54,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
         mimeType: mimeType || undefined,
       };
       const response = await mediaApi.getAll(params);
-      setMedia(response);
+      setMedias(response.data);
       // setTotalPages(response.totalPages);
     } catch (_error) {
       toast.error('Không thể tải danh sách media');
@@ -74,7 +75,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
       for (let i = 0; i < files.length; i++) {
         const file = files[i];
         const uploadedMedia = await mediaApi.upload(file);
-        setMedia((prev) => Array.isArray(prev) ? [...prev, uploadedMedia] : [uploadedMedia]);
+        setMedias((prev) => Array.isArray(prev) ? [...prev, uploadedMedia] : [uploadedMedia]);
         if (onSelect) {
           onSelect(uploadedMedia);
         }
@@ -89,7 +90,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
     if (window.confirm('Bạn có chắc chắn muốn xóa media này?')) {
       try {
         await mediaApi.delete(id);
-        setMedia((prev) => prev.filter((item) => item.id !== id));
+        setMedias((prev) => prev.filter((item) => item.id !== id));
         setSelectedItems((prev) => prev.filter((item) => item.id !== id));
         toast.success('Xóa media thành công');
       } catch (_error) {
@@ -117,17 +118,18 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
   };
 
   const handlePreview = (item: Media) => {
-    const index = media.findIndex((m) => m.id === item.id);
+    console.log('handle preview')
+    const index = medias.findIndex((m) => m.id === item.id);
     setPreviewIndex(index);
     setIsPreviewOpen(true);
   };
 
   const handlePrevPreview = () => {
-    setPreviewIndex((prev) => (prev > 0 ? prev - 1 : media.length - 1));
+    setPreviewIndex((prev) => (prev > 0 ? prev - 1 : medias.length - 1));
   };
 
   const handleNextPreview = () => {
-    setPreviewIndex((prev) => (prev < media.length - 1 ? prev + 1 : 0));
+    setPreviewIndex((prev) => (prev < medias.length - 1 ? prev + 1 : 0));
   };
 
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -141,24 +143,24 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
   };
 
   if (loading) {
-    return <div>Đang tải...</div>;
+    return <div >Đang tải...</div>;
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 py-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Quản lý Media</h2>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Modal isOpen={isDialogOpen} onClose={() => setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Upload className="mr-2 h-4 w-4" />
               Tải lên
             </Button>
           </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Tải lên Media</DialogTitle>
-            </DialogHeader>
+          <div>
+            <div>
+              <div>Tải lên Media</div>
+            </div>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="file">Chọn file</Label>
@@ -171,8 +173,8 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
                 />
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </Modal>
       </div>
 
       <div className="flex gap-4">
@@ -189,7 +191,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Loại file" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className='bg-white'>
             <SelectItem value="all">Tất cả</SelectItem>
             <SelectItem value="image">Hình ảnh</SelectItem>
             <SelectItem value="video">Video</SelectItem>
@@ -200,23 +202,22 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {media && media.map((item) => (
+        {medias && medias.map((item) => (
           <div
+            onClick={() => handlePreview(item)}
             key={item.id}
-            className={`relative group border rounded-lg overflow-hidden cursor-pointer ${
-              selectedItems.some((selected) => selected.id === item.id)
+            className={`relative group border rounded-lg overflow-hidden cursor-pointer ${selectedItems.some((selected) => selected.id === item.id)
                 ? 'border-primary'
                 : 'border-border'
-            }`}
+              }`}
           >
             {item.mimeType.startsWith('image/') ? (
               <Image
-                src={`http://localhost:4000${item.url}`}
+                src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
                 alt={item.originalName}
                 width={200}
                 height={200}
                 className="object-cover w-full h-48"
-                onClick={() => handlePreview(item)}
               />
             ) : (
               <div className="w-full h-48 flex items-center justify-center bg-muted">
@@ -271,21 +272,21 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
         </div>
       )}
 
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle className="flex justify-between items-center">
+      <Modal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)}>
+        <div className="max-w-4xl">
+          <div>
+            <div className="flex justify-between items-center">
               <span>Xem trước Media</span>
-              <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)}>
+              {/* <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)}>
                 <X className="h-4 w-4" />
-              </Button>
-            </DialogTitle>
-          </DialogHeader>
+              </Button> */}
+            </div>
+          </div>
           <div className="relative aspect-video">
-            {media && media[previewIndex]?.mimeType.startsWith('image/') ? (
+            {medias && medias[previewIndex]?.mimeType.startsWith('image/') ? (
               <Image
-                src={media[previewIndex].url}
-                alt={media[previewIndex].originalName}
+                src={process.env.NEXT_PUBLIC_API_URL + "/" + medias[previewIndex].url}
+                alt={process.env.NEXT_PUBLIC_API_URL + "/" + medias[previewIndex].originalName}
                 fill
                 className="object-contain"
               />
@@ -314,12 +315,12 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
             </div>
           </div>
           <div className="mt-4 text-sm text-muted-foreground">
-            <p>Tên file: {media && media[previewIndex]?.originalName}</p>
-            <p>Loại file: {media && media[previewIndex]?.mimeType}</p>
-            <p>Kích thước: {media && (media[previewIndex]?.size / 1024 / 1024).toFixed(2)} MB</p>
+            <p>Tên file: {medias && medias[previewIndex]?.originalName}</p>
+            <p>Loại file: {medias && medias[previewIndex]?.mimeType}</p>
+            <p>Kích thước: {medias && (medias[previewIndex]?.size / 1024 / 1024).toFixed(2)} MB</p>
           </div>
-        </DialogContent>
-      </Dialog>
+        </div>
+      </Modal>
     </div>
   );
 } 

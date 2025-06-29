@@ -15,6 +15,12 @@ import { Subscript } from "@tiptap/extension-subscript"
 import { Superscript } from "@tiptap/extension-superscript"
 import { Underline } from "@tiptap/extension-underline"
 
+// --- Table Extensions ---
+import { Table } from "@tiptap/extension-table"
+import { TableRow } from "@tiptap/extension-table-row"
+import { TableCell } from "@tiptap/extension-table-cell"
+import { TableHeader } from "@tiptap/extension-table-header"
+
 // --- Custom Extensions ---
 import { CustomImage } from "@/components/tiptap-extension/custom-image"
 import { Link } from "@/components/tiptap-extension/link-extension"
@@ -36,12 +42,14 @@ import "@/components/tiptap-node/code-block-node/code-block-node.scss"
 import "@/components/tiptap-node/list-node/list-node.scss"
 import "@/components/tiptap-node/image-node/image-node.scss"
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss"
+import "@/components/tiptap-node/table-node/table-node.scss"
 
 // --- Tiptap UI ---
 import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu"
 import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button"
 import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu"
 import { NodeButton } from "@/components/tiptap-ui/node-button"
+import { TableButton } from "@/components/tiptap-ui/table-button"
 import {
   HighlightPopover,
   HighlightContent,
@@ -67,13 +75,18 @@ import { useWindowSize } from "@/hooks/use-window-size"
 
 // --- Components ---
 import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle"
+import { MediaManager } from "@/components/MediaManager"
 
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils"
 
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss"
+import { AlignEndVertical, AlignHorizontalJustifyCenter, AlignStartVertical, FileImage } from "lucide-react"
 
+import { Modal } from "@/components/ui/modal"
+import { useModal } from "@/hooks/useModal"
+// const { isOpen, openModal, closeModal } = useModal();
 const ImageAlignButton = ({
   align,
   children,
@@ -106,6 +119,7 @@ const MainToolbarContent = ({
   isMobile: boolean
 }) => {
   const { editor } = useCurrentEditor()
+  const [mediaOpen, setMediaOpen] = React.useState(false)
 
   return (
     <>
@@ -123,6 +137,7 @@ const MainToolbarContent = ({
         <ListDropdownMenu types={["bulletList", "orderedList", "taskList"]} />
         <NodeButton type="codeBlock" />
         <NodeButton type="blockquote" />
+        <TableButton />
       </ToolbarGroup>
 
       <ToolbarSeparator />
@@ -167,12 +182,30 @@ const MainToolbarContent = ({
         <>
           <ToolbarSeparator />
           <ToolbarGroup>
-            <ImageAlignButton align="left">Align Left</ImageAlignButton>
-            <ImageAlignButton align="center">Align Center</ImageAlignButton>
-            <ImageAlignButton align="right">Align Right</ImageAlignButton>
+            <ImageAlignButton align="left"><AlignStartVertical size={16} className="text-gray-600"/></ImageAlignButton>
+            <ImageAlignButton align="center"><AlignHorizontalJustifyCenter size={16} className="text-gray-600"/></ImageAlignButton>
+            <ImageAlignButton align="right"><AlignEndVertical size={16} className="text-gray-600"/></ImageAlignButton>
           </ToolbarGroup>
         </>
       )}
+
+      <Button onClick={() => setMediaOpen(true)}>
+        <FileImage size={16} className="text-gray-600"/> Thư viện
+      </Button>
+      <Modal isOpen={mediaOpen} onClose={()=>setMediaOpen(false)} className="w-full/0.8">
+        <div className="d-flex px-20 justify-center mx-10">
+        <MediaManager
+          onSelect={media => {
+            if (!editor) return
+            const url = Array.isArray(media) ? media[0]?.url || media[0]?.path : media?.url || media?.path
+            if (url) editor.chain().focus().setImage({ src: process.env.NEXT_PUBLIC_API_URL + url }).run()
+            setMediaOpen(false)
+          }}
+          multiple={false}
+        />
+        </div>
+     
+      </Modal>
 
       <Spacer />
 
@@ -181,6 +214,8 @@ const MainToolbarContent = ({
       <ToolbarGroup>
         <ThemeToggle />
       </ToolbarGroup>
+
+      
     </>
   )
 }
@@ -273,6 +308,18 @@ export function SimpleEditor({
       Typography,
       Superscript,
       Subscript,
+
+      // Table extensions
+      Table.configure({
+        resizable: true,
+      }),
+      TableRow,
+      TableHeader,
+      TableCell.configure({
+        HTMLAttributes: {
+          class: 'table-cell',
+        },
+      }),
 
       Selection,
       ImageUploadNode.configure({

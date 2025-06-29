@@ -51,13 +51,14 @@ export interface MediaResponse {
 }
 
 export const mediaApi = {
-  getAll: async (params?: MediaQueryParams): Promise<Media[]> => {
+  getAll: async (params?: PaginationParams): Promise<PaginatedResponse<Media>> =>{
     try {
       const response = await axiosApi.get('/media', { params });
       return response.data;
+
     } catch (_error) {
       console.error('Error fetching media:', _error);
-      throw _error;
+      return { data: [], total: 0, page: 0, size: 10, totalPages: 0 };
     }
   },
 
