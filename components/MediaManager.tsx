@@ -53,7 +53,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
         mimeType: mimeType || undefined,
       };
       const response = await mediaApi.getAll(params);
-      setMedia(response);
+      setMedia(response.data);
       // setTotalPages(response.totalPages);
     } catch (_error) {
       toast.error('Không thể tải danh sách media');
@@ -141,11 +141,11 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
   };
 
   if (loading) {
-    return <div>Đang tải...</div>;
+    return <div >Đang tải...</div>;
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 py-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Quản lý Media</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

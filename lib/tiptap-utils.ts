@@ -44,7 +44,7 @@ export const handleImageUpload = async (
     }
 
     // const data = await response.data.json()
-    const url ='http://localhost:4000'+ response.data.url;
+    const url = process.env.NEXT_PUBLIC_API_URL + response.data.url;
     return url;
   } catch (error) {
     console.error("Upload error:", error)
