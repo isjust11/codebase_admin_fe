@@ -31,7 +31,8 @@
     "messages": {
       "loginSuccess": "Login successful",
       "emailSent": "Email sent successfully",
-      "emailError": "Error sending email"
+      "emailError": "Error sending email",
+      "requiredUserOrEmail":"Required email/username"
     }
   },
   "RegisterPage": {

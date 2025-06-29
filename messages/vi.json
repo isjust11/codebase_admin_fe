@@ -30,7 +30,8 @@
     "messages": {
       "loginSuccess": "Đăng nhập thành công",
       "emailSent": "Email đã được gửi thành công",
-      "emailError": "Lỗi khi gửi email"
+      "emailError": "Lỗi khi gửi email",
+      "requiredUserOrEmail":"Yêu cầu nhập tên tài khoản hoặc email"
     }
   },
   "RegisterPage": {

@@ -16,6 +16,15 @@ import { Question } from '@/types/question';
 import { SkillType } from '@/enums/skill-type.enum';
 import { toast } from 'sonner';
 
+// Interface cho validation errors
+interface ValidationErrors {
+    content?: string;
+    type?: string;
+    skill?: string;
+    options?: string;
+    answer?: string;
+    explanation?: string;
+}
 
 const QuestionEditor = () => {
     const router = useRouter();
@@ -24,6 +33,7 @@ const QuestionEditor = () => {
 
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [questions, setQuestions] = useState<Question[]>([]);
+    const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
     const [currentQuestion, setCurrentQuestion] = useState<Question>({
         id:'',
         content: '',
@@ -74,6 +84,84 @@ const QuestionEditor = () => {
         }
     };
 
+    // Validation function
+    const validateQuestion = (question: Question): ValidationErrors => {
+        const errors: ValidationErrors = {};
+
+        // Validate content
+        if (!question.content || question.content.trim() === '') {
+            errors.content = 'Nội dung câu hỏi không được để trống';
+        } else if (question.content.length < 10) {
+            errors.content = 'Nội dung câu hỏi phải có ít nhất 10 ký tự';
+        }
+
+        // Validate type
+        if (!question.type) {
+            errors.type = 'Vui lòng chọn loại câu hỏi';
+        }
+
+        // Validate skill
+        if (!question.skill) {
+            errors.skill = 'Vui lòng chọn kỹ năng';
+        }
+
+        // Validate options for multiple choice questions
+        if (question.type === QuestionType.CHOOSE_SINGLE_ANSWER || question.type === QuestionType.CHOOSE_MULTIPLE_ANSWERS) {
+            if (!question.options || question.options.length < 2) {
+                errors.options = 'Phải có ít nhất 2 tùy chọn';
+            } else {
+                const emptyOptions = question.options.filter(opt => !opt || opt.trim() === '');
+                if (emptyOptions.length > 0) {
+                    errors.options = 'Tất cả các tùy chọn phải được điền đầy đủ';
+                }
+                
+                // Check for duplicate options
+                const uniqueOptions = new Set(question.options.map(opt => opt.trim().toLowerCase()));
+                if (uniqueOptions.size !== question.options.length) {
+                    errors.options = 'Các tùy chọn không được trùng lặp';
+                }
+            }
+        }
+
+        // Validate answer
+        if (!question.answer || question.answer.trim() === '') {
+            errors.answer = 'Đáp án không được để trống';
+        } else {
+            if (question.type === QuestionType.CHOOSE_SINGLE_ANSWER) {
+                // Validate single answer format
+                if (!optionLabels.includes(question.answer)) {
+                    errors.answer = 'Đáp án phải là một trong các tùy chọn A, B, C, D...';
+                }
+            } else if (question.type === QuestionType.CHOOSE_MULTIPLE_ANSWERS) {
+                // Validate multiple answers format
+                const answers = question.answer.split(',').map(a => a.trim());
+                const validAnswers = answers.every(a => optionLabels.includes(a));
+                if (!validAnswers) {
+                    errors.answer = 'Đáp án phải là các tùy chọn hợp lệ (VD: A,B,C)';
+                }
+                if (answers.length < 2) {
+                    errors.answer = 'Phải chọn ít nhất 2 đáp án cho câu hỏi nhiều lựa chọn';
+                }
+            } else if (question.type === QuestionType.FILL_IN_THE_BLANK || 
+                       question.type === QuestionType.SHORT_ANSWER) {
+                if (question.answer.length < 2) {
+                    errors.answer = 'Đáp án phải có ít nhất 2 ký tự';
+                }
+            } else if (question.type === QuestionType.ESSAY) {
+                if (question.answer.length < 10) {
+                    errors.answer = 'Đáp án cho bài luận phải có ít nhất 10 ký tự';
+                }
+            }
+        }
+
+        // Validate explanation (optional but if provided, should be meaningful)
+        if (question.explanation && question.explanation.trim() !== '' && question.explanation.length < 5) {
+            errors.explanation = 'Giải thích phải có ít nhất 5 ký tự nếu được cung cấp';
+        }
+
+        return errors;
+    };
+
     const handleQuestionTypeChange = (type: QuestionType) => {
         setCurrentQuestion(prev => ({
             ...prev,
@@ -82,6 +170,8 @@ const QuestionEditor = () => {
                 ? ['', '', '', '']
                 : []
         }));
+        // Clear validation errors when type changes
+        setValidationErrors(prev => ({ ...prev, type: undefined, options: undefined, answer: undefined }));
     };
 
     const handleOptionChange = (index: number, value: string) => {
@@ -89,6 +179,8 @@ const QuestionEditor = () => {
             ...prev,
             options: prev.options?.map((option, i) => i === index ? value : option)
         }));
+        // Clear options validation error when user starts typing
+        setValidationErrors(prev => ({ ...prev, options: undefined }));
     };
 
     const addOption = () => {
@@ -109,24 +201,24 @@ const QuestionEditor = () => {
         }
     };
 
-    const saveCurrentQuestion = () => {
-        var isValid = true;
-        if (!currentQuestion.content || !currentQuestion.type || !currentQuestion.skill) {
-            toast.warning('Vui lòng điền đầy đủ thông tin câu hỏi');
-            isValid = false;
-        }
+    const saveCurrentQuestion = (): boolean => {
+        const errors = validateQuestion(currentQuestion);
+        setValidationErrors(errors);
 
-        if (currentQuestion.type === QuestionType.CHOOSE_SINGLE_ANSWER || currentQuestion.type === QuestionType.CHOOSE_MULTIPLE_ANSWERS) {
-            if (!currentQuestion.answer || currentQuestion.options?.some(opt => !opt)) {
-                toast.warning('Vui lòng điền đầy đủ các tùy chọn và đáp án');
-                isValid = false;
+        if (Object.keys(errors).length > 0) {
+            // Show first error message
+            const firstError = Object.values(errors)[0];
+            if (firstError) {
+                toast.error(firstError);
             }
+            return false;
         }
 
         const updatedQuestions = [...questions];
         updatedQuestions[currentQuestionIndex] = { ...currentQuestion };
         setQuestions(updatedQuestions);
-        return isValid;
+        setValidationErrors({}); // Clear errors on successful save
+        return true;
     };
 
     const nextQuestion = () => {
@@ -161,6 +253,7 @@ const QuestionEditor = () => {
                 examQuestions: []
             }]);
         }
+        setValidationErrors({}); // Clear errors when moving to next question
     };
 
     const previousQuestion = () => {
@@ -171,6 +264,7 @@ const QuestionEditor = () => {
             setCurrentQuestionIndex(prevIndex);
             setCurrentQuestion(questions[prevIndex]);
         }
+        setValidationErrors({}); // Clear errors when moving to previous question
     };
 
     const deleteQuestion = (index: number) => {
@@ -195,15 +289,32 @@ const QuestionEditor = () => {
                 examQuestions: []
             });
         }
+        setValidationErrors({}); // Clear errors when deleting
     };
 
     const saveAllQuestions = async () => {
         try {
-            saveCurrentQuestion();
+            const isValid = saveCurrentQuestion();
+            if (!isValid) return;
+            
             if (questions.length == 0) {
                 toast.warning('Vui lòng tạo ít nhất 1 câu hỏi!')
                 return;
             }
+
+            // Validate all questions before saving
+            let hasErrors = false;
+            for (let i = 0; i < questions.length; i++) {
+                const errors = validateQuestion(questions[i]);
+                if (Object.keys(errors).length > 0) {
+                    toast.error(`Câu hỏi ${i + 1} có lỗi: ${Object.values(errors)[0]}`);
+                    hasErrors = true;
+                    break;
+                }
+            }
+
+            if (hasErrors) return;
+
             // TODO: Implement API call to save all questions
             await createBulkQuestion(examId, questions);
             toast.success(`Đã lưu tất cả câu hỏi thành công! `);
@@ -269,7 +380,7 @@ const QuestionEditor = () => {
                             <div className="space-y-2">
                                 <Label>Loại câu hỏi</Label>
                                 <Select value={currentQuestion.type} onValueChange={handleQuestionTypeChange}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className={validationErrors.type ? "border-red-500" : ""}>
                                         <SelectValue placeholder="Chọn loại câu hỏi" />
                                     </SelectTrigger>
                                     <SelectContent className='bg-white z-[999991]'>
@@ -280,13 +391,16 @@ const QuestionEditor = () => {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                {validationErrors.type && (
+                                    <p className="text-sm text-red-500">{validationErrors.type}</p>
+                                )}
                             </div>
 
                             {/* Skill Selection */}
                             <div className="space-y-2">
                                 <Label>Kỹ năng</Label>
                                 <Select value={currentQuestion.skill} onValueChange={(skill) => setCurrentQuestion(prev => ({ ...prev, skill: skill as SkillType }))}>
-                                    <SelectTrigger>
+                                    <SelectTrigger className={validationErrors.skill ? "border-red-500" : ""}>
                                         <SelectValue placeholder="Chọn kỹ năng" />
                                     </SelectTrigger>
                                     <SelectContent className='bg-white z-[999991]'>
@@ -297,23 +411,29 @@ const QuestionEditor = () => {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                {validationErrors.skill && (
+                                    <p className="text-sm text-red-500">{validationErrors.skill}</p>
+                                )}
                             </div>
 
                             {/* Question Content */}
                             <div className="space-y-2">
                                 <Label>Nội dung câu hỏi</Label>
-                                {/* <Textarea
-                                    value={currentQuestion.content}
-                                    onChange={(e) => setCurrentQuestion(prev => ({ ...prev, content: e.target.value }))}
-                                    placeholder="Nhập nội dung câu hỏi..."
-                                    rows={4}
-                                /> */}
-                                <SimpleEditor
-                                    key={'content-'+currentQuestion.id}
-                                    initialContent={currentQuestion.content || ''}
-                                    placeholder="Giải thích đáp án..."
-                                    onContentChange={(e) => setCurrentQuestion(prev => ({ ...prev, content: e }))}
-                                />
+                                <div className={validationErrors.content ? "border border-red-500 rounded-md" : ""}>
+                                    <SimpleEditor
+                                        key={'content-'+currentQuestion.id}
+                                        initialContent={currentQuestion.content || ''}
+                                        placeholder="Nhập nội dung câu hỏi..."
+                                        onContentChange={(e) => {
+                                            setCurrentQuestion(prev => ({ ...prev, content: e }));
+                                            // Clear content validation error when user starts typing
+                                            setValidationErrors(prev => ({ ...prev, content: undefined }));
+                                        }}
+                                    />
+                                </div>
+                                {validationErrors.content && (
+                                    <p className="text-sm text-red-500">{validationErrors.content}</p>
+                                )}
                             </div>
 
                             {/* Options for Multiple Choice */}
@@ -343,7 +463,7 @@ const QuestionEditor = () => {
                                                     value={option}
                                                     onChange={(e) => handleOptionChange(index, e.target.value)}
                                                     placeholder={`Tùy chọn ${optionLabels[index]}`}
-                                                    className="flex-1"
+                                                    className={`flex-1 ${validationErrors.options ? "border-red-500" : ""}`}
                                                 />
                                                 {(currentQuestion.options?.length ?? 0 > 2) && (
                                                     <Button
@@ -358,18 +478,30 @@ const QuestionEditor = () => {
                                             </div>
                                         ))}
                                     </div>
+                                    {validationErrors.options && (
+                                        <p className="text-sm text-red-500">{validationErrors.options}</p>
+                                    )}
                                 </div>
                             )}
 
                             {/* Explanation */}
                             <div className="space-y-2">
                                 <Label>Giải thích (tùy chọn)</Label>
-                                <SimpleEditor
-                                    key={'explanation-'+currentQuestion.id}
-                                    initialContent={currentQuestion.explanation || ''}
-                                    placeholder="Giải thích đáp án..."
-                                    onContentChange={(e) => setCurrentQuestion(prev => ({ ...prev, explanation: e }))}
-                                />
+                                <div className={validationErrors.explanation ? "border border-red-500 rounded-md" : ""}>
+                                    <SimpleEditor
+                                        key={'explanation-'+currentQuestion.id}
+                                        initialContent={currentQuestion.explanation || ''}
+                                        placeholder="Giải thích đáp án..."
+                                        onContentChange={(e) => {
+                                            setCurrentQuestion(prev => ({ ...prev, explanation: e }));
+                                            // Clear explanation validation error when user starts typing
+                                            setValidationErrors(prev => ({ ...prev, explanation: undefined }));
+                                        }}
+                                    />
+                                </div>
+                                {validationErrors.explanation && (
+                                    <p className="text-sm text-red-500">{validationErrors.explanation}</p>
+                                )}
                             </div>
                         </div>
 
@@ -379,18 +511,29 @@ const QuestionEditor = () => {
                                 <Label>Đáp án đúng</Label>
 
                                 {currentQuestion.type === QuestionType.CHOOSE_SINGLE_ANSWER && (
-                                    <Select value={currentQuestion.answer} onValueChange={(answer) => setCurrentQuestion(prev => ({ ...prev, answer }))}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Chọn đáp án đúng" />
-                                        </SelectTrigger>
-                                        <SelectContent className='bg-white z-[999991]'>
-                                            {currentQuestion.options?.map((option, index) => (
-                                                <SelectItem key={index} value={optionLabels[index]} className='hover:bg-gray-100'>
-                                                    {optionLabels[index]}: {option}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <div>
+                                        <Select 
+                                            value={currentQuestion.answer} 
+                                            onValueChange={(answer) => {
+                                                setCurrentQuestion(prev => ({ ...prev, answer }));
+                                                setValidationErrors(prev => ({ ...prev, answer: undefined }));
+                                            }}
+                                        >
+                                            <SelectTrigger className={validationErrors.answer ? "border-red-500" : ""}>
+                                                <SelectValue placeholder="Chọn đáp án đúng" />
+                                            </SelectTrigger>
+                                            <SelectContent className='bg-white z-[999991]'>
+                                                {currentQuestion.options?.map((option, index) => (
+                                                    <SelectItem key={index} value={optionLabels[index]} className='hover:bg-gray-100'>
+                                                        {optionLabels[index]}: {option}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        {validationErrors.answer && (
+                                            <p className="text-sm text-red-500">{validationErrors.answer}</p>
+                                        )}
+                                    </div>
                                 )}
 
                                 {currentQuestion.type === QuestionType.CHOOSE_MULTIPLE_ANSWERS && (
@@ -410,6 +553,7 @@ const QuestionEditor = () => {
                                                             newAnswers = currentAnswers?.filter(a => a !== optionLabels[index]);
                                                         }
                                                         setCurrentQuestion(prev => ({ ...prev, answer: newAnswers?.join(',') }));
+                                                        setValidationErrors(prev => ({ ...prev, answer: undefined }));
                                                     }}
                                                 />
                                                 <Label htmlFor={`answer-${index}`} className="flex-1">
@@ -417,29 +561,50 @@ const QuestionEditor = () => {
                                                 </Label>
                                             </div>
                                         ))}
+                                        {validationErrors.answer && (
+                                            <p className="text-sm text-red-500">{validationErrors.answer}</p>
+                                        )}
                                     </div>
                                 )}
 
                                 {(currentQuestion.type === QuestionType.FILL_IN_THE_BLANK ||
                                     currentQuestion.type === QuestionType.SHORT_ANSWER ||
                                     currentQuestion.type === QuestionType.ESSAY) && (
-                                        <SimpleEditor
-                                            key={'answer-'+currentQuestion.id}
-                                            initialContent={currentQuestion.answer || ''}
-                                            placeholder="Nhập đáp án đúng..."
-                                            onContentChange={(e) => setCurrentQuestion(prev => ({ ...prev, answer: e }))}
-                                        />
+                                        <div>
+                                            <div className={validationErrors.answer ? "border border-red-500 rounded-md" : ""}>
+                                                <SimpleEditor
+                                                    key={'answer-'+currentQuestion.id}
+                                                    initialContent={currentQuestion.answer || ''}
+                                                    placeholder="Nhập đáp án đúng..."
+                                                    onContentChange={(e) => {
+                                                        setCurrentQuestion(prev => ({ ...prev, answer: e }));
+                                                        setValidationErrors(prev => ({ ...prev, answer: undefined }));
+                                                    }}
+                                                />
+                                            </div>
+                                            {validationErrors.answer && (
+                                                <p className="text-sm text-red-500">{validationErrors.answer}</p>
+                                            )}
+                                        </div>
                                     )}
 
                                 {(currentQuestion.type === QuestionType.MATCHING ||
                                     currentQuestion.type === QuestionType.ORDERING) && (
                                         <div className="space-y-2">
-                                            <SimpleEditor
-                                                key={'answer-'+currentQuestion.id}
-                                                initialContent={currentQuestion.answer || ''}
-                                                placeholder="Nhập thứ tự đúng (VD: A-B-C-D hoặc 1-2-3-4)..."
-                                                onContentChange={(e) => setCurrentQuestion(prev => ({ ...prev, answer: e }))}
-                                            />
+                                            <div className={validationErrors.answer ? "border border-red-500 rounded-md" : ""}>
+                                                <SimpleEditor
+                                                    key={'answer-'+currentQuestion.id}
+                                                    initialContent={currentQuestion.answer || ''}
+                                                    placeholder="Nhập thứ tự đúng (VD: A-B-C-D hoặc 1-2-3-4)..."
+                                                    onContentChange={(e) => {
+                                                        setCurrentQuestion(prev => ({ ...prev, answer: e }));
+                                                        setValidationErrors(prev => ({ ...prev, answer: undefined }));
+                                                    }}
+                                                />
+                                            </div>
+                                            {validationErrors.answer && (
+                                                <p className="text-sm text-red-500">{validationErrors.answer}</p>
+                                            )}
                                         </div>
                                     )}
                             </div>
@@ -485,6 +650,7 @@ const QuestionEditor = () => {
                                         saveCurrentQuestion();
                                         setCurrentQuestionIndex(index);
                                         setCurrentQuestion(question);
+                                        setValidationErrors({}); // Clear errors when switching questions
                                     }}
                                 >
                                     <div className="flex items-center space-x-3">

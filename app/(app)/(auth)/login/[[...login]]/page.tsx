@@ -68,9 +68,14 @@ export default function LoginPage() {
 
   const handleForgotPassword = async () => {
     try {
-      setIsLoading(true);
-      const response = await forgotPassword(form.getValues('username'));
-      toast.success(response.message);
+      const username = form.getValues('username')
+      if(username){
+        setIsLoading(true);
+        const response = await forgotPassword(form.getValues('username'));
+        toast.success(response.message);
+      }else{
+        toast.error('messages.requiredUserOrEmail')
+      }
     } catch (_error) {
       toast.error(t('messages.emailError'));
     } finally {
