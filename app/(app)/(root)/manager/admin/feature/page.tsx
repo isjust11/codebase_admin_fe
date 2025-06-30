@@ -23,6 +23,8 @@ import { FeatureForm } from './components/FeatureForm';
 import Link from "next/link";
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 import { AsyncWrapper } from '@/components/common/AsyncWrapper';
+import { useTranslations } from 'next-intl';
+
 export default function FeaturePage() {
   const [features, setFeatures] = useState<Feature[]>([]);
   const [featureParent, setFeatureParent] = useState<Feature>();
@@ -34,6 +36,7 @@ export default function FeaturePage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
+  const t = useTranslations('FeaturePage');
   // const { socket } = useSocket();
 
   const fetchFeatures = async () => {
@@ -60,11 +63,11 @@ export default function FeaturePage() {
     if (selectedFeature) {
       // Cập nhật navigator
       await updateFeature(selectedFeature.id, values);
-      toast.success('Cập nhật chức năng thành công!')
+      toast.success(t('updateSuccess'))
     } else {
       // Thêm navigator mới
       await createFeature(values);
-      toast.success('Thêm mới chức năng thành công!')
+      toast.success(t('addSuccess'))
     }
     await fetchFeatures()
     closeModal();
@@ -73,7 +76,7 @@ export default function FeaturePage() {
   const handleDelete = async (feature: any) => {
     setSelectedFeature(feature)
     setOpenDialog(true);
-    setDialogContent('Bạn có chắc chắn muốn xóa chức năng này không?');
+    setDialogContent(t('confirmDelete'));
     
 
   };
@@ -82,13 +85,13 @@ export default function FeaturePage() {
     await deleteFeature(selectedFeature?.id);
     await fetchFeatures();
     setOpenDialog(false)
-    toast.success('Xóa chức năng thành công!')
+    toast.success(t('deleteSuccess'))
   }
 
   const handleChangeStatus = async (feature: Feature) => {
     await updateFeature(feature.id, { isActive: !feature.isActive });
     await fetchFeatures()
-    toast.success('Đổi trạng thái chức năng thành công!')
+    toast.success(t('changeStatusSuccess'))
   };
 
   const columns: ColumnDef<Feature>[] = [
@@ -102,14 +105,14 @@ export default function FeaturePage() {
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       enableSorting: false,
@@ -123,7 +126,7 @@ export default function FeaturePage() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tên chức năng
+            {t('featureName')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -131,7 +134,7 @@ export default function FeaturePage() {
     },
     {
       accessorKey: "featureType",
-      header: "Loại danh mục",
+      header: t('featureType'),
       cell: ({ row }) => {
         const featureType = row.getValue("featureType") as Category
         return (
@@ -143,7 +146,7 @@ export default function FeaturePage() {
     },
     {
       accessorKey: "icon",
-      header: "Icon",
+      header: t('icon'),
       cell: ({ row }) => {
         const icon = row.getValue("icon") as string
         return (
@@ -154,7 +157,7 @@ export default function FeaturePage() {
     {
       accessorKey: "link",
       enableHiding: true,
-      header: "Đường dẫn",
+      header: t('link'),
       cell: ({ row }) => {
         const link = row.getValue("link") as string;
         const parentId = row.original.parentId;
@@ -175,19 +178,19 @@ export default function FeaturePage() {
     },
     {
       accessorKey: "isActive",
-      header: "Trạng thái",
+      header: t('status'),
       cell: ({ row }) => {
         const status = row.getValue("isActive") as boolean
         return (
           <Badge variant="light" color={status === true ? 'success' : 'error'} >
-            {status == true ? 'Hoạt động' : 'Ngừng hoạt động'}
+            {status == true ? t('active') : t('inactive')}
           </Badge>
         )
       },
     },
     {
       accessorKey: "sortOrder",
-      header: "Thứ tự",
+      header: t('sortOrder'),
       cell: ({ row }) => {
         const sortOrder = row.getValue("sortOrder") as number
         return (
@@ -199,7 +202,7 @@ export default function FeaturePage() {
     },
     {
       id: "actions",
-      header: 'Thao tác',
+      header: t('actions'),
       cell: ({ row }) => {
         const feature = row.original
         return (
@@ -207,7 +210,7 @@ export default function FeaturePage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Mở menu</span>
+                  <span className="sr-only">{t('openMenu')}</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -220,7 +223,7 @@ export default function FeaturePage() {
                       openModal();
                     }}>
                     <PlusCircle className="mr-2 h-4 w-4 text-green-500 dark:text-white" />
-                    Thêm chức năng con
+                    {t('addChildFeature')}
                   </DropdownMenuItem>
                 }
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-gray-700 dark:text-white"
@@ -229,7 +232,7 @@ export default function FeaturePage() {
                     openModal();
                   }}>
                   <BadgeInfo className="mr-2 h-4 w-4 text-gray-700 dark:text-white" />
-                  Xem chi tiết
+                  {t('viewDetail')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
                   onClick={() => {
@@ -237,7 +240,7 @@ export default function FeaturePage() {
                   }}
                 >
                   <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
-                  {feature.isActive ? ' Ngừng hoạt động' : 'Kích hoạt'}
+                  {feature.isActive ? t('inactive') : t('active')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-blue-500 dark:text-white'
                   onClick={() => {
@@ -246,11 +249,11 @@ export default function FeaturePage() {
                   }}
                 >
                   <Pencil className="mr-2 h-4 w-4 text-blue-500 dark:text-white" />
-                  Chỉnh sửa
+                  {t('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10" onClick={() => handleDelete(feature)}>
                   <Trash className="mr-2 h-4 w-4" />
-                  Xóa
+                  {t('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -266,16 +269,16 @@ export default function FeaturePage() {
         setSelectedFeature(null);
         openModal();
       },
-      title: "Thêm chức năng",
+      title: t('addFeature'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
   ]
 
   return (
     <AsyncWrapper>
-      <PageBreadcrumb pageTitle="Danh sách chức năng" />
+      <PageBreadcrumb pageTitle={t('featureList')} />
       <div className="space-y-6">
-        <ComponentCard title="Danh sách chức năng" listAction={lstActions}>
+        <ComponentCard title={t('featureList')} listAction={lstActions}>
           <DataTable
             columns={columns}
             data={features}
@@ -291,7 +294,7 @@ export default function FeaturePage() {
             className="max-w-[600px] p-5 lg:p-10"
           >
             <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
-              {selectedFeature ? 'Cập nhật chức năng' : 'Thêm chức năng mới'}
+              {selectedFeature ? t('updateFeature') : t('addFeatureNew')}
             </h4>
             <FeatureForm
               initialData={selectedFeature}
@@ -305,8 +308,8 @@ export default function FeaturePage() {
         <AlertDialogUtils
           type="warning"
           content={dialogContent}
-          confirmText="Đồng ý"
-          cancelText="Hủy"
+          confirmText={t('confirm')}
+          cancelText={t('cancel')}
           isOpen={openDialog}
           onConfirm={() => confirmDelete()}
           onCancel={() => {setOpenDialog(false)}}
