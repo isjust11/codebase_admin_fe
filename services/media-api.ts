@@ -10,6 +10,8 @@ export interface Media {
   url: string;
   isDeleted: boolean;
   userId: number;
+  width: number;
+  height: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -38,7 +40,7 @@ export interface UpdateMediaDto {
 export interface MediaQueryParams {
   search?: string;
   page?: number;
-  limit?: number;
+  size?: number;
   mimeType?: string;
 }
 
@@ -51,14 +53,14 @@ export interface MediaResponse {
 }
 
 export const mediaApi = {
-  getAll: async (params?: PaginationParams): Promise<PaginatedResponse<Media>> =>{
+  getAll: async (params?: MediaQueryParams): Promise<PaginatedResponse<Media>> =>{
     try {
       const response = await axiosApi.get('/media', { params });
       return response.data;
 
     } catch (_error) {
       console.error('Error fetching media:', _error);
-      return { data: [], total: 0, page: 0, size: 10, totalPages: 0 };
+      return { data: [], total: 0, page: 0, size: 100, totalPages: 0 };
     }
   },
 

@@ -6,6 +6,7 @@ import { useState } from "react";
 import { MoreDotIcon } from "@/public/icons";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
+import { Button } from "../ui/button";
 
 export default function DemographicCard() {
   const [isOpen, setIsOpen] = useState(false);
@@ -31,9 +32,9 @@ export default function DemographicCard() {
         </div>
 
         <div className="relative inline-block">
-          <button onClick={toggleDropdown} className="dropdown-toggle">
+          <Button onClick={toggleDropdown} className="dropdown-toggle">
             <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300" />
-          </button>
+          </Button>
           <Dropdown
             isOpen={isOpen}
             onClose={closeDropdown}

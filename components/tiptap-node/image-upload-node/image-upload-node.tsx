@@ -5,6 +5,8 @@ import type { NodeViewProps } from "@tiptap/react"
 import { NodeViewWrapper } from "@tiptap/react"
 import { CloseIcon } from "@/components/tiptap-icons/close-icon"
 import "@/components/tiptap-node/image-upload-node/image-upload-node.scss"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 export interface FileItem {
   id: string
@@ -294,7 +296,7 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({
               {progress}%
             </span>
           )}
-          <button
+          <Button
             className="tiptap-image-upload-close-btn"
             onClick={(e) => {
               e.stopPropagation()
@@ -302,7 +304,7 @@ const ImageUploadPreview: React.FC<ImageUploadPreviewProps> = ({
             }}
           >
             <CloseIcon />
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -404,7 +406,7 @@ export const ImageUploadNode: React.FC<NodeViewProps> = (props) => {
         />
       )}
 
-      <input
+      <Input
         ref={inputRef}
         name="file"
         accept={accept}

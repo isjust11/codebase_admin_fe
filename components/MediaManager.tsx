@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { Media, mediaApi, MediaQueryParams, MediaResponse } from '@/services/media-api';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +13,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, X, Check, Search } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, X, Check, Search, ImageOff } from 'lucide-react';
 import Image from 'next/image';
 import {
   Select,
@@ -23,6 +23,77 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Modal } from './ui/modal';
+import { useDropzone } from 'react-dropzone';
+import ReactCrop, { type Crop, PixelCrop, centerCrop, makeAspectCrop } from 'react-image-crop';
+import 'react-image-crop/dist/ReactCrop.css';
+
+// --- Helper Functions ---
+function useDebounceEffect(
+  fn: () => void,
+  waitTime: number,
+  deps?: React.DependencyList,
+) {
+  useEffect(() => {
+    const t = setTimeout(() => {
+      fn.apply(undefined, deps as any)
+    }, waitTime)
+
+    return () => {
+      clearTimeout(t)
+    }
+  }, deps)
+}
+
+const TO_RADIANS = Math.PI / 180
+async function canvasPreview(
+  image: HTMLImageElement,
+  canvas: HTMLCanvasElement,
+  crop: PixelCrop,
+  scale = 1,
+  rotate = 0,
+) {
+  const ctx = canvas.getContext('2d')
+
+  if (!ctx) {
+    throw new Error('No 2d context')
+  }
+
+  const scaleX = image.naturalWidth / image.width
+  const scaleY = image.naturalHeight / image.height
+  const pixelRatio = window.devicePixelRatio
+  canvas.width = Math.floor(crop.width * scaleX * pixelRatio)
+  canvas.height = Math.floor(crop.height * scaleY * pixelRatio)
+
+  ctx.scale(pixelRatio, pixelRatio)
+  ctx.imageSmoothingQuality = 'high'
+
+  const cropX = crop.x * scaleX
+  const cropY = crop.y * scaleY
+
+  const rotateRads = rotate * TO_RADIANS
+  const centerX = image.naturalWidth / 2
+  const centerY = image.naturalHeight / 2
+
+  ctx.save()
+  ctx.translate(-cropX, -cropY)
+  ctx.translate(centerX, centerY)
+  ctx.rotate(rotateRads)
+  ctx.scale(scale, scale)
+  ctx.translate(-centerX, -centerY)
+  ctx.drawImage(
+    image,
+    0,
+    0,
+    image.naturalWidth,
+    image.naturalHeight,
+    0,
+    0,
+    image.naturalWidth,
+    image.naturalHeight,
+  )
+
+  ctx.restore()
+}
 
 interface MediaManagerProps {
   onSelect?: (media: Media | Media[]) => void;
@@ -30,12 +101,43 @@ interface MediaManagerProps {
   multiple?: boolean;
 }
 
+const MediaThumbnail: React.FC<{ item: Media }> = ({ item }) => {
+  const [hasError, setHasError] = useState(false);
+
+  if (item.mimeType.startsWith('image/') && !hasError) {
+    return (
+      <Image
+        src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
+        alt={item.originalName}
+        width={item.width || 200}
+        height={item.width || 200}
+        className="object-cover"
+        onError={() => setHasError(true)}
+      />
+    );
+  }
+
+  return (
+    <div className="w-full h-48 flex items-center justify-center bg-muted">
+      <ImageOff className="h-12 w-12 text-muted-foreground text-gray-300" />
+    </div>
+  );
+};
+
 export function MediaManager({ onSelect, selectedMedia, multiple = false }: MediaManagerProps) {
   const [medias, setMedias] = useState<Media[]>([]);
+  const [fileUploads, setFileUploads] = useState<(File & { preview: string, status?: boolean, message?: string })[]>([]);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
+  const [imageError, setImageError] = useState(false);
+  const [editMode, setEditMode] = useState(false);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const [imgRef, setImgRef] = useState<HTMLImageElement | null>(null);
   const [selectedItems, setSelectedItems] = useState<Media[]>(
     selectedMedia ? (Array.isArray(selectedMedia) ? selectedMedia : [selectedMedia]) : []
   );
@@ -43,13 +145,34 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [mimeType, setMimeType] = useState<string>('');
-  const itemsPerPage = 12;
+  const itemsPerPage = 100;
+  const [isUploading, setIsUploading] = useState(false);
+
+  const onDrop = useCallback((acceptedFiles: File[]) => {
+    if (acceptedFiles && acceptedFiles.length > 0) {
+      const newFiles = acceptedFiles.map(file => Object.assign(file, {
+        preview: URL.createObjectURL(file),
+      }));
+      setFileUploads(prev => [...prev, ...newFiles]);
+    }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    accept: {
+      "image/*": [],
+      "video/*": [],
+      "audio/*": [],
+      "application/*": [],
+    },
+    multiple: true
+  });
 
   const fetchMedia = async () => {
     try {
       const params: MediaQueryParams = {
         page: currentPage,
-        limit: itemsPerPage,
+        size: itemsPerPage,
         search: searchQuery,
         mimeType: mimeType || undefined,
       };
@@ -67,23 +190,43 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
     fetchMedia();
   }, [currentPage, searchQuery, mimeType]);
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files) return;
+  useEffect(() => {
+    // Make sure to revoke the data uris to avoid memory leaks
+    return () => fileUploads.forEach(file => URL.revokeObjectURL(file.preview));
+  }, [fileUploads]);
 
-    try {
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const uploadedMedia = await mediaApi.upload(file);
-        setMedias((prev) => Array.isArray(prev) ? [...prev, uploadedMedia] : [uploadedMedia]);
-        if (onSelect) {
-          onSelect(uploadedMedia);
-        }
+  const handleUploadMultipleFiles = async () => {
+    if (fileUploads.length === 0) return;
+
+    setIsUploading(true);
+
+    for (let i = 0; i < fileUploads.length; i++) {
+      const fileToUpload = fileUploads[i];
+      if (fileToUpload.status === true) continue;
+
+      try {
+        await mediaApi.upload(fileToUpload);
+        setFileUploads(prevFiles =>
+          prevFiles.map((file, index) =>
+            index === i ? { ...file, status: true, message: 'Tải lên thành công' } : file
+          )
+        );
+      } catch (error: any) {
+        setFileUploads(prevFiles =>
+          prevFiles.map((file, index) =>
+            index === i ? { ...file, status: false, message: error.message || 'Tải lên thất bại' } : file
+          )
+        );
       }
-      toast.success('Tải lên media thành công');
-    } catch (_error) {
-      toast.error('Có lỗi xảy ra khi tải lên media');
     }
+
+    setIsUploading(false);
+    await fetchMedia();
+    toast.info('Hoàn tất quá trình tải lên. Kiểm tra trạng thái của từng tệp.');
+  };
+
+  const removeFile = (previewUrl: string) => {
+    setFileUploads(files => files.filter(file => file.preview !== previewUrl));
   };
 
   const handleDelete = async (id: number) => {
@@ -118,17 +261,19 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
   };
 
   const handlePreview = (item: Media) => {
-    console.log('handle preview')
     const index = medias.findIndex((m) => m.id === item.id);
+    setImageError(false);
     setPreviewIndex(index);
     setIsPreviewOpen(true);
   };
 
   const handlePrevPreview = () => {
+    setImageError(false);
     setPreviewIndex((prev) => (prev > 0 ? prev - 1 : medias.length - 1));
   };
 
   const handleNextPreview = () => {
+    setImageError(false);
     setPreviewIndex((prev) => (prev < medias.length - 1 ? prev + 1 : 0));
   };
 
@@ -142,6 +287,54 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
     setCurrentPage(1);
   };
 
+  const handleSaveChanges = async () => {
+    if (!completedCrop || !imgRef) {
+      toast.error('Vui lòng chọn một vùng để cắt.');
+      return;
+    }
+
+    const scaleX = imgRef.naturalWidth / imgRef.width;
+    const scaleY = imgRef.naturalHeight / imgRef.height;
+    const canvas = document.createElement('canvas');
+    canvas.width = completedCrop.width;
+    canvas.height = completedCrop.height;
+    const ctx = canvas.getContext('2d');
+
+    if (!ctx) {
+      throw new Error('Không thể tạo context 2D');
+    }
+    ctx.drawImage(
+      imgRef,
+      completedCrop.x * scaleX,
+      completedCrop.y * scaleY,
+      completedCrop.width * scaleX,
+      completedCrop.height * scaleY,
+      0,
+      0,
+      completedCrop.width,
+      completedCrop.height
+    );
+
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) {
+      toast.error('Không thể tạo ảnh đã cắt.');
+      return;
+    }
+
+    const currentMedia = medias[previewIndex];
+    const file = new File([blob], currentMedia.originalName, { type: 'image/png' });
+
+    try {
+      await mediaApi.update(currentMedia.id, file);
+      await fetchMedia();
+      setEditMode(false);
+      setIsPreviewOpen(false);
+      toast.success('Ảnh đã được cập nhật thành công.');
+    } catch (error) {
+      toast.error('Có lỗi khi cập nhật ảnh.');
+    }
+  };
+
   if (loading) {
     return <div >Đang tải...</div>;
   }
@@ -150,28 +343,100 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
     <div className="space-y-4 py-6">
       <div className="flex justify-between items-center">
         <h2 className="text-lg font-semibold">Quản lý Media</h2>
-        <Modal isOpen={isDialogOpen} onClose={() => setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Upload className="mr-2 h-4 w-4" />
-              Tải lên
-            </Button>
-          </DialogTrigger>
-          <div>
+        <Button onClick={() => setIsDialogOpen(true)}>
+          <Upload className="mr-2 h-4 w-4" />
+          Tải lên
+        </Button>
+        <Modal isOpen={isDialogOpen} onClose={() => { setIsDialogOpen(false); setFileUploads([]) }} className='w-3/4 max-w-4xl'>
+          <div className='p-4'>
             <div>
-              <div>Tải lên Media</div>
+              <div className='text-2xl'>Tải lên Media</div>
             </div>
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="file">Chọn file</Label>
-                <Input
-                  id="file"
-                  type="file"
-                  accept="image/*,video/*,audio/*"
-                  multiple={multiple}
-                  onChange={handleFileUpload}
-                />
+            <div className="space-y-4 py-6">
+              <div
+                {...getRootProps()}
+                className={`dropzone rounded-xl border-2 border-dashed p-7 lg:p-10 text-center cursor-pointer
+                  ${isDragActive
+                    ? "border-primary bg-primary/10"
+                    : "border-border hover:border-primary/50"
+                  }
+                `}
+              >
+                <input multiple {...getInputProps()} />
+                <div className="dz-message flex flex-col items-center m-0!">
+                  <div className="mb-[22px] flex justify-center">
+                    <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+                      <Upload className="h-8 w-8" />
+                    </div>
+                  </div>
+                  <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+                    {isDragActive ? "Thả tệp vào đây" : "Kéo & thả hoặc nhấn để chọn tệp"}
+                  </h4>
+                  <span className=" text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
+                    Tải lên nhiều tệp cùng lúc
+                  </span>
+                </div>
               </div>
+
+              {fileUploads.length > 0 && (
+                <div className="pt-4">
+                  <h4 className="font-semibold text-lg mb-2">Các tệp đã chọn ({fileUploads.length}):</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    {fileUploads.map((file) => (
+                      <div key={file.preview} className="relative group aspect-square">
+                        <Image
+                          src={file.preview}
+                          alt={file.name}
+                          fill
+                          className="object-cover rounded-lg"
+                        />
+                        {!isUploading && file.status !== true && (
+                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <Button
+                              variant="destructive"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                removeFile(file.preview);
+                              }}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+                        {file.status === true && (
+                          <div className="absolute inset-0 bg-green-500/70 flex items-center justify-center">
+                            <Check className="h-8 w-8 text-white" />
+                          </div>
+                        )}
+                        {file.status === false && (
+                          <div className="absolute inset-0 bg-red-500/70 flex flex-col items-center justify-center p-2 text-center">
+                            <X className="h-8 w-8 text-white" />
+                            <p className="text-white text-xs mt-1 leading-tight">{file.message}</p>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 left-0 right-0 p-1 bg-black/50 text-white text-xs truncate">
+                          {file.name}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={() => { setIsDialogOpen(false); setFileUploads([]) }}>
+                Đóng
+              </Button>
+              <Button 
+                onClick={handleUploadMultipleFiles} 
+                disabled={isUploading || fileUploads.filter(f => f.status !== true).length === 0}
+              >
+                {isUploading 
+                  ? 'Đang tải lên...' 
+                  : `Tải lên ${fileUploads.filter(f => f.status !== true).length} tệp`}
+              </Button>
             </div>
           </div>
         </Modal>
@@ -201,51 +466,48 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
         </Select>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 md:grid-cols-3 lg:grid-cols-6 gap-4">
         {medias && medias.map((item) => (
           <div
             onClick={() => handlePreview(item)}
             key={item.id}
-            className={`relative group border rounded-lg overflow-hidden cursor-pointer ${selectedItems.some((selected) => selected.id === item.id)
-                ? 'border-primary'
-                : 'border-border'
+            className={`relative group border rounded-lg overflow-hidden cursor-pointer items-center  ${selectedItems.some((selected) => selected.id === item.id)
+              ? 'border-primary'
+              : 'border-border'
               }`}
           >
-            {item.mimeType.startsWith('image/') ? (
-              <Image
-                src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
-                alt={item.originalName}
-                width={200}
-                height={200}
-                className="object-cover w-full h-48"
-              />
-            ) : (
-              <div className="w-full h-48 flex items-center justify-center bg-muted">
-                <ImageIcon className="h-12 w-12 text-muted-foreground" />
-              </div>
-            )}
+            <MediaThumbnail item={item} />
             <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
               <Button
                 variant="secondary"
                 size="icon"
+                className='p-1 bg-blue-50 opacity-50'
                 onClick={(e) => {
                   e.stopPropagation();
                   handleSelect(item);
                 }}
               >
-                <Check className="h-4 w-4" />
+                <Check className="h-4 w-4 text-blue-500" />
               </Button>
               <Button
                 variant="destructive"
                 size="icon"
+                className='p-1 bg-red-50 opacity-50'
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(item.id);
                 }}
               >
-                <Trash2 className="h-4 w-4" />
+                <Trash2 className="h-4 w-4 text-red-500" />
               </Button>
             </div>
+            {/* <div className='absolute inset-0 bg-black/50 opacity-0 bottom-0'
+            >
+              <span className='text-gray-50 font-thin'>
+                {item.originalName}
+              </span>
+
+            </div> */}
           </div>
         ))}
       </div>
@@ -272,53 +534,87 @@ export function MediaManager({ onSelect, selectedMedia, multiple = false }: Medi
         </div>
       )}
 
-      <Modal isOpen={isPreviewOpen} onClose={() => setIsPreviewOpen(false)}>
-        <div className="max-w-4xl">
-          <div>
-            <div className="flex justify-between items-center">
-              <span>Xem trước Media</span>
-              {/* <Button variant="ghost" size="icon" onClick={() => setIsPreviewOpen(false)}>
-                <X className="h-4 w-4" />
-              </Button> */}
-            </div>
-          </div>
-          <div className="relative aspect-video">
-            {medias && medias[previewIndex]?.mimeType.startsWith('image/') ? (
-              <Image
-                src={process.env.NEXT_PUBLIC_API_URL + "/" + medias[previewIndex].url}
-                alt={process.env.NEXT_PUBLIC_API_URL + "/" + medias[previewIndex].originalName}
-                fill
-                className="object-contain"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-muted">
-                <ImageIcon className="h-24 w-24 text-muted-foreground" />
-              </div>
+      <Modal isOpen={isPreviewOpen} onClose={() => { setIsPreviewOpen(false); setEditMode(false); }} className='w-3/4'>
+        <div className="max-w-4xl p-4">
+          <div className="flex justify-between items-center text-2xl font-bold mb-4">
+            <span>Xem trước Media</span>
+            {medias[previewIndex]?.mimeType.startsWith('image/') && !editMode && (
+              <Button variant="outline" onClick={() => setEditMode(true)}>Chỉnh sửa</Button>
             )}
-            <div className="absolute inset-0 flex items-center justify-between p-4">
-              <Button
-                variant="secondary"
-                size="icon"
-                onClick={handlePrevPreview}
-                className="rounded-full"
+          </div>
+
+          {editMode ? (
+            <div>
+              <ReactCrop
+                crop={crop}
+                onChange={(_, percentCrop) => setCrop(percentCrop)}
+                onComplete={(c) => setCompletedCrop(c)}
+                aspect={1}
               >
-                <ChevronLeft className="h-6 w-6" />
-              </Button>
-              <Button
-                variant="secondary"
-                size="icon"
-                onClick={handleNextPreview}
-                className="rounded-full"
-              >
-                <ChevronRight className="h-6 w-6" />
-              </Button>
+                <Image
+                  ref={setImgRef}
+                  src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
+                  alt="Crop preview"
+                  style={{ maxHeight: '70vh', objectFit: 'contain' }}
+                  crossOrigin="anonymous"
+                />
+              </ReactCrop>
+              <div className="flex justify-end gap-2 mt-4">
+                <Button variant="outline" onClick={() => setEditMode(false)}>Hủy</Button>
+                <Button onClick={handleSaveChanges}>Lưu thay đổi</Button>
+              </div>
             </div>
-          </div>
-          <div className="mt-4 text-sm text-muted-foreground">
-            <p>Tên file: {medias && medias[previewIndex]?.originalName}</p>
-            <p>Loại file: {medias && medias[previewIndex]?.mimeType}</p>
-            <p>Kích thước: {medias && (medias[previewIndex]?.size / 1024 / 1024).toFixed(2)} MB</p>
-          </div>
+          ) : (
+            <>
+              <div className="relative aspect-video">
+                {medias && medias[previewIndex]?.mimeType.startsWith('image/') && !imageError ? (
+                  <Image
+                    src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
+                    alt={medias[previewIndex].originalName}
+                    fill
+                    className="object-contain"
+                    onError={() => setImageError(true)}
+                    unoptimized // Needed for crossOrigin to work with next/image if we go back to it
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-muted">
+                    {medias && medias[previewIndex]?.mimeType.startsWith('image/') && imageError ? (
+                      <div className="text-destructive text-center">
+                        <p>Không thể tải hình ảnh.</p>
+                        <p className="text-xs">Vui lòng kiểm tra lại đường dẫn hoặc file.</p>
+                      </div>
+                    ) : (
+                      <ImageIcon className="h-24 w-24 text-muted-foreground" />
+                    )}
+                  </div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-between p-4">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    onClick={handlePrevPreview}
+                    className="rounded-full"
+                  >
+                    <ChevronLeft className="h-6 w-6" />
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    onClick={handleNextPreview}
+                    className="rounded-full"
+                  >
+                    <ChevronRight className="h-6 w-6" />
+                  </Button>
+                </div>
+              </div>
+              <div className="mt-4 text-sm text-muted-foreground">
+                <p><span className='text-gray-500'>Tên file:</span> {medias && medias[previewIndex]?.originalName}</p>
+                <p><span className='text-gray-500'>Loại file:</span> {medias && medias[previewIndex]?.mimeType}</p>
+                <p><span className='text-gray-500'>Kích thước:</span> {medias && ((medias[previewIndex]?.width ?? 0) + ' x ' + (medias[previewIndex]?.height ?? 0))}</p>
+                <p><span className='text-gray-500'>Dung lượng:</span> {medias && (medias[previewIndex]?.size / 1024 / 1024).toFixed(2)} MB</p>
+              </div>
+            </>
+          )}
         </div>
       </Modal>
     </div>
