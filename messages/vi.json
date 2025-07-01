@@ -198,5 +198,10 @@
     "unblockSuccess": "Mở khóa tài khoản thành công",
     "error": "Có lỗi xảy ra",
     "fetchError": "Có lỗi xảy ra khi tải danh sách tài khoản"
+  },
+  "Utils": {
+    "confirm": "Xác nhận",
+    "cancel": "Hủy",
+    "removeConfirm": "Bạn có chắc chắn muốn xóa {count} file?"
   }
 }

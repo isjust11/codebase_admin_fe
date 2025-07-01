@@ -109,6 +109,15 @@ export const mediaApi = {
       throw _error;
     }
   },
+
+  deleteMultiple: async (ids: number[]): Promise<void> => {
+    try {
+      await axiosApi.delete('/media', { data: ids });
+    } catch (_error) {
+      console.error('Error deleting multiple media:', _error);
+      throw _error;
+    }
+  },
 };
 
 export const uploadFile = async (file: File): Promise<Media> => {

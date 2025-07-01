@@ -188,5 +188,10 @@
     "selectAll": "Chọn tất cả",
     "confirm": "Đồng ý",
     "cancel": "Hủy"
+  },
+  "Utils": {
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "removeConfirm": "Are you sure you want to delete {count} files?"
   }
 }
