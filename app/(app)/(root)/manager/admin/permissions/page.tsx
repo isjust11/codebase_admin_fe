@@ -22,18 +22,20 @@ import {
 import { Plus, Pencil, Trash2 } from 'lucide-react';
 import { PermissionForm } from './components/permission-form';
 import { deletePermission, getPermissions } from '@/services/auth-api';
+import { useTranslations } from 'next-intl';
 
 export default function PermissionsPage() {
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const t = useTranslations('PermissionsPage');
 
   const fetchPermissions = async () => {
     try {
       const data = await getPermissions();
       setPermissions(data);
     } catch (error: any) {
-      toast.error('Lỗi khi tải danh sách quyền: ' + error.message);
+      toast.error(t('fetchError') + error.message);
     }
   };
 
@@ -42,14 +44,14 @@ export default function PermissionsPage() {
   }, []);
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa quyền này?')) return;
+    if (!confirm(t('confirmDelete'))) return;
     
     try {
       await deletePermission(id);
-      toast.success('Xóa quyền thành công');
+      toast.success(t('deleteSuccess'));
       fetchPermissions();
     } catch (error: any) {
-      toast.error('Lỗi khi xóa quyền: ' + error.message);
+      toast.error(t('deleteError') + error.message);
     }
   };
 
@@ -71,18 +73,18 @@ export default function PermissionsPage() {
   return (
     <div className="container mx-auto">
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">Quản lý quyền</h1>
+        <h1 className="text-2xl font-bold">{t('permissionManagement')}</h1>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={handleCreate}>
               <Plus className="w-4 h-4 mr-2" />
-              Thêm quyền mới
+              {t('addPermission')}
             </Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {selectedPermission ? 'Cập nhật quyền' : 'Thêm quyền mới'}
+                {selectedPermission ? t('updatePermission') : t('addPermissionNew')}
               </DialogTitle>
             </DialogHeader>
             <PermissionForm
@@ -97,10 +99,10 @@ export default function PermissionsPage() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên quyền</TableHead>
-              <TableHead>Mô tả</TableHead>
-              <TableHead>Ngày tạo</TableHead>
-              <TableHead className="w-[100px]">Thao tác</TableHead>
+              <TableHead>{t('permissionName')}</TableHead>
+              <TableHead>{t('description')}</TableHead>
+              <TableHead>{t('createdAt')}</TableHead>
+              <TableHead className="w-[100px]">{t('actions')}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

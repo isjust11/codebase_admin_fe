@@ -38,7 +38,7 @@ export default function RolesPage() {
       setRoles(reponse.data);
       setPageCount(reponse.totalPages)
     } catch (error: any) {
-      toast.error('Lỗi khi tải danh sách vai trò: ' + error.message);
+      toast.error(t('fetchError') + error.message);
     }
   };
 
@@ -48,13 +48,13 @@ export default function RolesPage() {
 
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa vai trò này?')) return;
+    if (!confirm(t('confirmDelete'))) return;
     try {
       await deleteRole(id);
-      toast.success('Xóa vai trò thành công');
+      toast.success(t('deleteSuccess'));
       fetchRoles();
     } catch (error: any) {
-      toast.error('Lỗi khi xóa vai trò: ' + error.message);
+      toast.error(t('deleteError') + error.message);
     }
   };
 
@@ -78,14 +78,14 @@ export default function RolesPage() {
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       enableSorting: false,
@@ -99,7 +99,7 @@ export default function RolesPage() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tên vai trò
+            {t('roleName')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -107,11 +107,11 @@ export default function RolesPage() {
     },
     {
       accessorKey: "description",
-      header: t("description"),
+      header: t('description'),
     },
     {
       accessorKey: "code",
-      header: "Mã vai trò",
+      header: t('roleCode'),
       cell: ({ row }) => {
         const code = row.getValue("code") as string
         return (
@@ -123,19 +123,19 @@ export default function RolesPage() {
     },
     {
       accessorKey: "isActive",
-      header: "Trạng thái",
+      header: t('status'),
       cell: ({ row }) => {
         const status = row.getValue("isActive") as boolean
         return (
           <Badge variant="light" color={status === true ? 'success' : 'error'} >
-            {status == true ? 'Hoạt động' : 'Ngừng hoạt động'}
+            {status == true ? t('active') : t('inactive')}
           </Badge>
         )
       },
     },
     {
       id: "actions",
-      header: 'Thao tác',
+      header: t('actions'),
       cell: ({ row }) => {
         const role = row.original
         return (
@@ -143,7 +143,7 @@ export default function RolesPage() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Mở menu</span>
+                  <span className="sr-only">{t('openMenu')}</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -151,17 +151,17 @@ export default function RolesPage() {
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                   onClick={() => router.push(`/manager/admin/roles/${role.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
-                  Xem chi tiết
+                  {t('viewDetail')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
                   onClick={() => router.push(`/manager/admin/roles/update/${role.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  {t('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(role.id)}>
                   <Trash className="mr-2 h-4 w-4" />
-                  Xóa
+                  {t('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -179,16 +179,16 @@ export default function RolesPage() {
         // openModal();
         router.push('/manager/admin/roles/create')
       },
-      title: "Thêm vai trò",
+      title: t('addRole'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
   ]
 
   return (
     <AsyncWrapper>
-      <PageBreadcrumb pageTitle="Danh sách vai trò" />
+      <PageBreadcrumb pageTitle={t('roleList')} />
       <div className="space-y-6">
-        <ComponentCard title={t("roleList")} listAction={lstActions}>
+        <ComponentCard title={t('roleList')} listAction={lstActions}>
           <DataTable
             columns={columns}
             data={roles}
@@ -203,7 +203,7 @@ export default function RolesPage() {
             className="max-w-[600px] p-5 lg:p-10"
           >
             <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
-              {selectedRole ? 'Cập nhật vai trò' : 'Thêm vai trò mới'}
+              {selectedRole ? t('updateRole') : t('addRoleNew')}
             </h4>
           </Modal>
         </ComponentCard>

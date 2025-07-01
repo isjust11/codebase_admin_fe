@@ -33,7 +33,7 @@ export default function UsersPage() {
       setUsers(response.data);
       setPageCount(response.total);
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi tải danh sách tài khoản');
+      toast.error(t('fetchError'));
     }
   };
 
@@ -43,14 +43,14 @@ export default function UsersPage() {
   }, [pageIndex, pageSize, search]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa người dùng này?')) return;
+    if (!confirm(t('confirmDelete'))) return;
 
     try {
       await userApi.delete(id);
-      toast.success('Xóa người dùng thành công');
+      toast.success(t('deleteSuccess'));
       fetchUsers(pageIndex, pageSize, search);
     } catch (_error) {
-      toast.error('Có lỗi xảy ra khi xóa người dùng');
+      toast.error(t('deleteError'));
     }
   };
 
@@ -58,14 +58,14 @@ export default function UsersPage() {
     try {
       if (isBlocked) {
         await userApi.unblock(id);
-        toast.success('Mở khóa tài khoản thành công');
+        toast.success(t('unblockSuccess'));
       } else {
         await userApi.block(id);
-        toast.success('Khóa tài khoản thành công');
+        toast.success(t('blockSuccess'));
       }
       fetchUsers(pageIndex, pageSize, search);
     } catch (_error) {
-      toast.error('Có lỗi xảy ra');
+      toast.error(t('error'));
     }
   };
 
@@ -89,14 +89,14 @@ export default function UsersPage() {
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       enableSorting: false,
@@ -129,7 +129,7 @@ export default function UsersPage() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tên đăng nhập
+            {t('username')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -137,41 +137,41 @@ export default function UsersPage() {
     },
     {
       accessorKey: "fullName",
-      header: "Họ tên",
+      header: t('fullName'),
     },
     {
       accessorKey: "email",
-      header: "Email",
+      header: t('email'),
     },
     {
       accessorKey: "roles",
-      header: "Quyền",
+      header: t('roles'),
       cell: ({ row }) => {
         const roles = row.original.roles;
         const isAdmin = row.original.isAdmin;
         return (
           <div className="text-sm">
-            {roles?.map(role => role.name).join(', ') || 'Không có quyền'}
-            {isAdmin && ' (Quản trị viên)'}
+            {roles?.map(role => role.name).join(', ') || t('noRole')}
+            {isAdmin && ` (${t('admin')})`}
           </div>
         )
       }
     },
     {
       accessorKey: "isBlocked",
-      header: "Trạng thái",
+      header: t('status'),
       cell: ({ row }) => {
         const isBlocked = row.getValue("isBlocked") as boolean;
         return (
           <Badge variant="light" color={!isBlocked ? 'success' : 'error'}>
-            {!isBlocked ? 'Hoạt động' : 'Đã khóa'}
+            {!isBlocked ? t('active') : t('blocked')}
           </Badge>
         )
       },
     },
     {
       accessorKey: "lastLogin",
-      header: "Lần đăng nhập cuối",
+      header: t('lastLogin'),
       cell: ({ row }) => {
         const date = row.getValue("lastLogin") as Date;
         return (
@@ -189,7 +189,7 @@ export default function UsersPage() {
     },
     {
       id: "actions",
-      header: 'Thao tác',
+      header: t('actions'),
       cell: ({ row }) => {
         const user = row.original;
         return (
@@ -197,7 +197,7 @@ export default function UsersPage() {
             <DropdownMenu >
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Mở menu</span>
+                  <span className="sr-only">{t('openMenu')}</span>
                   <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 " />
                 </Button>
               </DropdownMenuTrigger>
@@ -205,13 +205,13 @@ export default function UsersPage() {
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => router.push(`/manager/admin/users/${user.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
-                  Xem chi tiết
+                  {t('viewDetail')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700'
                   onClick={() => router.push(`/manager/admin/users/update/${user.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  {t('edit')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
                   onClick={() => handleBlock(user.id, user.isBlocked)}
@@ -219,19 +219,19 @@ export default function UsersPage() {
                   {user.isBlocked ? (
                     <>
                       <Unlock className="mr-2 h-4 w-4" />
-                      Mở khóa
+                      {t('unblock')}
                     </>
                   ) : (
                     <>
                       <Lock className="mr-2 h-4 w-4" />
-                      Khóa
+                      {t('block')}
                     </>
                   )}
                 </DropdownMenuItem>
                 <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20"
                   onClick={() => handleDelete(user.id)}>
                   <Trash className="mr-2 h-4 w-4" />
-                  Xóa
+                  {t('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -254,9 +254,9 @@ export default function UsersPage() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Danh sách người dùng" />
+      <PageBreadcrumb pageTitle={t('userList')} />
       <div className="space-y-6">
-        <ComponentCard title="Danh sách người dùng" listAction={lstActions}>
+        <ComponentCard title={t('userList')} listAction={lstActions}>
           <DataTable
             columns={columns}
             data={users}

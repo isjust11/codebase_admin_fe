@@ -58,8 +58,8 @@ export function UserFormInput({ user, onFormChange, isView = false }: UserFormPr
   useEffect(() => {
     const fetchRoles = async () => {
       try {
-        const data = await getRoles();
-        setRoles(data);
+        const response = await getRoles();
+        setRoles(response.data);
       } catch (_error) {
         // Handle error
       }
