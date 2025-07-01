@@ -5,7 +5,7 @@ import { Media, mediaApi, MediaQueryParams, MediaResponse } from '@/services/med
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, X, Check, Search, ImageOff, Info } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, X, Check, Search, ImageOff, Info, Pen, Save } from 'lucide-react';
 import Image from 'next/image';
 import {
   Select,
@@ -20,74 +20,7 @@ import ReactCrop, { type Crop, PixelCrop, centerCrop, makeAspectCrop } from 'rea
 import 'react-image-crop/dist/ReactCrop.css';
 import { AlertDialogUtils } from './AlertDialogUtils';
 import { useTranslations } from 'next-intl';
-
-// --- Helper Functions ---
-function useDebounceEffect(
-  fn: () => void,
-  waitTime: number,
-  deps?: React.DependencyList,
-) {
-  useEffect(() => {
-    const t = setTimeout(() => {
-      fn.apply(undefined, deps as any)
-    }, waitTime)
-
-    return () => {
-      clearTimeout(t)
-    }
-  }, deps)
-}
-
-const TO_RADIANS = Math.PI / 180
-async function canvasPreview(
-  image: HTMLImageElement,
-  canvas: HTMLCanvasElement,
-  crop: PixelCrop,
-  scale = 1,
-  rotate = 0,
-) {
-  const ctx = canvas.getContext('2d')
-
-  if (!ctx) {
-    throw new Error('No 2d context')
-  }
-
-  const scaleX = image.naturalWidth / image.width
-  const scaleY = image.naturalHeight / image.height
-  const pixelRatio = window.devicePixelRatio
-  canvas.width = Math.floor(crop.width * scaleX * pixelRatio)
-  canvas.height = Math.floor(crop.height * scaleY * pixelRatio)
-
-  ctx.scale(pixelRatio, pixelRatio)
-  ctx.imageSmoothingQuality = 'high'
-
-  const cropX = crop.x * scaleX
-  const cropY = crop.y * scaleY
-
-  const rotateRads = rotate * TO_RADIANS
-  const centerX = image.naturalWidth / 2
-  const centerY = image.naturalHeight / 2
-
-  ctx.save()
-  ctx.translate(-cropX, -cropY)
-  ctx.translate(centerX, centerY)
-  ctx.rotate(rotateRads)
-  ctx.scale(scale, scale)
-  ctx.translate(-centerX, -centerY)
-  ctx.drawImage(
-    image,
-    0,
-    0,
-    image.naturalWidth,
-    image.naturalHeight,
-    0,
-    0,
-    image.naturalWidth,
-    image.naturalHeight,
-  )
-
-  ctx.restore()
-}
+import ImageCrop from './react-crop/imageCrop';
 
 interface MediaManagerProps {
   onSelect?: (media: Media | Media[] | null) => void;
@@ -363,23 +296,23 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
       onSelect(null);
     }
     toast.success('Xóa tất cả file thành công');
-  } 
+  }
 
   return (
     <div className="space-y-4 py-6">
       <div className="flex justify-between items-center">
         <h1 className="text-lg font-semibold">Quản lý Media</h1>
-       
+
         <div className="flex items-center gap-2">
-        {
-          selectedItems.length > 0 && (
-            <div className="flex items-center gap-2">
-              <Button variant="default" className='bg-red-500 hover:bg-red-600' onClick={() => {
-                setOpenDialog(true);
-              }}><Trash2 className="h-4 w-4 mr-2" /> Xóa tất cả ({selectedItems.length})</Button>
-            </div>
-          )
-        }
+          {
+            selectedItems.length > 0 && (
+              <div className="flex items-center gap-2">
+                <Button variant="default" className='bg-red-500 hover:bg-red-600' onClick={() => {
+                  setOpenDialog(true);
+                }}><Trash2 className="h-4 w-4 mr-2" /> Xóa tất cả ({selectedItems.length})</Button>
+              </div>
+            )
+          }
           <Button onClick={() => setIsDialogOpen(true)}>
             <Upload className="mr-2 h-4 w-4" />
             Tải lên
@@ -420,48 +353,48 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                 <div className="pt-4">
                   <h4 className="font-semibold text-lg mb-2">Các tệp đã chọn ({fileUploads.length}):</h4>
                   <div className="max-h-[300px] overflow-y-auto">
-                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-                    {fileUploads.map((file) => (
-                      <div key={file.preview} className="relative group aspect-square">
-                        <Image
-                          src={file.preview}
-                          alt={file.name}
-                          fill
-                          className="object-cover rounded-lg"
-                        />
-                        {!isUploading && file.status !== true && (
-                          <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                            <Button
-                              variant="destructive"
-                              size="icon"
-                              className="h-8 w-8"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                removeFile(file.preview);
-                              }}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                      {fileUploads.map((file) => (
+                        <div key={file.preview} className="relative group aspect-square">
+                          <Image
+                            src={file.preview}
+                            alt={file.name}
+                            fill
+                            className="object-cover rounded-lg"
+                          />
+                          {!isUploading && file.status !== true && (
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                              <Button
+                                variant="destructive"
+                                size="icon"
+                                className="h-8 w-8"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeFile(file.preview);
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          )}
+                          {file.status === true && (
+                            <div className="absolute inset-0 bg-green-500/70 flex items-center justify-center">
+                              <Check className="h-8 w-8 text-white" />
+                            </div>
+                          )}
+                          {file.status === false && (
+                            <div className="absolute inset-0 bg-red-500/70 flex flex-col items-center justify-center p-2 text-center">
+                              <X className="h-8 w-8 text-white" />
+                              <p className="text-white text-xs mt-1 leading-tight">{file.message}</p>
+                            </div>
+                          )}
+                          <div className="absolute bottom-0 left-0 right-0 p-1 bg-black/50 text-white text-xs truncate">
+                            {file.name}
                           </div>
-                        )}
-                        {file.status === true && (
-                          <div className="absolute inset-0 bg-green-500/70 flex items-center justify-center">
-                            <Check className="h-8 w-8 text-white" />
-                          </div>
-                        )}
-                        {file.status === false && (
-                          <div className="absolute inset-0 bg-red-500/70 flex flex-col items-center justify-center p-2 text-center">
-                            <X className="h-8 w-8 text-white" />
-                            <p className="text-white text-xs mt-1 leading-tight">{file.message}</p>
-                          </div>
-                        )}
-                        <div className="absolute bottom-0 left-0 right-0 p-1 bg-black/50 text-white text-xs truncate">
-                          {file.name}
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
-                </div>
                 </div>
               )}
             </div>
@@ -469,12 +402,12 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
               <Button variant="outline" onClick={() => { setIsDialogOpen(false); setFileUploads([]) }}>
                 Đóng
               </Button>
-              <Button 
-                onClick={handleUploadMultipleFiles} 
+              <Button
+                onClick={handleUploadMultipleFiles}
                 disabled={isUploading || fileUploads.filter(f => f.status !== true).length === 0}
               >
-                {isUploading 
-                  ? 'Đang tải lên...' 
+                {isUploading
+                  ? 'Đang tải lên...'
                   : `Tải lên ${fileUploads.filter(f => f.status !== true).length} tệp`}
               </Button>
             </div>
@@ -572,22 +505,20 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
           const isSelected = selectedItems.some((selected) => selected.id === item.id);
           return (
             <div
-            onClick={() => handlePreview(item)}
+              onClick={() => handlePreview(item)}
               key={item.id}
-              className={`relative group border rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
-                isSelected
-                  ? 'ring-2 ring-blue-500/20 shadow-lg'
-                  : 'border-border hover:border-blue-500/50'
-              }`}
+              className={`relative group border rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${isSelected
+                ? 'ring-2 ring-blue-500/20 shadow-lg'
+                : 'border-border hover:border-blue-500/50'
+                }`}
             >
               {/* Checkbox overlay */}
               <div className="absolute top-2 left-2 z-10">
                 <div
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${
-                    isSelected
-                      ? 'bg-blue-500 border-blue-500'
-                      : 'bg-white/80 border-gray-300 hover:border-blue-500'
-                  }`}
+                  className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${isSelected
+                    ? 'bg-blue-500 border-blue-500'
+                    : 'bg-white/80 border-gray-300 hover:border-blue-500'
+                    }`}
                   onClick={(e) => {
                     e.stopPropagation();
                     handleSelect(item);
@@ -664,39 +595,33 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
       )}
 
       <Modal isOpen={isPreviewOpen} onClose={() => { setIsPreviewOpen(false); setEditMode(false); }} className='w-3/4'>
-        <div className="max-w-4xl p-4">
-          <div className="flex justify-between items-center text-2xl font-bold mb-4">
+        <div className="w-full p-4">
+          <div className="flex justify-between items-center text-2xl font-bold mb-4 px-10 py-5 mr-10">
             <span>Xem trước Media</span>
-            {medias[previewIndex]?.mimeType.startsWith('image/') && !editMode && (
-              <Button variant="outline" onClick={() => setEditMode(true)}>Chỉnh sửa</Button>
-            )}
+            {medias[previewIndex]?.mimeType.startsWith('image/') &&
+              !editMode && (
+                <Button variant="outline" className='mr-5 ' onClick={() => setEditMode(true)}>
+                  <Pen className='text-gray-400'></Pen>
+                  Chỉnh sửa</Button>
+              )}
+            {medias[previewIndex]?.mimeType.startsWith('image/') &&
+              editMode && (
+                <div className='group-last:'>
+                  <Button variant="outline" className='mr-5' onClick={() => setEditMode(false)}>
+                    <X className='text-gray-400'></X>
+                    Hủy</Button>
+                </div>
+
+              )}
           </div>
 
           {editMode ? (
-            <div className="relative aspect-video">
-              <ReactCrop
-                crop={crop}
-                onChange={(_, percentCrop) => setCrop(percentCrop)}
-                onComplete={(c) => setCompletedCrop(c)}
-              >
-                <Image
-                  ref={setImgRef}
-                  src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
-                  alt="Crop preview"
-                  fill
-                  crossOrigin="anonymous"
-                />
-              </ReactCrop>
-              <div className="flex justify-end gap-2 mt-4">
-                <Button variant="outline" onClick={() => setEditMode(false)}>Hủy</Button>
-                <Button onClick={handleSaveChanges}>Lưu thay đổi</Button>
-              </div>
-            </div>
+            <ImageCrop src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url} />
           ) : (
             <>
-              <div className="relative aspect-video">
+              <div className="relative aspect-video object-cover">
                 {medias && medias[previewIndex]?.mimeType.startsWith('image/') && !imageError ? (
-                   <Image
+                  <Image
                     src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
                     alt={medias[previewIndex].originalName}
                     fill
@@ -747,14 +672,14 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
       </Modal>
 
       <AlertDialogUtils
-          type="warning"
-          content={t('removeConfirm', { count: selectedItems.length })}
-          confirmText={t('confirm')}
-          cancelText={t('cancel')}
-          isOpen={openDialog}
-          onConfirm={() => handleDeleteSelectedItems()}
-          onCancel={() => {setOpenDialog(false)}}
-        />
+        type="warning"
+        content={t('removeConfirm', { count: selectedItems.length })}
+        confirmText={t('confirm')}
+        cancelText={t('cancel')}
+        isOpen={openDialog}
+        onConfirm={() => handleDeleteSelectedItems()}
+        onCancel={() => { setOpenDialog(false) }}
+      />
     </div>
   );
 } 
