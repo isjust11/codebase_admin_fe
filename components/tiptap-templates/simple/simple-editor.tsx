@@ -192,7 +192,7 @@ const MainToolbarContent = ({
       <Button onClick={() => setMediaOpen(true)}>
         <FileImage size={16} className="text-gray-600"/> Thư viện
       </Button>
-      <Modal isOpen={mediaOpen} onClose={()=>setMediaOpen(false)} className="w-full/0.8">
+      <Modal isOpen={mediaOpen} onClose={()=>setMediaOpen(false)} className="max-h-9/10 w-3/4">
         <div className="d-flex px-20 justify-center mx-10">
         <MediaManager
           onSelect={media => {

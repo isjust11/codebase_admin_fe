@@ -37,15 +37,37 @@ const MediaThumbnail: React.FC<{ item: Media }> = ({ item }) => {
         src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
         alt={item.originalName}
         width={item.width || 200}
-        height={item.width || 200}
+        height={item.height || 200}
         className="object-cover"
         onError={() => setHasError(true)}
       />
     );
   }
 
+  if (item.mimeType.startsWith('video/')) {
+    return (
+      <video
+        src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
+        controls
+        className="object-cover w-full h-48 rounded"
+      />
+    );
+  }
+
+  if (item.mimeType.startsWith('audio/')) {
+    return (
+      <div className="w-full h-48 flex items-center justify-center bg-muted rounded">
+        <audio
+          src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
+          controls
+        />
+      </div>
+    );
+  }
+
+  // fallback cho các loại file khác
   return (
-    <div className="w-full h-48 flex items-center justify-center bg-muted">
+    <div className="w-full h-48 flex items-center justify-center bg-muted rounded">
       <ImageOff className="h-12 w-12 text-muted-foreground text-gray-300" />
     </div>
   );
@@ -62,6 +84,9 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
+  const [videoError, setVideoError] = useState(false);
+  const [audioError, setAudioError] = useState(false);
+
   const [editMode, setEditMode] = useState(false);
   const [crop, setCrop] = useState<Crop>();
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
@@ -126,7 +151,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
       };
       const response = await mediaApi.getAll(params);
       setMedias(response.data);
-      // setTotalPages(response.totalPages);
+      setTotalPages(response.totalPages)
     } catch (_error) {
       toast.error('Không thể tải danh sách media');
     } finally {
@@ -283,10 +308,6 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
     }
   };
 
-  if (loading) {
-    return <div >Đang tải...</div>;
-  }
-
   const handleDeleteSelectedItems = async () => {
     setOpenDialog(false);
     await mediaApi.deleteMultiple(selectedItems.map(item => item.id));
@@ -361,7 +382,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                             alt={file.name}
                             fill
                             className="object-cover rounded-lg"
-                          />
+                                  />
                           {!isUploading && file.status !== true && (
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <Button
@@ -430,11 +451,10 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
             <SelectValue placeholder="Loại file" />
           </SelectTrigger>
           <SelectContent className='bg-white'>
-            <SelectItem value="all">Tất cả</SelectItem>
-            <SelectItem value="image">Hình ảnh</SelectItem>
-            <SelectItem value="video">Video</SelectItem>
-            <SelectItem value="audio">Âm thanh</SelectItem>
-            <SelectItem value="application">Tài liệu</SelectItem>
+            <SelectItem value="*">Tất cả</SelectItem>
+            <SelectItem value="image/">Hình ảnh</SelectItem>
+            <SelectItem value="video/">Video</SelectItem>
+            <SelectItem value="audio/">Âm thanh</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -499,100 +519,109 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
           </div>
         )
       }
+      {
+        loading && (
+          <div className="flex flex-col items-center justify-center min-h-[80vh]">
+            <div className="animate-spin h-10 w-10 border-4 border-fuchsia-500 border-t-transparent rounded-full mb-4"></div>
+            <p>Đang tải...</p>
+          </div>
+        )
+      }
+      <div className='h-3/4'>
+        <div
+          className="grid grid-cols-4 md:grid-cols-3 lg:grid-cols-6 gap-4 overflow-y-scroll max-h-[60vh]"
+        >
+          {medias && medias.map((item) => {
+            const isSelected = selectedItems.some((selected) => selected.id === item.id);
+            return (
+              <div
+                onClick={() => handlePreview(item)}
+                key={item.id}
+                className={`relative group border rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${isSelected
+                  ? 'ring-2 ring-blue-500/20 shadow-lg'
+                  : 'border-border hover:border-blue-500/50'
+                  }`}
+              >
+                {/* Checkbox overlay */}
+                <div className="absolute top-2 left-2 z-10">
+                  <div
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${isSelected
+                      ? 'bg-blue-500 border-blue-500'
+                      : 'bg-white/80 border-gray-300 hover:border-blue-500'
+                      }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(item);
+                    }}
+                  >
+                    {isSelected && <Check className="h-3 w-3 text-white" />}
+                  </div>
+                </div>
 
-      <div className="grid grid-cols-4 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        {medias && medias.map((item) => {
-          const isSelected = selectedItems.some((selected) => selected.id === item.id);
-          return (
-            <div
-              onClick={() => handlePreview(item)}
-              key={item.id}
-              className={`relative group border rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${isSelected
-                ? 'ring-2 ring-blue-500/20 shadow-lg'
-                : 'border-border hover:border-blue-500/50'
-                }`}
-            >
-              {/* Checkbox overlay */}
-              <div className="absolute top-2 left-2 z-10">
-                <div
-                  className={`w-5 h-5 rounded border-2 flex items-center justify-center cursor-pointer transition-all ${isSelected
-                    ? 'bg-blue-500 border-blue-500'
-                    : 'bg-white/80 border-gray-300 hover:border-blue-500'
-                    }`}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelect(item);
-                  }}
-                >
-                  {isSelected && <Check className="h-3 w-3 text-white" />}
+                {/* Thumbnail */}
+                <div >
+                  <MediaThumbnail item={item} />
+                </div>
+
+                {/* Overlay khi hover */}
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
+                  <Button
+                    variant="secondary"
+                    size="icon"
+                    className="h-8 w-8 bg-white/90 hover:bg-white"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSelect(item);
+                    }}
+                  >
+                    {isSelected ? (
+                      <X className="h-4 w-4 text-red-500" />
+                    ) : (
+                      <Check className="h-4 w-4 text-green-500" />
+                    )}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="h-8 w-8 bg-red-500/90 hover:bg-red-500"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDelete(item.id);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 text-white" />
+                  </Button>
+                </div>
+
+                {/* Tên file */}
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-blue-950/80 text-white text-xs truncate">
+                  {item.originalName}
                 </div>
               </div>
-
-              {/* Thumbnail */}
-              <div >
-                <MediaThumbnail item={item} />
-              </div>
-
-              {/* Overlay khi hover */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center space-x-2">
-                <Button
-                  variant="secondary"
-                  size="icon"
-                  className="h-8 w-8 bg-white/90 hover:bg-white"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSelect(item);
-                  }}
-                >
-                  {isSelected ? (
-                    <X className="h-4 w-4 text-red-500" />
-                  ) : (
-                    <Check className="h-4 w-4 text-green-500" />
-                  )}
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  className="h-8 w-8 bg-red-500/90 hover:bg-red-500"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(item.id);
-                  }}
-                >
-                  <Trash2 className="h-4 w-4 text-white" />
-                </Button>
-              </div>
-
-              {/* Tên file */}
-              <div className="absolute bottom-0 left-0 right-0 p-2 bg-blue-950/80 text-white text-xs truncate">
-                {item.originalName}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
-      {totalPages > 1 && (
-        <div className="flex justify-center gap-2 mt-4">
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-            disabled={currentPage === 1}
-          >
-            Trước
-          </Button>
-          <span className="flex items-center px-4">
-            Trang {currentPage} / {totalPages}
-          </span>
-          <Button
-            variant="outline"
-            onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-            disabled={currentPage === totalPages}
-          >
-            Sau
-          </Button>
-        </div>
-      )}
+      <div className="flex justify-center gap-2 mt-4">
+        <Button
+          variant="outline"
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+        >
+          Trước
+        </Button>
+        <span className="flex items-center px-4">
+          Trang {currentPage} / {totalPages}
+        </span>
+        <Button
+          variant="outline"
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+        >
+          Sau
+        </Button>
+      </div>
 
       <Modal isOpen={isPreviewOpen} onClose={() => { setIsPreviewOpen(false); setEditMode(false); }} className='w-3/4'>
         <div className="w-full p-4">
@@ -627,13 +656,40 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                     fill
                     className="object-contain"
                     onError={() => setImageError(true)}
-                    unoptimized // Needed for crossOrigin to work with next/image if we go back to it
+                    unoptimized
                   />
+                ) : medias && medias[previewIndex]?.mimeType.startsWith('video/') && !videoError ? (
+                  <video
+                    width="1320"
+                    height="640"
+                    controls
+                    autoPlay={false}
+                    onError={() => setVideoError(true)}
+                    className="w-full h-full object-contain"
+                  >
+                    <source src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url} type={medias[previewIndex].mimeType} />
+                    <track
+                      src={medias[previewIndex].filename}
+                      kind="subtitles"
+                      srcLang="en"
+                      label="English"
+                    />
+                    Your browser does not support the video tag.
+                  </video>
+                ) : medias && medias[previewIndex]?.mimeType.startsWith('audio/') && !audioError ? (
+                  <div className="flex items-end justify-self-end w-full h-full">
+                    <audio
+                      src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
+                      controls
+                      onError={() => setAudioError(true)}
+                      className="w-full"
+                    />
+                  </div>
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-muted">
                     {medias && medias[previewIndex]?.mimeType.startsWith('image/') && imageError ? (
                       <div className="text-destructive text-center">
-                        <p>Không thể tải hình ảnh.</p>
+                        <p>Không thể tải file đa phương tiện.</p>
                         <p className="text-xs">Vui lòng kiểm tra lại đường dẫn hoặc file.</p>
                       </div>
                     ) : (
@@ -641,12 +697,13 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                     )}
                   </div>
                 )}
-                <div className="absolute inset-0 flex items-center justify-between p-4">
+                {/* Overlay next/prev buttons - đặt ngoài controls */}
+                <div className="absolute inset-0 flex items-center justify-between p-4 pointer-events-none">
                   <Button
                     variant="secondary"
                     size="icon"
                     onClick={handlePrevPreview}
-                    className="rounded-full bg-fuchsia-300 hover:bg-fuchsia-400"
+                    className="rounded-full bg-fuchsia-300 hover:bg-fuchsia-400 pointer-events-auto"
                   >
                     <ChevronLeft className="h-6 w-6" />
                   </Button>
@@ -654,7 +711,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                     variant="secondary"
                     size="icon"
                     onClick={handleNextPreview}
-                    className="rounded-full bg-fuchsia-300 hover:bg-fuchsia-400"
+                    className="rounded-full bg-fuchsia-300 hover:bg-fuchsia-400 pointer-events-auto"
                   >
                     <ChevronRight className="h-6 w-6" />
                   </Button>
