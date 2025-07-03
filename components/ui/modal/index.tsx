@@ -1,5 +1,6 @@
 "use client";
 import React, { useRef, useEffect } from "react";
+import { Button } from "../button";
 
 interface ModalProps {
   isOpen: boolean;
@@ -8,6 +9,7 @@ interface ModalProps {
   children: React.ReactNode;
   showCloseButton?: boolean; // New prop to control close button visibility
   isFullscreen?: boolean; // Default to false for backwards compatibility
+  modalSize?: "sm" | "md" | "lg" | "xl" | "2xl" | "3xl" | "4xl" | "5xl";
 }
 
 export const Modal: React.FC<ModalProps> = ({
@@ -17,6 +19,7 @@ export const Modal: React.FC<ModalProps> = ({
   className,
   showCloseButton = true, // Default to true for backwards compatibility
   isFullscreen = false,
+  modalSize = "md",
 }) => {
   const modalRef = useRef<HTMLDivElement>(null);
 
@@ -52,7 +55,9 @@ export const Modal: React.FC<ModalProps> = ({
 
   const contentClasses = isFullscreen
     ? "w-full h-full"
-    : "relative rounded-3xl bg-white dark:bg-gray-900";
+    : `relative rounded-3xl bg-white dark:bg-gray-900 
+    ${modalSize === "sm" ? "min-w-sm" : modalSize === "md" ? "min-w-md" : modalSize === "lg" ? "min-w-lg" : modalSize === "xl" ? "min-w-xl" : modalSize === "2xl" ?
+       "min-w-2xl" : modalSize === "3xl" ? "min-w-3xl" : modalSize === "4xl" ? "min-w-4xl" : modalSize === "5xl" ? "min-w-5xl" : ""}`;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center overflow-y-auto modal z-99999">
@@ -68,7 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
         onClick={(e) => e.stopPropagation()}
       >
         {showCloseButton && (
-          <button
+          <Button
             onClick={onClose}
             className="absolute right-3 top-3 z-999 flex h-9.5 w-9.5 items-center justify-center rounded-full bg-gray-100 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white sm:right-6 sm:top-6 sm:h-11 sm:w-11"
           >
@@ -86,7 +91,7 @@ export const Modal: React.FC<ModalProps> = ({
                 fill="currentColor"
               />
             </svg>
-          </button>
+          </Button>
         )}
         <div>{children}</div>
       </div>

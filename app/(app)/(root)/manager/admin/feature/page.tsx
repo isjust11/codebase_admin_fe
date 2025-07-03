@@ -291,7 +291,8 @@ export default function FeaturePage() {
           <Modal
             isOpen={isOpen}
             onClose={closeModal}
-            className="max-w-[600px] p-5 lg:p-10"
+            className="p-5 lg:p-10"
+            modalSize="2xl"
           >
             <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
               {selectedFeature ? t('updateFeature') : t('addFeatureNew')}

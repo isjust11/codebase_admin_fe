@@ -55,7 +55,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(currentUser);
         setFeature(feature || []);
         console.log(currentUser);
-        router.push('/');
         setIsLoggedIn(true);
       } else {
         setUser(null);

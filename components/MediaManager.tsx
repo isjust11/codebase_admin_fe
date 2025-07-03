@@ -86,6 +86,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
   const [imageError, setImageError] = useState(false);
   const [videoError, setVideoError] = useState(false);
   const [audioError, setAudioError] = useState(false);
+  const [actualImageSize, setActualImageSize] = useState<{ width: number, height: number } | null>(null);
 
   const [editMode, setEditMode] = useState(false);
   const [crop, setCrop] = useState<Crop>();
@@ -236,17 +237,20 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
   const handlePreview = (item: Media) => {
     const index = medias.findIndex((m) => m.id === item.id);
     setImageError(false);
+    setActualImageSize(null);
     setPreviewIndex(index);
     setIsPreviewOpen(true);
   };
 
   const handlePrevPreview = () => {
     setImageError(false);
+    setActualImageSize(null);
     setPreviewIndex((prev) => (prev > 0 ? prev - 1 : medias.length - 1));
   };
 
   const handleNextPreview = () => {
     setImageError(false);
+    setActualImageSize(null);
     setPreviewIndex((prev) => (prev < medias.length - 1 ? prev + 1 : 0));
   };
 
@@ -382,7 +386,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                             alt={file.name}
                             fill
                             className="object-cover rounded-lg"
-                                  />
+                          />
                           {!isUploading && file.status !== true && (
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                               <Button
@@ -559,7 +563,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                 </div>
 
                 {/* Thumbnail */}
-                <div >
+                <div className="flex justify-center items-center w-full h-full">
                   <MediaThumbnail item={item} />
                 </div>
 
@@ -594,7 +598,9 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                 </div>
 
                 {/* Tên file */}
-                <div className="absolute bottom-0 left-0 right-0 p-2 bg-blue-950/80 text-white text-xs truncate">
+                <div className="absolute bottom-0 left-0 right-0 p-2 bg-blue-950/80 text-white text-xs truncate 
+                opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-full group-hover:translate-y-0
+                ">
                   {item.originalName}
                 </div>
               </div>
@@ -650,14 +656,26 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
             <>
               <div className="relative aspect-video object-cover">
                 {medias && medias[previewIndex]?.mimeType.startsWith('image/') && !imageError ? (
-                  <Image
-                    src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
-                    alt={medias[previewIndex].originalName}
-                    fill
-                    className="object-contain"
-                    onError={() => setImageError(true)}
-                    unoptimized
-                  />
+                  <div className="flex justify-center items-center w-full h-full">
+                    <div className="max-h-[80vh] overflow-y-auto">
+                    <Image
+                      src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
+                      alt={medias[previewIndex].originalName}
+                      width={medias[previewIndex].width}
+                      height={medias[previewIndex].height}
+                      className="object-contain"
+                      onError={() => setImageError(true)}
+                      onLoad={(e) => {
+                        const img = e.target as HTMLImageElement;
+                        setActualImageSize({
+                          width: img.naturalWidth,
+                          height: img.naturalHeight
+                        });
+                      }}
+                      unoptimized
+                    />
+                  </div>
+                  </div>
                 ) : medias && medias[previewIndex]?.mimeType.startsWith('video/') && !videoError ? (
                   <video
                     width="1320"
@@ -720,7 +738,17 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
               <div className="mt-4 text-sm text-muted-foreground">
                 <p><span className='text-gray-500'>Tên file:</span> {medias && medias[previewIndex]?.originalName}</p>
                 <p><span className='text-gray-500'>Loại file:</span> {medias && medias[previewIndex]?.mimeType}</p>
-                <p><span className='text-gray-500'>Kích thước:</span> {medias && ((medias[previewIndex]?.width ?? 0) + ' x ' + (medias[previewIndex]?.height ?? 0))}</p>
+                <p><span className='text-gray-500'>Kích thước:</span>
+                  {medias && medias[previewIndex]?.mimeType.startsWith('image/') && actualImageSize ? (
+                    <span className="text-blue-600 font-medium">
+                      {actualImageSize.width} x {actualImageSize.height} (thật)
+                    </span>
+                  ) : (
+                    <span>
+                      {medias && ((medias[previewIndex]?.width ?? 0) + ' x ' + (medias[previewIndex]?.height ?? 0))}
+                    </span>
+                  )}
+                </p>
                 <p><span className='text-gray-500'>Dung lượng:</span> {medias && (medias[previewIndex]?.size / 1024 / 1024).toFixed(2)} MB</p>
               </div>
             </>

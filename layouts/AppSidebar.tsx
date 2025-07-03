@@ -99,14 +99,11 @@ const AppSidebar: React.FC = () => {
         .map(convertFeatureToNavItem)
         .filter((x) => x.type === menuType.code);
       
-      console.log(`Menu type ${menuType.code}:`, items.length, 'items');
       
       items.forEach((nav, index) => {
         if (nav.subItems && nav.subItems.length > 0) {
           nav.subItems.forEach((subItem) => {
-            console.log(`Checking subItem: ${subItem.path} vs current: ${pathname}`);
             if (isActive(subItem.path)) {
-              console.log(`Found match! Opening submenu for ${menuType.code} at index ${index}`);
               setOpenSubmenu({
                 type: menuType.code,
                 index,
