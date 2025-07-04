@@ -252,6 +252,87 @@ export const deletePermission = async (id: string): Promise<void> => {
   await axiosApi.delete(`/permissions/${id}`);
 };
 
+// Thêm các API mới cho permission constants
+export const getPermissionResources = async () => {
+  try {
+    const response = await axiosApi.get('/permissions/constants/resources');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching permission resources:', error);
+    throw error;
+  }
+};
+
+export const getPermissionActions = async () => {
+  try {
+    const response = await axiosApi.get('/permissions/constants/actions');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching permission actions:', error);
+    throw error;
+  }
+};
+
+export const getPermissionTemplates = async () => {
+  try {
+    const response = await axiosApi.get('/permissions/constants/templates');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching permission templates:', error);
+    throw error;
+  }
+};
+
+export const getPermissionTemplateByResource = async (resource: string) => {
+  try {
+    const response = await axiosApi.get(`/permissions/constants/templates/${resource}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching permission template:', error);
+    throw error;
+  }
+};
+
+export const createPermissionFromTemplate = async (data: { resource: string; selectedActions: string[] }) => {
+  try {
+    const response = await axiosApi.post('/permissions/create-from-template', data);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating permission from template:', error);
+    throw error;
+  }
+};
+
+export const getPermissionsByAction = async (action: string) => {
+  try {
+    const response = await axiosApi.get(`/permissions/by-action/${action}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching permissions by action:', error);
+    throw error;
+  }
+};
+
+export const getPermissionsByResource = async (resource: string) => {
+  try {
+    const response = await axiosApi.get(`/permissions/by-resource/${resource}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching permissions by resource:', error);
+    throw error;
+  }
+};
+
+export const getPermissionsByActionAndResource = async (action: string, resource: string) => {
+  try {
+    const response = await axiosApi.get(`/permissions/by-action-resource/${action}/${resource}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching permissions by action and resource:', error);
+    throw error;
+  }
+};
+
 export const getTokenInfo = async (token: string) => {
   try {
     const response = await axiosApi.get(`/auth/token-info?token=${token}`);

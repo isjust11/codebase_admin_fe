@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { createFeature, deleteFeature, getFeatures, updateFeature } from '@/services/manager-api';
+import { createFeature, deleteFeature, getAllFeatures, getFeatures, updateFeature } from '@/services/manager-api';
 import { Feature } from '@/types/feature';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -40,10 +40,10 @@ export default function FeaturePage() {
   // const { socket } = useSocket();
 
   const fetchFeatures = async () => {
-    const response = await getFeatures({ page: pageIndex + 1, size: pageSize, search });
-    const featureTree = buildFeature(response.data);
+    const response = await getAllFeatures(search);
+    const featureTree = buildFeature(response);
     setFeatures(featureTree);
-    setPageCount(response.totalPages);
+    // setPageCount(response.totalPages);
   };
 
   useEffect(() => {
@@ -281,6 +281,7 @@ export default function FeaturePage() {
         <ComponentCard title={t('featureList')} listAction={lstActions}>
           <DataTable
             columns={columns}
+            allowPagination={false}
             data={features}
             pageCount={pageCount}
             onPaginationChange={handlePaginationChange}

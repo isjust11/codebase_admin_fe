@@ -101,6 +101,16 @@ export const getFeatures = async (params?: PaginationParams): Promise<PaginatedR
     return { data: [], total: 0, page: 0, size: 10, totalPages: 0 };
   }
 };
+// get all features without pagination just support search query
+export const getAllFeatures = async (search?: string): Promise<Feature[]> => {
+  try {
+    const response = await axiosApi.get(`/feature/all`, {params: {search}});
+    return response.data;
+  } catch (_error) {
+    console.error('Error fetching navigator:', _error);
+    return [];
+  }
+};
 
 export const createFeature = async (data: any): Promise<Feature> => {
   try {

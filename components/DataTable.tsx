@@ -34,7 +34,8 @@ interface DataTableProps<TData, TValue> {
   onPaginationChange?: (pageIndex: number, pageSize: number) => void
   onSearchChange?: (search: string) => void
   manualPagination?: boolean
-  getRowChildren?: (row: TData) => TData[] | undefined
+  getRowChildren?: (row: TData) => TData[] | undefined,
+  allowPagination?: boolean
 }
 
 export function DataTable<TData, TValue>({
@@ -45,6 +46,7 @@ export function DataTable<TData, TValue>({
   onSearchChange,
   manualPagination = false,
   getRowChildren,
+  allowPagination = true,
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -249,7 +251,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
+      {allowPagination && <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground dark:text-gray-400">
           Đã chọn
           <span className="text-bold"> {table.getFilteredSelectedRowModel().rows.length} /{" "}
@@ -308,7 +310,7 @@ export function DataTable<TData, TValue>({
           </div> :
           <></>
         }
-      </div>
+      </div>}
     </div>
   )
 }

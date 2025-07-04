@@ -2,6 +2,7 @@
 import { Icon } from '@/components/ui/icon';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { featureService } from '@/services/feature-api';
+import { getAllFeatures } from '@/services/manager-api';
 import { Feature } from '@/types/feature';
 import { ArrowRight, ChevronRight, X, ChevronDown, ChevronRight as ChevronRightIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -52,8 +53,8 @@ export default function AssignHandleForm({
 
     const fetchFeatures = async () => {
         try {
-            const data = await featureService.getFeatures();
-            const newFeatures = data.data;
+            const data = await getAllFeatures();
+            const newFeatures = data;
             setFeatures(newFeatures);
 
             // Lọc ra các feature gốc (không có parent)

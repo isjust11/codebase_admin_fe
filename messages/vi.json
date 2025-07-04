@@ -231,5 +231,28 @@
     "confirm": "Xác nhận",
     "cancel": "Hủy",
     "removeConfirm": "Bạn có chắc chắn muốn xóa {count} file?"
+  },
+  "PermissionPage": {
+    "permissionList": "Danh sách quyền",
+    "permissionName": "Tên quyền",
+    "permissionCode": "Mã quyền",
+    "permissionDescription": "Mô tả",
+    "permissionStatus": "Trạng thái",
+    "permissionActive": "Hoạt động",
+    "permissionInactive": "Ngừng hoạt động",
+    "permissionActions": "Thao tác",
+    "permissionViewDetail": "Xem chi tiết",
+    "permissionEdit": "Chỉnh sửa",
+    "permissionDelete": "Xóa",
+    "permissionAdd": "Thêm quyền",
+    "permissionAddNew": "Thêm quyền mới",
+    "permissionUpdate": "Cập nhật quyền",
+    "permissionConfirmDelete": "Bạn có chắc chắn muốn xóa quyền này không?",
+    "permissionDeleteSuccess": "Xóa quyền thành công",
+    "permissionDeleteError": "Lỗi khi xóa quyền",
+    "permissionFetchError": "Lỗi khi tải danh sách quyền",
+    "permissionSelectAll": "Chọn tất cả",
+    "permissionConfirm": "Đồng ý",
+    "permissionCancel": "Hủy"
   }
 }
