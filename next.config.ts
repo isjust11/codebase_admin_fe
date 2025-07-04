@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
     return config;
   },
   images: {
-    domains: ['localhost','lh3.googleusercontent.com','platform-lookaside.fbsbx.com'],
+    // domains: ['localhost','lh3.googleusercontent.com','platform-lookaside.fbsbx.com'],
     remotePatterns: [
       {
         protocol: 'http',
@@ -22,6 +22,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'lh3.googleusercontent.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'platform-lookaside.fbsbx.com',
       },
     ],
   },

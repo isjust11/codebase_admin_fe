@@ -1,10 +1,12 @@
-
-
 export interface Permission {
   id: string;
   name: string;
   code: string;
   description?: string;
+  action?: string;
+  resource?: string;
+  featureId?: number;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -12,11 +14,21 @@ export interface Permission {
 export interface CreatePermissionDto {
   name: string;
   description?: string;
+  code?: string;
+  action?: string;
+  resource?: string;
+  featureId?: number;
+  isActive?: boolean;
 }
 
 export interface UpdatePermissionDto {
   name?: string;
   description?: string;
+  code?: string;
+  action?: string;
+  resource?: string;
+  featureId?: number;
+  isActive?: boolean;
 }
 
 export interface CreateRoleDto {
@@ -24,7 +36,7 @@ export interface CreateRoleDto {
   code: string;
   description?: string;
   navagatorIds?: string[];
-  // permissionIds: number[];
+  permissionIds?: number[];
 }
 
 export interface UpdateRoleDto {
@@ -33,5 +45,5 @@ export interface UpdateRoleDto {
   description?: string;
   navagatorIds?: string[];
   isActive?: boolean;
-  // permissionIds?: number[];
+  permissionIds?: number[];
 } 
