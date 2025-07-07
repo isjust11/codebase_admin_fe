@@ -189,7 +189,7 @@
     "confirm": "Confirm",
     "cancel": "Cancel"
   },
-  "PermissionPage": {
+  "PermissionsPage": {
     "permissionList": "Permission List",
     "permissionName": "Permission Name",
     "permissionCode": "Permission Code",
@@ -210,7 +210,32 @@
     "permissionFetchError": "Error fetching permission list",
     "permissionSelectAll": "Select all",
     "permissionConfirm": "Confirm",
-    "permissionCancel": "Cancel"
+    "permissionCancel": "Cancel",
+    "permissionManagement": "Permission Management",
+    "permissionManagementTemplate": "Permission Management Template",
+    "permissionManagementList": "Permission Management List",
+    "addPermission": "Add Permission",
+    "updatePermission": "Update Permission",
+    "deletePermission": "Delete Permission",
+    "viewDetailPermission": "View Detail Permission",
+    "editPermission": "Edit Permission",
+    "description": "Description",
+    "createdAt": "Create At",
+    "updateAt": "Update At",
+    "createdBy": "Created By",
+    "updatedBy": "Updated By",
+    "resource": "Resource",
+    "action": "Action",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "actions": "Actions",
+    "viewDetail": "View Detail",
+    "edit": "Edit",
+    "delete": "Delete",
+    "addPermissionNew": "Add Permission New",
+    "openMenu": "Open menu",
+    "selectAll": "Select all"
   },
   "Utils": {
     "confirm": "Confirm",

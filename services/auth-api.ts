@@ -228,9 +228,14 @@ export const findbyCode = async (code: string): Promise<Role> => {
   return response.data;
 };
 
-export const getPermissions = async (): Promise<Permission[]> => {
-  const response = await axiosApi.get('/permissions');
-  return response.data;
+export const getPermissions = async (params?: PaginationParams): Promise<PaginatedResponse<Permission>> =>  {
+  try{
+    const response = await axiosApi.get('/permissions', {params});
+    return response.data;
+  }catch(_error){
+    console.error('Error fetching permissions:', _error);
+    return { data: [], total: 0, page: 0, size: 10, totalPages: 0 };
+  }
 };
 
 export const getPermission = async (id: string): Promise<Permission> => {

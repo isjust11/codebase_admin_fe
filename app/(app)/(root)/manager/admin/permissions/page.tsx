@@ -2,41 +2,42 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
-import { Permission } from '@/types/permission';
 import { toast } from 'sonner';
-import { 
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
-import { Plus, Pencil, Trash2, FileText } from 'lucide-react';
-import { PermissionForm } from './components/permission-form';
+import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash } from 'lucide-react';
 import { deletePermission, getPermissions } from '@/services/auth-api';
+import { Checkbox } from '@radix-ui/react-checkbox';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
+import { ColumnDef } from '@tanstack/react-table';
+import { useRouter } from 'next/navigation';
+import { Action } from '@/types/actions';
+import { DataTable } from '@/components/DataTable';
+import PageBreadcrumb from '@/components/common/PageBreadCrumb';
+import ComponentCard from '@/components/common/ComponentCard';
+import { Modal } from '@/components/ui/modal';
+import { useModal } from '@/hooks/useModal';
+import Badge from '@/components/ui/badge/Badge';
+import { Permission } from '@/types/permission';
 import { useTranslations } from 'next-intl';
-import { Badge } from '@/components/ui/badge';
+import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PermissionManager from './components/permission-manager';
 
 export default function PermissionsPage() {
+  const t = useTranslations('PermissionsPage');
+  const router = useRouter();
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const t = useTranslations('PermissionsPage');
+  const { isOpen, openModal, closeModal } = useModal();
+  const [totalPages, setTotalPages] = useState(0);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [search, setSearch] = useState('');
 
   const fetchPermissions = async () => {
     try {
-      const data = await getPermissions();
-      setPermissions(data);
+      const response = await getPermissions({ page: pageIndex + 1, size: pageSize, search });
+      setPermissions(response.data);
+      setTotalPages(response.totalPages);
     } catch (error: any) {
       toast.error(t('fetchError') + error.message);
     }
@@ -44,7 +45,7 @@ export default function PermissionsPage() {
 
   useEffect(() => {
     fetchPermissions();
-  }, []);
+  }, [pageIndex, pageSize, search]);
 
   const handleDelete = async (id: string) => {
     if (!confirm(t('confirmDelete'))) return;
@@ -58,19 +59,17 @@ export default function PermissionsPage() {
     }
   };
 
-  const handleEdit = (permission: Permission) => {
-    setSelectedPermission(permission);
-    setIsDialogOpen(true);
+  const handleSizeChange = (size: number) => {
+    setPageSize(size);
   };
 
-  const handleCreate = () => {
-    setSelectedPermission(null);
-    setIsDialogOpen(true);
+  const handlePaginationChange = (newPageIndex: number, newPageSize: number) => {
+    setPageIndex(newPageIndex);
+    setPageSize(newPageSize);
   };
 
-  const onSuccess = () => {
-    setIsDialogOpen(false);
-    fetchPermissions();
+  const handleSearch = (searchValue: string) => {
+    setSearch(searchValue);
   };
 
   const getResourceDisplayName = (resourceKey: string) => {
@@ -115,122 +114,217 @@ export default function PermissionsPage() {
     return actionNames[actionKey] || actionKey;
   };
 
-  return (
-    <div className="container mx-auto">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold">{t('permissionManagement')}</h1>
-      </div>
-
-      <Tabs defaultValue="list" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="list">Danh sách Quyền</TabsTrigger>
-          <TabsTrigger value="template">Quản lý theo Template</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="list" className="space-y-4">
-          <div className="flex justify-end">
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogTrigger asChild>
-                <Button onClick={handleCreate}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  {t('addPermission')}
+  const columns: ColumnDef<Permission>[] = [
+    {
+      id: "select",
+      accessorKey: "id",
+      header: ({ table }) => (
+        <Checkbox
+          checked={
+            table.getIsAllPageRowsSelected() ||
+            (table.getIsSomePageRowsSelected() && "indeterminate")
+          }
+          onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+          aria-label={t('selectAll')}
+        />
+      ),
+      cell: ({ row }) => (
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label={t('selectAll')}
+        />
+      ),
+      enableSorting: false,
+      enableHiding: false,
+    },
+    {
+      accessorKey: "name",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            {t('permissionName')}
+            {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
+          </Button>
+        )
+      },
+    },
+    {
+      accessorKey: "resource",
+      header: "Resource",
+      cell: ({ row }) => {
+        const resource = row.getValue("resource") as string;
+        return resource ? (
+          <Badge variant="light" color="primary">
+            {getResourceDisplayName(resource)}
+          </Badge>
+        ) : (
+          <span className="text-gray-400">-</span>
+        );
+      },
+    },
+    {
+      accessorKey: "action",
+      header: "Action",
+      cell: ({ row }) => {
+        const action = row.getValue("action") as string;
+        return action ? (
+          <Badge variant="light" color="info">
+            {getActionDisplayName(action)}
+          </Badge>
+        ) : (
+          <span className="text-gray-400">-</span>
+        );
+      },
+    },
+    {
+      accessorKey: "code",
+      header: "Mã quyền",
+      cell: ({ row }) => {
+        const code = row.getValue("code") as string;
+        return (
+          <code className="text-sm bg-gray-100 px-2 py-1 rounded">
+            {code}
+          </code>
+        );
+      },
+    },
+    {
+      accessorKey: "isActive",
+      header: "Trạng thái",
+      cell: ({ row }) => {
+        const status = row.getValue("isActive") as boolean;
+        return (
+          <Badge variant="light" color={status === true ? 'success' : 'error'}>
+            {status === true ? 'Kích hoạt' : 'Vô hiệu'}
+          </Badge>
+        );
+      },
+    },
+    {
+      accessorKey: "description",
+      header: t('description'),
+      cell: ({ row }) => {
+        const description = row.getValue("description") as string;
+        return (
+          <div className="max-w-xs truncate">
+            {description || '-'}
+          </div>
+        );
+      },
+    },
+    {
+      accessorKey: "createdAt",
+      header: t('createdAt'),
+      cell: ({ row }) => {
+        const createdAt = row.getValue("createdAt") as string;
+        return new Date(createdAt).toLocaleDateString('vi-VN');
+      },
+    },
+    {
+      id: "actions",
+      header: t('actions'),
+      cell: ({ row }) => {
+        const permission = row.original;
+        return (
+          <div className="p-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">{t('openMenu')}</span>
+                  <MoreHorizontal className="h-4 w-4" />
                 </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-4xl">
-                <DialogHeader>
-                  <DialogTitle>
-                    {selectedPermission ? t('updatePermission') : t('addPermissionNew')}
-                  </DialogTitle>
-                </DialogHeader>
-                <PermissionForm
-                  permission={selectedPermission}
-                  onSuccess={onSuccess}
-                />
-              </DialogContent>
-            </Dialog>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs'>
+                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
+                  onClick={() => router.push(`/manager/admin/permissions/${permission.id}`)}>
+                  <BadgeInfo className="mr-2 h-4 w-4" />
+                  {t('viewDetail')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                  onClick={() => router.push(`/manager/admin/permissions/update/${permission.id}`)}
+                >
+                  <Pencil className="mr-2 h-4 w-4" />
+                  {t('edit')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" 
+                  onClick={() => handleDelete(permission.id.toString())}>
+                  <Trash className="mr-2 h-4 w-4" />
+                  {t('delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
+        )
+      },
+    },
+  ];
 
-          <div className="border rounded-lg">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>{t('permissionName')}</TableHead>
-                  <TableHead>Resource</TableHead>
-                  <TableHead>Action</TableHead>
-                  <TableHead>Mã quyền</TableHead>
-                  <TableHead>Trạng thái</TableHead>
-                  <TableHead>{t('description')}</TableHead>
-                  <TableHead>{t('createdAt')}</TableHead>
-                  <TableHead className="w-[100px]">{t('actions')}</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {permissions.map((permission) => (
-                  <TableRow key={permission.id}>
-                    <TableCell className="font-medium">{permission.name}</TableCell>
-                    <TableCell>
-                      {permission.resource ? (
-                        <Badge variant="outline">
-                          {getResourceDisplayName(permission.resource)}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      {permission.action ? (
-                        <Badge variant="secondary">
-                          {getActionDisplayName(permission.action)}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>
-                      <code className="text-sm bg-gray-100 px-2 py-1 rounded">
-                        {permission.code}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={permission.isActive ? "default" : "destructive"}>
-                        {permission.isActive ? 'Kích hoạt' : 'Vô hiệu'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="max-w-xs truncate">
-                      {permission.description || '-'}
-                    </TableCell>
-                    <TableCell>
-                      {new Date(permission.createdAt).toLocaleDateString('vi-VN')}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(permission)}
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDelete(permission.id.toString())}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </TabsContent>
+  const lstActions: Action[] = [
+    {
+      icon: <Plus className="w-4 h-4 mr-2" />,
+      onClick: () => {
+        router.push('/manager/admin/permissions/create');
+      },
+      title: t('addPermission'),
+      className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
+    },
+  ];
 
-        <TabsContent value="template" className="space-y-4">
-          <PermissionManager />
-        </TabsContent>
-      </Tabs>
-    </div>
+  return (
+    <AsyncWrapper>
+      <PageBreadcrumb pageTitle={t('permissionManagement')} />
+      <div className="space-y-6">
+        <Tabs defaultValue="list" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 bg-gray-100 rounded-lg shadow-sm">
+            <TabsTrigger 
+              value="list"
+              className="data-[state=active]:bg-fuchsia-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+            >
+              Danh sách Quyền
+            </TabsTrigger>
+            <TabsTrigger 
+              value="template"
+              className="data-[state=active]:bg-fuchsia-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
+            >
+              Quản lý theo Template
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="list" className="space-y-4">
+            <ComponentCard title={t('permissionManagement')} listAction={lstActions}>
+              <DataTable
+                columns={columns}
+                data={permissions}
+                pageCount={totalPages}
+                onPaginationChange={handlePaginationChange}
+                onSearchChange={handleSearch}
+                manualPagination={true}
+                onSizeChange={handleSizeChange}
+              />
+            </ComponentCard>
+          </TabsContent>
+
+          <TabsContent value="template" className="space-y-4">
+            <ComponentCard title={t('permissionManagementTemplate')}>
+              <PermissionManager />
+            </ComponentCard>
+          </TabsContent>
+        </Tabs>
+
+        <Modal
+          isOpen={isOpen}
+          onClose={closeModal}
+          className="max-w-[600px] p-5 lg:p-10"
+        >
+          <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
+            {selectedPermission ? t('updatePermission') : t('addPermissionNew')}
+          </h4>
+        </Modal>
+      </div>
+    </AsyncWrapper>
   );
 } 

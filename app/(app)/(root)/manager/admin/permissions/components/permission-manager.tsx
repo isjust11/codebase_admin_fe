@@ -244,9 +244,9 @@ const PermissionManager: React.FC = () => {
           <SelectTrigger>
             <SelectValue placeholder="Chọn resource..." />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className='bg-white dark:bg-gray-800'>
             {Object.entries(resources).map(([key, value]) => (
-              <SelectItem key={key} value={value}>
+              <SelectItem key={key} value={value} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
                 {getResourceDisplayName(value)}
               </SelectItem>
             ))}

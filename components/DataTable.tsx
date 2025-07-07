@@ -35,7 +35,8 @@ interface DataTableProps<TData, TValue> {
   onSearchChange?: (search: string) => void
   manualPagination?: boolean
   getRowChildren?: (row: TData) => TData[] | undefined,
-  allowPagination?: boolean
+  allowPagination?: boolean,
+  onSizeChange?: (size: number) => void
 }
 
 export function DataTable<TData, TValue>({
@@ -47,6 +48,7 @@ export function DataTable<TData, TValue>({
   manualPagination = false,
   getRowChildren,
   allowPagination = true,
+  onSizeChange,
 }: DataTableProps<TData, TValue>) {
 
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -266,6 +268,7 @@ export function DataTable<TData, TValue>({
                 onChange={(e) => {
                   setPageSize(Number(e.target.value))
                   table.setPageIndex(0)
+                  onSizeChange?.(Number(e.target.value))
                 }}
                 className="h-8 w-[70px] rounded-md border border-input bg-background px-2 py-1 text-sm dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90"
                 aria-label="Số hàng trên trang"
