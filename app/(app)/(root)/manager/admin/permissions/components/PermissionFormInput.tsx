@@ -65,7 +65,6 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
   const [selectedResource, setSelectedResource] = useState<string>('');
   const [selectedActions, setSelectedActions] = useState<string[]>([]);
   const [isTemplateMode, setIsTemplateMode] = useState(false);
-  console.log(permission);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -267,6 +266,7 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
                 <Select 
                   onValueChange={handleResourceChange} 
                   defaultValue={field.value}
+                  value={field.value}
                   disabled={isView}
                 >
                   <FormControl>
@@ -276,8 +276,8 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
                   </FormControl>
                   <SelectContent className='bg-white dark:bg-gray-800'>
                     {Object.entries(resources).map(([key, value]) => (
-                      <SelectItem key={key} value={key} className='hover:bg-gray-100 dark:hover:bg-gray-700' >
-                        {getResourceDisplayName(key)}
+                      <SelectItem key={key} value={value} className='hover:bg-gray-100 dark:hover:bg-gray-700' >
+                        {getResourceDisplayName(value)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -300,6 +300,7 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
                     handleActionToggle(value);
                   }} 
                   defaultValue={field.value}
+                  value={field.value}
                   disabled={isView}
                 >
                   <FormControl>
@@ -309,8 +310,8 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
                   </FormControl>
                   <SelectContent className='bg-white dark:bg-gray-800'>
                     {Object.entries(actions).map(([key, value]) => (
-                      <SelectItem key={key} value={key} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
-                        {getActionDisplayName(key)}
+                      <SelectItem key={key} value={value} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
+                        {getActionDisplayName(value)}
                       </SelectItem>
                     ))}
                   </SelectContent>

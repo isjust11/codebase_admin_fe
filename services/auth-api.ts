@@ -249,7 +249,7 @@ export const createPermission = async (data: CreatePermissionDto): Promise<Permi
 };
 
 export const updatePermission = async (id: string, data: UpdatePermissionDto): Promise<Permission> => {
-  const response = await axiosApi.patch(`/permissions/${id}`, data);
+  const response = await axiosApi.put(`/permissions/${id}`, data);
   return response.data;
 };
 
@@ -360,6 +360,11 @@ export const updateAvatar = async (data: any): Promise<any> => {
 
 export const updatePassword = async (data: any): Promise<any> => {
   const response = await axiosApi.patch(`/auth/update-password`, data);
+  return response.data;
+};
+
+export const assignRoleFeatures = async (roleId: string, featureIds: string[]): Promise<any> => {
+  const response = await axiosApi.post(`/roles/${roleId}/features`, { featureIds });
   return response.data;
 };
 
