@@ -235,7 +235,20 @@
     "delete": "Delete",
     "addPermissionNew": "Add Permission New",
     "openMenu": "Open menu",
-    "selectAll": "Select all"
+    "selectAll": "Select all",
+    "permissionDetail": "Permission Detail",
+    "loadError": "Cannot load permission information",
+    "fillRequiredFields": "Please fill in all required fields",
+    "createSuccess": "Permission added successfully",
+    "updateSuccess": "Permission updated successfully",
+    "createError": "Error occurred while adding permission",
+    "updateError": "Error occurred while updating permission",
+    "back": "Back",
+    "cancel": "Cancel",
+    "add": "Add",
+    "update": "Update",
+    "enterPermissionName": "Enter permission name",
+    "enterDescription": "Enter description"
   },
   "Utils": {
     "confirm": "Confirm",

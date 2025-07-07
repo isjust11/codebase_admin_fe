@@ -278,6 +278,19 @@
     "delete": "Xóa",
     "addPermissionNew": "Thêm quyền mới",
     "openMenu": "Mở menu",
-    "selectAll": "Chọn tất cả"
+    "selectAll": "Chọn tất cả",
+    "permissionDetail": "Chi tiết quyền",
+    "loadError": "Không thể tải thông tin quyền",
+    "fillRequiredFields": "Vui lòng điền đầy đủ thông tin",
+    "createSuccess": "Quyền đã được thêm thành công",
+    "updateSuccess": "Quyền đã được cập nhật thành công",
+    "createError": "Có lỗi xảy ra khi thêm quyền",
+    "updateError": "Có lỗi xảy ra khi cập nhật quyền",
+    "back": "Quay lại",
+    "cancel": "Hủy",
+    "add": "Thêm mới",
+    "update": "Cập nhật",
+    "enterPermissionName": "Nhập tên quyền",
+    "enterDescription": "Nhập mô tả"
   }
 }
