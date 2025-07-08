@@ -319,6 +319,7 @@
     "add": "Thêm mới",
     "update": "Cập nhật",
     "enterPermissionName": "Nhập tên quyền",
-    "enterDescription": "Nhập mô tả"
+    "enterDescription": "Nhập mô tả",
+    "refresh": "Làm mới"
   }
 }

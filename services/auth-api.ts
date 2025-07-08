@@ -56,6 +56,7 @@ export const refreshToken = async (): Promise<RefreshTokenResponse> => {
 // đăng nhập người dùng
 export const login = async (data: LoginData): Promise<AuthResponse> => {
   try {
+    console.log('run login', data);
     const response = await axiosApi.post(`/auth/login`, data);
     // lưu trữ token vào localStorage
     localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);

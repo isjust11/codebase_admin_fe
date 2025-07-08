@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash } from 'lucide-react';
+import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash, RefreshCcw } from 'lucide-react';
 import { deletePermission, getPermissions } from '@/services/auth-api';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -32,7 +32,7 @@ export default function PermissionsPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
-
+  const actionRef = useRef<{ refresh: () => void }>({ refresh: () => {} });
   const fetchPermissions = async () => {
     try {
       const response = await getPermissions({ page: pageIndex + 1, size: pageSize, search });
@@ -273,7 +273,16 @@ export default function PermissionsPage() {
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
   ];
-
+  const refreshActions: Action[] = [
+    {
+      icon: <RefreshCcw className="w-4 h-4 mr-2" />,
+      onClick: () => {
+        actionRef.current?.refresh();
+      },
+      title: t('refresh'),
+      className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
+    },
+  ];
   return (
     <AsyncWrapper>
       <PageBreadcrumb pageTitle={t('permissionManagement')} />
@@ -309,8 +318,8 @@ export default function PermissionsPage() {
           </TabsContent>
 
           <TabsContent value="template" className="space-y-4">
-            <ComponentCard title={t('permissionManagementTemplate')}>
-              <PermissionManager />
+            <ComponentCard title={t('permissionManagementTemplate')} listAction={refreshActions}>
+              <PermissionManager ref={actionRef} />
             </ComponentCard>
           </TabsContent>
         </Tabs>

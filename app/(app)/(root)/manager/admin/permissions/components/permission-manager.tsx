@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -33,7 +33,7 @@ interface Action {
   [key: string]: string;
 }
 
-const PermissionManager: React.FC = () => {
+const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefObject<{ refresh: () => void }> }>((props, ref) => {
   const [resources, setResources] = useState<Resource>({});
   const [actions, setActions] = useState<Action>({});
   const [templates, setTemplates] = useState<{ [key: string]: PermissionTemplate }>({});
@@ -45,6 +45,12 @@ const PermissionManager: React.FC = () => {
   useEffect(() => {
     fetchConstants();
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    refresh: () => {
+      fetchConstants();
+    }
+  }));
 
   useEffect(() => {
     // Update table data when resource or templates change
@@ -107,6 +113,8 @@ const PermissionManager: React.FC = () => {
   const handleDeselectAll = () => {
     setSelectedActions([]);
   };
+
+
 
   const handleCreatePermissions = async () => {
     if (!selectedResource || selectedActions.length === 0) {
@@ -232,13 +240,7 @@ const PermissionManager: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Quản lý Phân quyền theo Template</h1>
-        <Button onClick={fetchConstants} variant="outline">
-          Làm mới
-        </Button>
-      </div>
+    <div className="space-y-6">
       <div className="mb-4">
         <Select value={selectedResource} onValueChange={handleResourceChange}>
           <SelectTrigger>
@@ -324,6 +326,6 @@ const PermissionManager: React.FC = () => {
       </Card>
     </div>
   );
-};
+});
 
 export default PermissionManager; 

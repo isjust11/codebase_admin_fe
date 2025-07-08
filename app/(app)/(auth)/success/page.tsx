@@ -29,6 +29,7 @@ function AuthSuccessPage() {
           if (!isMounted) return;
 
           // Lưu thông tin vào localStorage
+          console.log('userInfo', userInfo);
           localStorage.setItem(AppConstants.AccessToken, userInfo.accessToken);
           localStorage.setItem(AppConstants.RefreshToken, userInfo.refreshToken);
           localStorage.setItem(AppConstants.User, JSON.stringify(userInfo.user));

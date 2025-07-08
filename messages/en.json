@@ -287,7 +287,8 @@
     "add": "Add",
     "update": "Update",
     "enterPermissionName": "Enter permission name",
-    "enterDescription": "Enter description"
+    "enterDescription": "Enter description",
+    "refresh": "Refresh"
   },
   "Utils": {
     "confirm": "Confirm",
