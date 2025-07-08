@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash } from 'lucide-react';
+import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash, Shield } from 'lucide-react';
 import { getRoles, deleteRole, createRole, updateRole, findbyCode } from '@/services/auth-api';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -20,6 +20,7 @@ import Badge from '@/components/ui/badge/Badge';
 import { Role } from '@/types/role';
 import { useTranslations } from 'next-intl';
 import { AsyncWrapper } from '@/components/common/AsyncWrapper';
+import RolePermissionManager from './components/RolePermissionManager';
 
 export default function RolesPage() {
   const t = useTranslations('RolesPage');
@@ -153,6 +154,11 @@ export default function RolesPage() {
                   <BadgeInfo className="mr-2 h-4 w-4" />
                   {t('viewDetail')}
                 </DropdownMenuItem>
+                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
+                  onClick={() => router.push(`/manager/admin/roles/rolepermission/${role.id}`)}>
+                  <Shield className="mr-2 h-4 w-4" />
+                  {t('managePermissions')}
+                </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
                   onClick={() => router.push(`/manager/admin/roles/update/${role.id}`)}
                 >
@@ -200,11 +206,22 @@ export default function RolesPage() {
           <Modal
             isOpen={isOpen}
             onClose={closeModal}
-            className="max-w-[600px] p-5 lg:p-10"
+            className="max-w-4xl p-5 lg:p-10"
           >
-            <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
-              {selectedRole ? t('updateRole') : t('addRoleNew')}
-            </h4>
+            {selectedRole ? (
+              <RolePermissionManager
+                role={selectedRole}
+                onClose={closeModal}
+                onSave={() => {
+                  toast.success(t('permissionUpdateSuccess'));
+                  closeModal();
+                }}
+              />
+            ) : (
+              <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
+                {t('addRoleNew')}
+              </h4>
+            )}
           </Modal>
         </ComponentCard>
       </div>

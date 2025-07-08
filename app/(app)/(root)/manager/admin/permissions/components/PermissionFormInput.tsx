@@ -20,15 +20,15 @@ import {
   getPermissionActions, 
   getPermissionTemplates 
 } from '@/services/auth-api';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
 import { useTranslations } from 'next-intl';
 
 const formSchema = z.object({
-  name: z.string().min(1, 'Tên quyền không được để trống'),
+  name: z.string().min(5, 'Tên quyền không được để trống'),
   description: z.string().optional(),
-  code: z.string().optional(),
-  action: z.string().optional(),
-  resource: z.string().optional(),
+  code: z.string().min(5, 'Mã quyền không được để trống'),
+  action: z.string().min(1, 'Hành động không được để trống'),
+  resource: z.string().min(1, 'Tài nguyên không được để trống'),
   featureId: z.number().optional(),
   isActive: z.boolean().default(true),
 });
@@ -38,6 +38,7 @@ type PermissionFormInputProps = {
   onCancel: () => void;
   onFormChange: (values: z.infer<typeof formSchema>) => void;
   isView?: boolean;
+  onAddAction?: (action: string) => void;
 };
 
 interface Resource {
@@ -57,7 +58,7 @@ interface PermissionTemplate {
   }[];
 }
 
-export function PermissionFormInput({ permission, onCancel, onFormChange, isView = false }: PermissionFormInputProps) {
+const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFormInputProps>(({ permission, onCancel, onFormChange, isView = false, onAddAction }, ref) => {
   const t = useTranslations('PermissionsPage');
   const [resources, setResources] = useState<Resource>({});
   const [actions, setActions] = useState<Action>({});
@@ -214,6 +215,18 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
     return actionNames[actionKey] || actionKey;
   };
 
+  useImperativeHandle(ref, () => ({
+    validate: () => {
+      form.trigger();
+      return form.formState.isValid;
+    }
+  }));
+
+  const formChange = (val: string) => {
+    form.setValue('name', val);
+    form.trigger();
+  };
+
   return (
     <Form {...form}>
       <form className="space-y-6">
@@ -222,14 +235,19 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
           <FormField
             control={form.control}
             name="name"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <FormItem>
-                <FormLabel>{t('permissionName')}</FormLabel>
+                <FormLabel>{t('permissionName')} <span className='text-red-500'>(*)</span></FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
                     placeholder={t('enterPermissionName')}
                     disabled={isView}
+                    className={fieldState.invalid ? 'input-error' : ''}
+                    onChange={e => {
+                      field.onChange(e);
+                      form.trigger('name');
+                    }}
                   />
                 </FormControl>
                 <FormMessage className='text-red-500'/>
@@ -241,14 +259,19 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
           <FormField
             control={form.control}
             name="code"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <FormItem>
-                <FormLabel>Mã quyền</FormLabel>
+                <FormLabel>Mã quyền <span className='text-red-500'>(*)</span></FormLabel>
                 <FormControl>
                   <Input 
                     {...field} 
                     placeholder="Nhập mã quyền"
                     disabled={isView}
+                    className={fieldState.invalid ? 'input-error' : ''}
+                    onChange={e => {
+                      field.onChange(e);
+                      form.trigger('code');
+                    }}
                   />
                 </FormControl>
                 <FormMessage className='text-red-500'/>
@@ -260,17 +283,21 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
           <FormField
             control={form.control}
             name="resource"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <FormItem>
-                <FormLabel>Resource</FormLabel>
+                <FormLabel>{t('resource')} <span className='text-red-500'>(*)</span></FormLabel>
                 <Select 
-                  onValueChange={handleResourceChange} 
+                  onValueChange={value => {
+                    handleResourceChange(value);
+                    field.onChange(value);
+                    form.trigger('resource');
+                  }} 
                   defaultValue={field.value}
                   value={field.value}
                   disabled={isView}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className={fieldState.invalid ? 'input-error' : ''}>
                       <SelectValue placeholder="Chọn resource" />
                     </SelectTrigger>
                   </FormControl>
@@ -291,20 +318,21 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
           <FormField
             control={form.control}
             name="action"
-            render={({ field }) => (
+            render={({ field, fieldState }) => (
               <FormItem>
-                <FormLabel>Action</FormLabel>
+                <FormLabel>{t('action')} <span className='text-red-500'>(*)</span></FormLabel>
                 <Select 
-                  onValueChange={(value) => {
+                  onValueChange={value => {
                     field.onChange(value);
                     handleActionToggle(value);
+                    form.trigger('action');
                   }} 
                   defaultValue={field.value}
                   value={field.value}
                   disabled={isView}
                 >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className={fieldState.invalid ? 'input-error' : ''}>
                       <SelectValue placeholder="Chọn action" />
                     </SelectTrigger>
                   </FormControl>
@@ -346,7 +374,7 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
         <FormField
           control={form.control}
           name="description"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel>{t('description')}</FormLabel>
               <FormControl>
@@ -355,6 +383,10 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
                   placeholder={t('enterDescription')}
                   disabled={isView}
                   rows={4}
+                  onChange={e => {
+                    field.onChange(e);
+                    form.trigger('description');
+                  }}
                 />
               </FormControl>
               <FormMessage className='text-red-500'/>
@@ -364,4 +396,6 @@ export function PermissionFormInput({ permission, onCancel, onFormChange, isView
       </form>
     </Form>
   );
-} 
+});
+
+export default PermissionFormInput; 

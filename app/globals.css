@@ -783,3 +783,36 @@ span.flatpickr-weekday,
   color: #1e40af;
   border: 1px solid #bfdbfe;
 }
+/* ghi đè input: focus border color */
+ input:focus-visible {
+  @apply ring-1 ring-blue-400;
+}
+/* select: focus border color, text-area: focus border color */
+ textarea:focus {
+  @apply ring-1 ring-blue-400;
+}
+/* select: focus border color, text-area: focus border color */
+select:focus, textarea:focus {
+  @apply ring-1 ring-blue-400;
+}
+button:focus, button:focus-visible {
+  @apply ring-0;
+}
+input:focus, input:focus-visible {
+  @apply ring-1 ring-blue-400;
+}
+select:focus, select:focus-visible {
+  @apply ring-1 ring-blue-400;
+}
+
+/* Ưu tiên border đỏ khi input/select có lỗi */
+input.input-error,
+input.input-error:focus,
+input.input-error:focus-visible {
+  @apply  ring-1 ring-red-500;
+}
+select.input-error,
+select.input-error:focus,
+select.input-error:focus-visible {
+  @apply  ring-1 ring-red-500;
+}

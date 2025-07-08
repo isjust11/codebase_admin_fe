@@ -1,3 +1,4 @@
+import { Permission } from "./permission";
 import { Role } from "./role";
 
 export interface User {
@@ -48,4 +49,6 @@ export interface User {
     updatedAt: Date;
 
     roles: Role[];
+
+    permissions: Permission[];
 }

@@ -254,7 +254,7 @@ const PermissionManager: React.FC = () => {
         </Select>
       </div>
       {/* DataTable for actions */}
-      <div className="border rounded-lg bg-white">
+      <div className="">
         <DataTable
           columns={columns}
           data={tableData}

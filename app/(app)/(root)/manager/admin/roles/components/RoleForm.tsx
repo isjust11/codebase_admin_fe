@@ -10,6 +10,7 @@ import { Role } from '@/types/role';
 import { createRole, getRole, updateRole } from '@/services/auth-api';
 import { RoleFormInput } from './RoleFormInput';
 import AssignHandleForm from './AssignHandleForm';
+import RolePermissionSummary from './RolePermissionSummary';
 
 interface RoleFormProps {
   isView?: boolean;
@@ -140,6 +141,16 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
                 isView={isView}
               />
             </div>
+
+            {/* Phần permission summary - chỉ hiển thị khi xem chi tiết */}
+            {isView && role && (
+              <div className="w-full">
+                <RolePermissionSummary
+                  role={role}
+                  onManagePermissions={() => router.push(`/manager/admin/roles/${role.id}/permissions`)}
+                />
+              </div>
+            )}
           </div>
         </ComponentCard>
       </div>

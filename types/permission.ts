@@ -7,8 +7,8 @@ export interface Permission {
   resource?: string;
   featureId?: number;
   isActive?: boolean;
-  createdAt: string;
-  updatedAt: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface CreatePermissionDto {

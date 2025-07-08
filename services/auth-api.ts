@@ -368,3 +368,26 @@ export const assignRoleFeatures = async (roleId: string, featureIds: string[]): 
   return response.data;
 };
 
+// New APIs for role-permission management
+export const getPermissionsByRole = async (roleId: string): Promise<Permission[]> => {
+  const response = await axiosApi.get(`/roles/${roleId}/permissions`);
+  return response.data;
+};
+
+export const assignRolePermissions = async (roleId: string, permissionIds: string[]): Promise<any> => {
+  const response = await axiosApi.post(`/roles/${roleId}/permissions`, { permissionIds });
+  return response.data;
+};
+
+export const removeRolePermissions = async (roleId: string, permissionIds: string[]): Promise<any> => {
+  const response = await axiosApi.delete(`/roles/${roleId}/permissions`, { 
+    data: { permissionIds } 
+  });
+  return response.data;
+};
+
+export const getRolePermissionStats = async (roleId: string): Promise<any> => {
+  const response = await axiosApi.get(`/roles/${roleId}/permissions/stats`);
+  return response.data;
+};
+

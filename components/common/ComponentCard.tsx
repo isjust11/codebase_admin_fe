@@ -7,7 +7,7 @@ interface ComponentCardProps {
   title: string;
   children: React.ReactNode;
   className?: string; // Additional custom classes for styling
-  desc?: string; // Description text
+  desc?: React.ReactNode; // Description text
   maxHeight?: string; // Optional max height for the card body
   listAction?: Action[]; // List of actions to display on the left of title
 }
@@ -31,9 +31,9 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
             {title}
           </h3>
           {desc && (
-            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              {desc}
-            </p>
+            // <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              desc
+            // </p>
           )}
         </div>
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -8,7 +8,7 @@ import { Plus, Save, X } from 'lucide-react';
 import { Permission } from '@/types/permission';
 import { createPermission, getPermission, updatePermission } from '@/services/auth-api';
 import { useTranslations } from 'next-intl';
-import { PermissionFormInput } from './PermissionFormInput';
+import PermissionFormInput from './PermissionFormInput';
 
 interface PermissionFormProps {
   isView?: boolean;
@@ -25,7 +25,7 @@ const PermissionForm = ({ isView = false }: PermissionFormProps) => {
   const id = params.id as string;
 
   const title = isView ? t('permissionDetail') : (id ? t('updatePermission') : t('addPermissionNew'));
-  
+  const formRef = useRef<{ validate: () => boolean }>(null);
   useEffect(() => {
     if (id) {
       setIsEditing(true);
@@ -44,7 +44,7 @@ const PermissionForm = ({ isView = false }: PermissionFormProps) => {
   };
 
   const handleSubmit = async () => {
-    if (!formValues) {
+    if (!formRef.current?.validate()) {
       toast.error(t('fillRequiredFields'));
       return;
     }
@@ -111,9 +111,10 @@ const PermissionForm = ({ isView = false }: PermissionFormProps) => {
             <div className="w-full">
               <div className="space-y-2">
                 <PermissionFormInput 
+                  ref={formRef}
                   permission={permission} 
                   onCancel={() => {}} 
-                  onFormChange={(values) => setFormValues(values)}
+                  onFormChange={(values: any) => setFormValues(values)}
                   isView={isView}
                 />
               </div>
