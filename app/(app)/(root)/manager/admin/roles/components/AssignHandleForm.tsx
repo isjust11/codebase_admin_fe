@@ -15,6 +15,40 @@ interface EnhancedAssignListProps {
     isView?: boolean;
 }
 
+// Thêm hàm buildTree để chuyển danh sách phẳng thành cây
+function buildTree(features: Feature[]): Feature[] {
+    const map = new Map<string, Feature & { children?: Feature[] }>();
+    features.forEach(f => map.set(String(f.id), { ...f, children: [] }));
+
+    const roots: Feature[] = [];
+    map.forEach(feature => {
+        if (feature.parentId !== undefined && feature.parentId !== null) {
+            const parent = map.get(String(feature.parentId));
+            if (parent) {
+                parent.children = parent.children || [];
+                parent.children.push(feature);
+            }
+        } else {
+            roots.push(feature);
+        }
+    });
+    return roots;
+}
+
+// Lọc cây theo trạng thái assigned/unassigned
+function filterTreeByAssigned(tree: Feature[], assignedIds: string[], isAssigned: boolean): Feature[] {
+    return tree
+        .map(node => {
+            const children = node.children ? filterTreeByAssigned(node.children, assignedIds, isAssigned) : [];
+            const match = isAssigned ? assignedIds.includes(node.id) : !assignedIds.includes(node.id);
+            if (children.length > 0 || match) {
+                return { ...node, children };
+            }
+            return null;
+        })
+        .filter(Boolean) as Feature[];
+}
+
 export default function AssignHandleForm({
     assignedItems = [],
     onChange,
@@ -37,37 +71,31 @@ export default function AssignHandleForm({
 
     useEffect(() => {
         if (features.length > 0) {
-            // Lọc ra các feature gốc (không có parent)
-            const rootFeatures = features.filter(feature => !feature.parentId);
-
-            // Phân loại feature gốc thành assigned và unassigned
-            const initialUnassigned = rootFeatures.filter((item: Feature) => !assignedItems?.includes(item.id));
-            const initialAssigned = rootFeatures.filter((item: Feature) => assignedItems?.includes(item.id));
-
-            setUnassigned(initialUnassigned);
-            setAssigned(initialAssigned);
-            setFilteredUnassigned(initialUnassigned);
-            setFilteredAssigned(initialAssigned);
+            // Xây dựng cây từ danh sách phẳng
+            const tree = buildTree(features);
+            // Phân loại cây assigned/unassigned
+            const assignedTree = filterTreeByAssigned(tree, assignedItems, true);
+            const unassignedTree = filterTreeByAssigned(tree, assignedItems, false);
+            setUnassigned(unassignedTree);
+            setAssigned(assignedTree);
+            setFilteredUnassigned(unassignedTree);
+            setFilteredAssigned(assignedTree);
         }
     }, [assignedItems, features]);
 
     const fetchFeatures = async () => {
         try {
             const data = await getAllFeatures();
-            const newFeatures = data;
-            setFeatures(newFeatures);
-
-            // Lọc ra các feature gốc (không có parent)
-            const rootFeatures = newFeatures.filter((feature: Feature) => !feature.parentId);
-
-            // Phân loại feature gốc thành assigned và unassigned
-            const initialUnassigned = rootFeatures.filter((item: Feature) => !assignedItems?.includes(item.id));
-            const initialAssigned = rootFeatures.filter((item: Feature) => assignedItems?.includes(item.id));
-
-            setUnassigned(initialUnassigned);
-            setAssigned(initialAssigned);
-            setFilteredUnassigned(initialUnassigned);
-            setFilteredAssigned(initialAssigned);
+            setFeatures(data);
+            // Xây dựng cây từ danh sách phẳng
+            const tree = buildTree(data);
+            // Phân loại cây assigned/unassigned
+            const assignedTree = filterTreeByAssigned(tree, assignedItems, true);
+            const unassignedTree = filterTreeByAssigned(tree, assignedItems, false);
+            setUnassigned(unassignedTree);
+            setAssigned(assignedTree);
+            setFilteredUnassigned(unassignedTree);
+            setFilteredAssigned(assignedTree);
         } catch (error: any) {
             toast.error('Lỗi khi tải danh sách chức năng: ' + error.message);
         }
@@ -122,69 +150,35 @@ export default function AssignHandleForm({
     // Assignment functions
     const assignItem = (item: Feature) => {
         const allIds = getAllFeatureIds(item);
-        const newUnassigned = unassigned.filter(i => !allIds.includes(i.id));
-        const newAssigned = [...assigned, item];
-
-        setUnassigned(newUnassigned);
-        setAssigned(newAssigned);
-        setFilteredAssigned(newAssigned);
-        setFilteredUnassigned(newUnassigned);
-        setSelectedUnassigned(selectedUnassigned.filter(id => !allIds.includes(id)));
-
-        onChange?.(newAssigned.map(item => item.id));
+        const newAssignedIds = Array.from(new Set([...assigned.map(i => i.id), ...allIds, ...assignedItems]));
+        onChange?.(newAssignedIds);
     };
 
     const unassignItem = (item: Feature) => {
         const allIds = getAllFeatureIds(item);
-        const newAssigned = assigned.filter(i => !allIds.includes(i.id));
-        const newUnassigned = [...unassigned, item];
-
-        setAssigned(newAssigned);
-        setUnassigned(newUnassigned);
-        setFilteredAssigned(newAssigned);
-        setFilteredUnassigned(newUnassigned);
-        setSelectedAssigned(selectedAssigned.filter(id => !allIds.includes(id)));
-
-        onChange?.(newAssigned.map(item => item.id));
+        const newAssignedIds = assignedItems.filter(id => !allIds.includes(id));
+        onChange?.(newAssignedIds);
     };
 
     // Bulk actions
     const assignSelected = () => {
-        const itemsToAssign = unassigned.filter(item =>
-            selectedUnassigned.includes(item.id)
-        );
-
+        const itemsToAssign = selectedUnassigned
+            .map(id => findFeatureById(unassigned, id))
+            .filter(Boolean) as Feature[];
         const allIds = itemsToAssign.flatMap(item => getAllFeatureIds(item));
-        const newUnassigned = unassigned.filter(item =>
-            !allIds.includes(item.id)
-        );
-        const newAssigned = [...assigned, ...itemsToAssign];
-
-        setUnassigned(newUnassigned);
-        setAssigned(newAssigned);
+        const newAssignedIds = Array.from(new Set([...assigned.map(i => i.id), ...allIds, ...assignedItems]));
         setSelectedUnassigned([]);
-        setFilteredAssigned(newAssigned);
-        setFilteredUnassigned(newUnassigned);
-        onChange?.(newAssigned.map(item => item.id));
+        onChange?.(newAssignedIds);
     };
 
     const unassignSelected = () => {
-        const itemsToUnassign = assigned.filter(item =>
-            selectedAssigned.includes(item.id)
-        );
-
+        const itemsToUnassign = selectedAssigned
+            .map(id => findFeatureById(assigned, id))
+            .filter(Boolean) as Feature[];
         const allIds = itemsToUnassign.flatMap(item => getAllFeatureIds(item));
-        const newAssigned = assigned.filter(item =>
-            !allIds.includes(item.id)
-        );
-        const newUnassigned = [...unassigned, ...itemsToUnassign];
-
-        setAssigned(newAssigned);
-        setUnassigned(newUnassigned);
+        const newAssignedIds = assignedItems.filter(id => !allIds.includes(id));
         setSelectedAssigned([]);
-        setFilteredAssigned(newAssigned);
-        setFilteredUnassigned(newUnassigned);
-        onChange?.(newAssigned.map(item => item.id));
+        onChange?.(newAssignedIds);
     };
 
     // Toggle selection
@@ -239,14 +233,14 @@ export default function AssignHandleForm({
                                 {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRightIcon className="h-4 w-4" />}
                             </button>
                         )}
-                        {level <= 0 && (<input
+                        <input
                             type="checkbox"
                             checked={isSelected}
                             onChange={() => isAssigned ? toggleAssignedSelection(feature.id) : toggleUnassignedSelection(feature.id)}
                             className="h-4 w-4"
                             aria-label={`Chọn ${feature.label}`}
                             disabled={isView}
-                        />)}
+                        />
 
                         <Link href={feature.link ?? '#'} className="flex flex-row items-center gap-2 hover:underline">
                             <div>
@@ -256,14 +250,18 @@ export default function AssignHandleForm({
                         </Link>
 
                     </div>
-                    {level <= 0 && (<button
+                    <button
                         onClick={() => isAssigned ? unassignItem(feature) : assignItem(feature)}
-                        className={`px-3 py-1 ${isAssigned ? 'bg-red-500' : 'bg-blue-500'} text-white rounded hover:${isAssigned ? 'bg-red-600' : 'bg-blue-600'}`}
+                        className={`px-2 py-1 ${
+                            level === 0 
+                                ? (isAssigned ? 'bg-red-500 hover:bg-red-600' : 'bg-blue-500 hover:bg-blue-600')
+                                : (isAssigned ? 'bg-red-300 hover:bg-red-400' : 'bg-blue-300 hover:bg-blue-400')
+                        } text-white rounded`}
                         title={isAssigned ? "Bỏ gán chức năng" : "Gán chức năng"}
                         disabled={isView}
                     >
                         {isAssigned ? <X className="h-4 w-4 inline-block" /> : <ChevronRight className="h-4 w-4 inline-block" />}
-                    </button>)}
+                    </button>
                 </li>
                 {hasChildren && isExpanded && (
                     <ul className="space-y-2 mt-2">
@@ -359,4 +357,16 @@ export default function AssignHandleForm({
             </div>
         </div>
     );
+}
+
+// Hàm tìm feature theo id trong cây
+function findFeatureById(tree: Feature[], id: string): Feature | undefined {
+    for (const node of tree) {
+        if (node.id === id) return node;
+        if (node.children) {
+            const found = findFeatureById(node.children, id);
+            if (found) return found;
+        }
+    }
+    return undefined;
 }
