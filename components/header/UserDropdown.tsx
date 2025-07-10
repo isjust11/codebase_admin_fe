@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useAuth } from "@/contexts/AuthContext";
-import { AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -51,7 +51,9 @@ export default function UserDropdown() {
                 alt="User"
               />
             ):(
-              <AvatarFallback>{getInitials()}</AvatarFallback>
+              <Avatar className="w-11 h-11 bg-gray-200 rounded-full ring-1 ring-gray-300">
+                <AvatarFallback>{getInitials()}</AvatarFallback>
+              </Avatar>
             )
           }
         </span>

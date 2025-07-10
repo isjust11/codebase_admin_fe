@@ -31,7 +31,7 @@ export default function UsersPage() {
     try {
       const response = await userApi.getByPage({ page: page + 1, size, search });
       setUsers(response.data);
-      setPageCount(response.total);
+      setPageCount(response.totalPages || 0);
     } catch (error) {
       toast.error(t('fetchError'));
     }
@@ -76,6 +76,10 @@ export default function UsersPage() {
 
   const handleSearch = (searchValue: string) => {
     setSearch(searchValue);
+  };
+
+  const handleSizeChange = (size: number) => {
+    setPageSize(size);
   };
 
   const columns: ColumnDef<User>[] = [
@@ -263,6 +267,7 @@ export default function UsersPage() {
             pageCount={pageCount}
             onPaginationChange={handlePaginationChange}
             onSearchChange={handleSearch}
+            onSizeChange={handleSizeChange}
             manualPagination={true}
           />
         </ComponentCard>

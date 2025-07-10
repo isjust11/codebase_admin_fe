@@ -343,15 +343,21 @@ export default function AssignHandleForm({
                         onChange={handleSearchAssigned}
                     />
                     <ScrollArea className="h-[400px] border rounded-md p-4">
-                        <ul className="space-y-2 mt-2">
-                            {filteredAssigned.map((item: Feature) => (
+                        {
+                            filteredAssigned.length > 0 ? (
+                                <ul className="space-y-2 mt-2">
+                                    {filteredAssigned.map((item: Feature) => (
                                 <FeatureItem
                                     key={item.id}
                                     feature={item}
                                     isAssigned={true}
                                 />
-                            ))}
-                        </ul>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <div className="h-[300px] flex items-center justify-center text-center text-gray-500">Không có chức năng nào</div>
+                            )
+                        }
                     </ScrollArea>
                 </div>
             </div>

@@ -165,24 +165,24 @@ export function UserFormInput({ user, onFormChange, isView = false }: UserFormPr
           render={({ field }) => (
             <FormItem>
               <FormLabel>Quyền</FormLabel>
-              <Select
-                value={field.value?.join(',')}
-                onValueChange={(value) =>
-                  field.onChange(value ? value.split(',').map(Number) : [])
-                }
-                disabled={isView}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Chọn quyền" />
-                </SelectTrigger>
-                <SelectContent className="opacity-100">
-                  {roles.map((role) => (
-                    <SelectItem key={role.id} value={role.id.toString()}>
-                      {role.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="flex flex-col gap-2">
+                {roles.map((role) => (
+                  <label key={role.id} className="flex items-center gap-2">
+                    <Checkbox
+                      checked={field.value?.includes(Number(role.id)) || false}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          field.onChange([...(field.value || []), Number(role.id)]);
+                        } else {
+                          field.onChange((field.value || []).filter((id) => id !== Number(role.id)));
+                        }
+                      }}
+                      disabled={isView}
+                    />
+                    {role.name}
+                  </label>
+                ))}
+              </div>
               <FormMessage className='text-red-500'/>
             </FormItem>
           )}
