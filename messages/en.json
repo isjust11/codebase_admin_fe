@@ -1,5 +1,4 @@
 {
-
   "HomePage": {
     "title": "Start"
   },
@@ -32,7 +31,7 @@
       "loginSuccess": "Login successful",
       "emailSent": "Email sent successfully",
       "emailError": "Error sending email",
-      "requiredUserOrEmail":"Required email/username"
+      "requiredUserOrEmail": "Required email/username"
     }
   },
   "RegisterPage": {
@@ -148,10 +147,36 @@
     "title": "Profil"
   },
   "UsersPage": {
-    "avatar":  "Ảnh đại diện"
+    "avatar": "Avatar",
+    "userList": "User List",
+    "username": "Username",
+    "fullName": "Full Name",
+    "email": "Email",
+    "roles": "Roles",
+    "noRole": "No role",
+    "admin": "Admin",
+    "status": "Status",
+    "active": "Active",
+    "blocked": "Blocked",
+    "lastLogin": "Last Login",
+    "actions": "Actions",
+    "viewDetail": "View Detail",
+    "edit": "Edit",
+    "block": "Block",
+    "unblock": "Unblock",
+    "delete": "Delete",
+    "openMenu": "Open Menu",
+    "selectAll": "Select All",
+    "confirmDelete": "Are you sure you want to delete this user?",
+    "deleteSuccess": "User deleted successfully",
+    "deleteError": "Error deleting user",
+    "blockSuccess": "Block user successfully",
+    "unblockSuccess": "Unblock user successfully",
+    "error": "Error",
+    "fetchError": "Error loading user list"
   },
   "RolesPage": {
-    "description":  "Description",
+    "description": "Description",
     "addRole": "Thêm vai trò",
     "editRole": "Chỉnh sửa vai trò",
     "deleteRole": "Xóa vai trò",
@@ -198,7 +223,6 @@
     "noPermissions": "No permissions",
     "permissionDeleteSuccess": "Permission deleted successfully",
     "permissionDeleteError": "Error deleting permission: "
-    
   },
   "FeaturePage": {
     "featureList": "Feature List",
@@ -294,5 +318,24 @@
     "confirm": "Confirm",
     "cancel": "Cancel",
     "removeConfirm": "Are you sure you want to delete {count} files?"
+  },
+  "UserForm": {
+    "username": "Username",
+    "usernamePlaceholder": "Enter username",
+    "usernameRequired": "Username is required",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "passwordRequired": "Password is required",
+    "newPassword": "New password (leave blank if no change)",
+    "fullName": "Full Name",
+    "fullNamePlaceholder": "Enter full name",
+    "email": "Email",
+    "emailPlaceholder": "Enter email",
+    "emailInvalid": "Invalid email",
+    "adminPermission": "Administrator permission",
+    "roles": "Roles",
+    "rolesUnassigned": "Unassigned roles",
+    "rolesAssigned": "Assigned roles",
+    "noRoles": "No roles"
   }
 }

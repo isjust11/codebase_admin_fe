@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,45 +15,39 @@ import { Input } from '@/components/ui/input';
 import { User } from '@/services/user-api';
 import { getRoles } from '@/services/auth-api';
 import { Role } from '@/types/role';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from '@/components/ui/checkbox';
 import { useState } from 'react';
 import AssignRoleList from './AssignRoleList';
 
-const formSchema = z.object({
-  username: z.string().min(1, 'Tên đăng nhập không được để trống'),
-  password: z.string().min(1, 'Mật khẩu không được để trống'),
+const formSchema = (t: (key: string) => string) => z.object({
+  username: z.string().min(1, t('usernameRequired')),
+  password: z.string().min(1, t('passwordRequired')),
   fullName: z.string().optional(),
-  email: z.string().email('Email không hợp lệ').optional(),
+  email: z.string().email(t('emailInvalid')).optional(),
   isAdmin: z.boolean(),
-  roleIds: z.array(z.number()).optional(),
+  roleIds: z.array(z.string()).optional(),
 });
 
 type UserFormProps = {
   user?: User | null;
   onCancel: () => void;
-  onFormChange?: (values: z.infer<typeof formSchema>) => void;
+  onFormChange?: (values: z.infer<ReturnType<typeof formSchema>>) => void;
   isView?: boolean;
 };
 
 export function UserFormInput({ user, onFormChange, isView = false }: UserFormProps) {
+  const t = useTranslations('UserForm');
   const [roles, setRoles] = useState<Role[]>([]);
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<ReturnType<typeof formSchema>>>({
+    resolver: zodResolver(formSchema(t)),
     defaultValues: {
       username: user?.username || '',
       password: '',
       fullName: user?.fullName || '',
       email: user?.email || '',
       isAdmin: user?.isAdmin || false,
-      roleIds: user?.roles?.map(role => Number(role.id)) || [],
+      roleIds: user?.roles?.map(role => role.id) || [],
     },
   });
 
@@ -78,21 +73,23 @@ export function UserFormInput({ user, onFormChange, isView = false }: UserFormPr
         fullName: user.fullName || '',
         email: user.email || '',
         isAdmin: user.isAdmin,
-        roleIds: user.roles?.map(role => Number(role.id)) || [],
+        roleIds: user.roles?.map(role => role.id) || [],
       });
     }
   }, [user, form]);
 
   // Gửi giá trị ban đầu của form
   useEffect(() => {
-    const initialValues = form.getValues();
-    onFormChange?.(initialValues);
-  }, [user]);
+    if (user) {
+      const initialValues = form.getValues();
+      onFormChange?.(initialValues);
+    }
+  }, [user, form]);
 
   // Theo dõi sự thay đổi của form
   useEffect(() => {
     const subscription = form.watch((value) => {
-      onFormChange?.(value as z.infer<typeof formSchema>);
+      onFormChange?.(value as z.infer<ReturnType<typeof formSchema>>);
     });
     return () => subscription.unsubscribe();
   }, [form.watch, onFormChange]);
@@ -105,11 +102,11 @@ export function UserFormInput({ user, onFormChange, isView = false }: UserFormPr
           name="username"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên đăng nhập</FormLabel>
+              <FormLabel>{t('username')}</FormLabel>
               <FormControl>
-                <Input className='input-focus' placeholder="Nhập tên đăng nhập" {...field} disabled={isView || !!user} />
+                <Input className='input-focus' placeholder={t('usernamePlaceholder')} {...field} disabled={isView || !!user} />
               </FormControl>
-              <FormMessage className='text-red-500'/>
+              <FormMessage className='text-red-500' />
             </FormItem>
           )}
         />
@@ -119,44 +116,68 @@ export function UserFormInput({ user, onFormChange, isView = false }: UserFormPr
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                {user ? 'Mật khẩu mới (để trống nếu không muốn thay đổi)' : 'Mật khẩu'}
+                {user ? t('newPassword') : t('password')}
               </FormLabel>
               <FormControl>
-                <Input 
-                  className='input-focus' 
-                  type="password" 
-                  placeholder="Nhập mật khẩu" 
-                  {...field} 
+                <Input
+                  className='input-focus'
+                  type="password"
+                  placeholder={t('passwordPlaceholder')}
+                  {...field}
                   disabled={isView}
                 />
               </FormControl>
-              <FormMessage className='text-red-500'/>
+              <FormMessage className='text-red-500' />
             </FormItem>
           )}
         />
+        <div className='flex items-center space-x-2'>
+          <div className='flex-1'>
+            <FormField
+              control={form.control}
+              name="fullName"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('fullName')}</FormLabel>
+                  <FormControl>
+                    <Input className='input-focus' placeholder={t('fullNamePlaceholder')} {...field} disabled={isView} />
+                  </FormControl>
+                  <FormMessage className='text-red-500' />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className='flex-1'>
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>{t('email')}</FormLabel>
+                  <FormControl>
+                    <Input className='input-focus' type="email" placeholder={t('emailPlaceholder')} {...field} disabled={isView} />
+                  </FormControl>
+                  <FormMessage className='text-red-500' />
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
         <FormField
           control={form.control}
-          name="fullName"
+          name="isAdmin"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Họ tên</FormLabel>
+            <FormItem className="flex items-center space-x-2">
               <FormControl>
-                <Input className='input-focus' placeholder="Nhập họ tên" {...field} disabled={isView} />
+                <Checkbox
+                  className='h-4 w-4'
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isView}
+                />
               </FormControl>
-              <FormMessage className='text-red-500'/>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <FormControl>
-                <Input className='input-focus' type="email" placeholder="Nhập email" {...field} disabled={isView} />
-              </FormControl>
-              <FormMessage className='text-red-500'/>
+              <FormLabel>{t('adminPermission')}</FormLabel>
+              <FormMessage className='text-red-500' />
             </FormItem>
           )}
         />
@@ -165,34 +186,18 @@ export function UserFormInput({ user, onFormChange, isView = false }: UserFormPr
           name="roleIds"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Quyền</FormLabel>
+              <FormLabel>{t('roles')}</FormLabel>
               <AssignRoleList
                 roles={roles}
-                assignedRoleIds={field.value || []}
+                assignedRoleIds={field.value?.map(id => id.toString()) || []}
                 onChange={field.onChange}
                 isView={isView}
               />
-              <FormMessage className='text-red-500'/>
+              <FormMessage className='text-red-500' />
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="isAdmin"
-          render={({ field }) => (
-            <FormItem className="flex items-center space-x-2">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isView}
-                />
-              </FormControl>
-              <FormLabel>Quyền quản trị viên</FormLabel>
-              <FormMessage className='text-red-500'/>
-            </FormItem>
-          )}
-        />
+
       </form>
     </Form>
   );

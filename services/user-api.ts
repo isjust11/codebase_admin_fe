@@ -43,7 +43,7 @@ export const userApi = {
   }
 },
 
-  getById: async (id: number): Promise<User> => {
+  getById: async (id: string): Promise<User> => {
     const response = await axiosApi.get(`/users/${id}`);
     return response.data;
   },
@@ -53,21 +53,21 @@ export const userApi = {
     return response.data;
   },
 
-  update: async (id: number, data: UpdateUserDto): Promise<User> => {
+  update: async (id: string, data: UpdateUserDto): Promise<User> => {
     const response = await axiosApi.put(`/users/${id}`, data);
     return response.data;
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (id: string): Promise<void> => {
     await axiosApi.delete(`/users/${id}`);
   },
 
-  block: async (id: number): Promise<User> => {
+  block: async (id: string): Promise<User> => {
     const response = await axiosApi.put(`/users/${id}/block`);
     return response.data;
   },
 
-  unblock: async (id: number): Promise<User> => {
+  unblock: async (id: string): Promise<User> => {
     const response = await axiosApi.put(`/users/${id}/unblock`);
     return response.data;
   },

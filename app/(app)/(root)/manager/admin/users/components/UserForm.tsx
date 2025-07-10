@@ -20,6 +20,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
   const [user, setUser] = useState<User>();
   const [formValues, setFormValues] = useState<any>(null);
+  const [isLoadingUser, setIsLoadingUser] = useState(false);
   const id = params.id as string;
 
   const title = isView ? 'Chi tiết người dùng' : (id ? 'Cập nhật người dùng' : 'Thêm người dùng');
@@ -32,12 +33,15 @@ const UserForm = ({ isView = false }: UserFormProps) => {
   }, [id]);
 
   const loadUser = async (id: string) => {
+    setIsLoadingUser(true);
     try {
-      const userData = await userApi.getById(Number(id));
+      const userData = await userApi.getById(id);
       setUser(userData);
     } catch (_error) {
       toast.error('Không thể tải thông tin người dùng');
       router.push('/manager/admin/users');
+    } finally {
+      setIsLoadingUser(false);
     }
   };
 
@@ -54,7 +58,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
       };
 
       if (isEditing) {
-        await userApi.update(Number(id), submitData);
+        await userApi.update(id, submitData);
         toast.success('Người dùng đã được cập nhật thành công');
       } else {
         await userApi.create(submitData);
@@ -108,12 +112,19 @@ const UserForm = ({ isView = false }: UserFormProps) => {
           <div className="flex flex-col space-y-4">
             <div className="w-full">
               <div className="space-y-2">
-                <UserFormInput 
-                  user={user} 
-                  onCancel={() => {}} 
-                  onFormChange={(values) => setFormValues(values)}
-                  isView={isView}
-                />
+                {isLoadingUser ? (
+                  <div className="flex items-center justify-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                    <span className="ml-2">Đang tải thông tin người dùng...</span>
+                  </div>
+                ) : (
+                  <UserFormInput 
+                    user={user} 
+                    onCancel={() => {}} 
+                    onFormChange={(values) => setFormValues(values)}
+                    isView={isView}
+                  />
+                )}
               </div>
             </div>
           </div>

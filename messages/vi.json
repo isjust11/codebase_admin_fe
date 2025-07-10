@@ -31,7 +31,7 @@
       "loginSuccess": "Đăng nhập thành công",
       "emailSent": "Email đã được gửi thành công",
       "emailError": "Lỗi khi gửi email",
-      "requiredUserOrEmail":"Yêu cầu nhập tên tài khoản hoặc email"
+      "requiredUserOrEmail": "Yêu cầu nhập tên tài khoản hoặc email"
     }
   },
   "RegisterPage": {
@@ -144,7 +144,7 @@
     }
   },
   "RolesPage": {
-    "description":  "Mô tả",
+    "description": "Mô tả",
     "addRole": "Thêm vai trò",
     "editRole": "Chỉnh sửa vai trò",
     "deleteRole": "Xóa vai trò",
@@ -198,8 +198,8 @@
     "selectAction": "Chọn hành động",
     "saving": "Đang lưu..."
   },
-   "UsersPage": {
-    "avatar":  "Ảnh đại diện",
+  "UsersPage": {
+    "avatar": "Ảnh đại diện",
     "userList": "Danh sách người dùng",
     "username": "Tên đăng nhập",
     "fullName": "Họ tên",
@@ -321,5 +321,24 @@
     "enterPermissionName": "Nhập tên quyền",
     "enterDescription": "Nhập mô tả",
     "refresh": "Làm mới"
+  },
+  "UserForm": {
+    "username": "Tên đăng nhập",
+    "usernamePlaceholder": "Nhập tên đăng nhập",
+    "usernameRequired": "Tên đăng nhập không được để trống",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "passwordRequired": "Mật khẩu không được để trống",
+    "newPassword": "Mật khẩu mới (để trống nếu không muốn thay đổi)",
+    "fullName": "Họ tên",
+    "fullNamePlaceholder": "Nhập họ tên",
+    "email": "Email",
+    "emailPlaceholder": "Nhập email",
+    "emailInvalid": "Email không hợp lệ",
+    "adminPermission": "Quyền quản trị viên",
+    "roles": "Quyền",
+    "rolesUnassigned": "Quyền chưa gán",
+    "rolesAssigned": "Quyền đã gán",
+    "noRoles": "Không có quyền"
   }
 }
