@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -21,9 +21,11 @@ import { Feature } from '@/types/feature';
 import { Role } from '@/types/role';
 import Switch from '@/components/form/switch/Switch';
 import { useTranslations } from 'next-intl';
-const formSchema = z.object({
-  name: z.string().min(1, 'Tên vai trò không được để trống'),
-  code: z.string().min(1, 'Mã vai trò không được để trống'),
+
+// Tạo schema validation với đa ngôn ngữ
+const createFormSchema = (t: any) => z.object({
+  name: z.string().min(6, t('validation.nameMinLength')),
+  code: z.string().min(6, t('validation.codeMinLength')),
   isActive: z.boolean(),
   description: z.string().optional(),
   features: z.array(z.string()).optional(),
@@ -32,14 +34,16 @@ const formSchema = z.object({
 type RoleFormProps = {
   role?: Role | null;
   onCancel: () => void;
-  onFormChange?: (values: z.infer<typeof formSchema>) => void;
+  onFormChange?: (values: any) => void;
   isView?: boolean;
 };
 
-export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormProps) {
+ export const RoleFormInput = forwardRef<{ validate: () => boolean }, RoleFormProps>(({ role, onFormChange, isView = false }, ref) => {
   const t = useTranslations('RolesPage');
-  const tUtils = useTranslations('Utils');
   const [features, setFeatures] = useState<Feature[]>([]);
+
+  // Tạo schema validation với đa ngôn ngữ
+  const formSchema = createFormSchema(t);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,11 +77,11 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
 
   // Theo dõi sự thay đổi của form
   useEffect(() => {
-    const subscription = form.watch((value) => {
+    const subscription = form.watch((value: any) => {
       onFormChange?.(value as z.infer<typeof formSchema>);
     });
     return () => subscription.unsubscribe();
-  }, [form.watch, onFormChange]);
+  }, [form.watch, onFormChange, formSchema]);
 
   useEffect(() => {
     const fetchNavigators = async () => {
@@ -85,12 +89,19 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
         const data = await featureService.getFeatures();
         setFeatures(data.data);
       } catch (error: any) {
-        toast.error('Lỗi khi tải danh sách chức năng: ' + error.message);
+        toast.error(t('errorNotify') + error.message);
       }
     };
 
     fetchNavigators();
   }, []);
+
+  useImperativeHandle(ref, () => ({
+    validate: () => {
+      form.trigger();
+      return form.formState.isValid;
+    }
+  }));
 
   return (
     <Form {...form}>
@@ -98,11 +109,21 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
         <FormField
           control={form.control}
           name="name"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel>{t('name')}</FormLabel>
               <FormControl>
-                <Input className='input-focus' placeholder={t('namePlaceholder')} {...field} disabled={isView} />
+                <Input 
+                  placeholder={t('namePlaceholder')} 
+                  {...field} 
+                  disabled={isView}
+                  className={fieldState.invalid ? 'input-error' : ''}
+                  onBlur={() => form.trigger('name')}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    form.trigger('name');
+                  }}
+                />
               </FormControl>
               <FormMessage className='text-red-500'/>
             </FormItem>
@@ -111,11 +132,21 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
         <FormField
           control={form.control}
           name="code"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel>{t('code')}</FormLabel>
               <FormControl>
-                <Input className='input-focus' disabled={role?.id != null || isView || role?.code == 'ADMIN'} placeholder={t('codePlaceholder')} {...field} />
+                <Input 
+                  disabled={role?.id != null || isView || role?.code == 'ADMIN'} 
+                  placeholder={t('codePlaceholder')} 
+                  {...field} 
+                  className={fieldState.invalid ? 'input-error' : ''}
+                  onBlur={() => form.trigger('code')}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    form.trigger('code');
+                  }}
+                />
               </FormControl>
               <FormMessage className='text-red-500'/>
             </FormItem>
@@ -138,14 +169,20 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
         <FormField
           control={form.control}
           name="description"
-          render={({ field }) => (
+          render={({ field, fieldState }) => (
             <FormItem>
               <FormLabel>{t('description')}</FormLabel>
               <FormControl>
-                <Textarea className='input-focus'
+                <Textarea 
+                  className={`input-focus ${fieldState.invalid ? 'input-error' : ''}`}
                   placeholder={t('descriptionPlaceholder')}
                   {...field}
                   disabled={isView}
+                  onBlur={() => form.trigger('description')}
+                  onChange={(e) => {
+                    field.onChange(e);
+                    form.trigger('description');
+                  }}
                 />
               </FormControl>
               <FormMessage className='text-red-500'/>
@@ -155,4 +192,6 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
       </form>
     </Form>
   );
-}
+});
+
+RoleFormInput.displayName = 'RoleFormInput';

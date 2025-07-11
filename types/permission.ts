@@ -41,7 +41,7 @@ export interface CreateRoleDto {
 
 export interface UpdateRoleDto {
   name?: string;
-  code: string;
+  code?: string;
   description?: string;
   navagatorIds?: string[];
   isActive?: boolean;

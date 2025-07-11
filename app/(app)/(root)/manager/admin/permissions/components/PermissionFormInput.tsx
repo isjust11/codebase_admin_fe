@@ -222,11 +222,6 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
     }
   }));
 
-  const formChange = (val: string) => {
-    form.setValue('name', val);
-    form.trigger();
-  };
-
   return (
     <Form {...form}>
       <form className="space-y-6">

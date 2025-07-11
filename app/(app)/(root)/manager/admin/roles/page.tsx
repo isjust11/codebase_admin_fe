@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash, Shield } from 'lucide-react';
+import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash, Shield, ArrowLeftRight } from 'lucide-react';
 import { getRoles, deleteRole, createRole, updateRole, findbyCode } from '@/services/auth-api';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
@@ -21,11 +21,12 @@ import { useTranslations } from 'next-intl';
 import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import RolePermissionManager from './components/RolePermissionManager';
 import { useAuth } from '@/contexts/AuthContext';
+import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 
 export default function RolesPage() {
   const t = useTranslations('RolesPage');
   const tUtils = useTranslations('Utils');
-  const {hasResourcePermission, hasPermission} = useAuth();
+  const { hasResourcePermission, hasPermission } = useAuth();
   const hasPermissionToManageRoles = hasResourcePermission('role');
   const router = useRouter()
   const [roles, setRoles] = useState<Role[]>([]);
@@ -35,6 +36,9 @@ export default function RolesPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogContent, setDialogContent] = useState('');
+
 
   useEffect(() => {
     if (!hasPermissionToManageRoles) {
@@ -58,14 +62,9 @@ export default function RolesPage() {
 
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t('confirmDelete'))) return;
-    try {
-      await deleteRole(id);
-      toast.success(t('deleteSuccess'));
-      fetchRoles();
-    } catch (error: any) {
-      toast.error(t('deleteError') + error.message);
-    }
+    setSelectedRole(roles.find(role => role.id === id) || null);
+    setDialogContent(t('confirmDelete', { name: selectedRole?.name || '' }));
+    setOpenDialog(true);
   };
 
   const handlePaginationChange = (newPageIndex: number, newPageSize: number) => {
@@ -79,6 +78,29 @@ export default function RolesPage() {
 
   const handleSizeChange = (size: number) => {
     setPageSize(size);
+  }
+
+  const handleChangeStatus = async (role: Role) => {
+    try {
+      await updateRole(role.id, { isActive: !role.isActive });
+      toast.success(t('updateSuccess'));
+      fetchRoles();
+    } catch (error: any) {
+      toast.error(t('deleteError') + error.message);
+    }
+  }
+
+  const confirmDelete = async () => {
+    if (!selectedRole) return;
+    try {
+      await deleteRole(selectedRole.id);
+      toast.success(t('deleteSuccess'));
+      setOpenDialog(false);
+      fetchRoles();
+    } catch (error: any) {
+      toast.error(t('deleteError') + error.message);
+      setOpenDialog(false);
+    }
   }
 
   const columns: ColumnDef<Role>[] = [
@@ -161,33 +183,41 @@ export default function RolesPage() {
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
+              <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                 {hasPermission('ROLE_READ') && (
-                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                  onClick={() => router.push(`/manager/admin/roles/${role.id}`)}>
-                  <BadgeInfo className="mr-2 h-4 w-4" />
-                  {t('viewDetail')}
-                </DropdownMenuItem>
+                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
+                    onClick={() => router.push(`/manager/admin/roles/${role.id}`)}>
+                    <BadgeInfo className="mr-2 h-4 w-4" />
+                    {t('viewDetail')}
+                  </DropdownMenuItem>
                 )}
                 {hasPermission('ROLE_ASSIGN_PERMISSION') && (
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-slate-500 dark:text-slate-400"
                     onClick={() => router.push(`/manager/admin/roles/rolepermission/${role.id}`)}>
-                  <Shield className="mr-2 h-4 w-4 text-slate-500 dark:text-slate-500" />
-                  {t('managePermissions')}
-                </DropdownMenuItem>
+                    <Shield className="mr-2 h-4 w-4 text-slate-500 dark:text-slate-500" />
+                    {t('managePermissions')}
+                  </DropdownMenuItem>
                 )}
-                {hasPermission('ROLE_UPDATE') && (
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-blue-500 dark:text-blue-400'
-                  onClick={() => router.push(`/manager/admin/roles/update/${role.id}`)}
+                {hasPermission('ROLE_UPDATE') && <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
+                  onClick={() => {
+                    handleChangeStatus(role)
+                  }}
                 >
-                  <Pencil className="mr-2 h-4 w-4 text-blue-500 dark:text-blue-400" />
-                  {t('edit')}
-                </DropdownMenuItem>
+                  <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
+                  {role.isActive ? t('inactive') : t('active')}
+                </DropdownMenuItem>}
+                {hasPermission('ROLE_UPDATE') && (
+                  <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-blue-500 dark:text-blue-400'
+                    onClick={() => router.push(`/manager/admin/roles/update/${role.id}`)}
+                  >
+                    <Pencil className="mr-2 h-4 w-4 text-blue-500 dark:text-blue-400" />
+                    {t('edit')}
+                  </DropdownMenuItem>
                 )}
                 {hasPermission('ROLE_DELETE') && (
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 dark:text-red-400" onClick={() => handleDelete(role.id)}>
-                  <Trash className="mr-2 h-4 w-4 text-red-600 dark:text-red-400" />
-                  {t('delete')}
+                  <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 dark:text-red-400" onClick={() => handleDelete(role.id)}>
+                    <Trash className="mr-2 h-4 w-4 text-red-600 dark:text-red-400" />
+                    {t('delete')}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -247,6 +277,16 @@ export default function RolesPage() {
               </h4>
             )}
           </Modal>
+          <AlertDialogUtils
+            type="warning"
+            title={tUtils('notify')}
+            content={dialogContent}
+            confirmText={tUtils('confirm')}
+            cancelText={tUtils('cancel')}
+            isOpen={openDialog}
+            onConfirm={() => confirmDelete()}
+            onCancel={() => { setOpenDialog(false) }}
+          />
         </ComponentCard>
       </div>
     </AsyncWrapper>

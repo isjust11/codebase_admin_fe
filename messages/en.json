@@ -25,7 +25,8 @@
     "noAssignedFeature": "No assigned feature",
     "noFeatureAssigned": "No feature assigned",
     "enterDescription": "Enter description (maximum 2500 characters)",
-    "noData": "No data"
+    "noData": "No data",
+    "notify": "Notify"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -332,7 +333,14 @@
     "unblock": "Unblock",
     "assign": "Assign",
     "upload": "Upload",
-    "download": "Download"
+    "download": "Download",
+    "errorNotify": "Error loading role list: ",
+    "validation": {
+      "nameRequired": "Role name is required",
+      "nameMinLength": "Role name must be at least 6 characters",
+      "codeRequired": "Role code is required",
+      "codeMinLength": "Role code must be at least 6 characters"
+    }
   },
   "FeaturePage": {
     "featureList": "Feature List",

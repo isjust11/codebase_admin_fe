@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { createTable, updateTable } from '@/services/manager-api';
@@ -28,7 +28,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
   const [formValues, setFormValues] = useState<any>(null);
   const [assignFeatures, setAssignFeatures] = useState<string[]>([]);
   const id = params.id as string;
-
+  const formRef = useRef<{ validate: () => boolean }>(null);
   const title = isView ? t('viewDetail') : (id ? t('updateRole') : t('addRole'));
   
   useEffect(() => {
@@ -50,7 +50,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
   };
 
   const handleSubmit = async () => {
-    if (!formValues) {
+    if (!formRef.current?.validate()) {
       toast.error(t('pleaseFillAllInformation'));
       return;
     }
@@ -131,6 +131,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
                   role={role} 
                   onCancel={() => {}} 
                   onFormChange={(values) => setFormValues(values)}
+                  ref={formRef}
                   isView={isView}
                 />
               </div>
