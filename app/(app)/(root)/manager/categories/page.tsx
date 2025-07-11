@@ -23,8 +23,11 @@ import Badge from '@/components/ui/badge/Badge';
 import { Icon } from '@/components/ui/icon';
 import { IconType } from '@/enums/icon-type.enum';
 import { useAsyncEffect } from '@/hooks/useAsyncEffect';
+import { useTranslations } from 'next-intl';
 
 export default function CategoriesManagement() {
+  const t = useTranslations("CategoriesPage");
+  const tUtils = useTranslations("Utils");
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryTypes, setCategoryTypes] = useState<CategoryType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -69,7 +72,7 @@ export default function CategoriesManagement() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tên danh mục
+            {t('name')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -77,11 +80,11 @@ export default function CategoriesManagement() {
     },
     {
       accessorKey: "description",
-      header: "Mô tả",
+      header: t('description'),
     },
     {
       accessorKey: "type",
-      header: "Loại danh mục",
+      header: t('type'),
       cell: ({ row }) => {
         const type = row.getValue("type") as CategoryType
         if (!type) return null;
@@ -90,19 +93,19 @@ export default function CategoriesManagement() {
     },
     {
       accessorKey: "isActive",
-      header: "Trạng thái",
+      header: t('status'),
       cell: ({ row }) => {
         const status = row.getValue("isActive") as boolean
         return (
           <Badge variant="light" color={status === true ? 'success' : 'error'} >
-            {status == true ? 'Hoạt động' : 'Ngừng hoạt động'}
+            {status == true ? t('active') : t('inactive')}
           </Badge>
         )
       },
     },
     {
       accessorKey: "icon",
-      header: "Icon",
+      header: t('icon'),
       cell: ({ row }) => {
         const iconUnicode = row.getValue("icon") as string;
         const iconType = row.original.iconType as IconType;
@@ -125,18 +128,18 @@ export default function CategoriesManagement() {
 
     {
       id: "actions",
-      header: 'Thao tác',
+      header: t('actions'),
       cell: ({ row }) => {
         const category = row.original as Category;
         const handleDelete = async (id: string) => {
           try {
             await deleteCategory(id);
-            toast.success('Danh mục đã được xóa thành công');
+            toast.success(t('messages.deleteSuccess'));
             // Refresh data
             await fetchData();
             setSelectedCategory(null);
           } catch (_error) {
-            toast.error('Có lỗi xảy ra khi xóa danh mục');
+            toast.error(t('messages.deleteError'));
           }
         }
         return (
@@ -144,20 +147,21 @@ export default function CategoriesManagement() {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Mở menu</span>
+                  <span className="sr-only">{t('openMenu')}</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-blue-400 hover:text-blue-500'
                   onClick={() => {
                     setSelectedCategory(category);
                     openModal();
                   }}
                 >
-                  <Pencil className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  <Pencil className="mr-2 h-4 w-4 text-blue-400 hover:text-blue-500" />
+                  {t('edit')}
                 </DropdownMenuItem>
+
                 <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                   onClick={() => {
                     if (category.id) {
@@ -165,7 +169,7 @@ export default function CategoriesManagement() {
                     }
                   }}>
                   <Trash className="mr-2 h-4 w-4" />
-                  Xóa
+                  {t('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -188,7 +192,7 @@ export default function CategoriesManagement() {
       setPageCount(categoriesData.totalPages);
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Có lỗi xảy ra khi tải dữ liệu');
+      toast.error(t('messages.loadError'));
     } finally {
       setLoading(false);
     }
@@ -223,17 +227,17 @@ export default function CategoriesManagement() {
       console.log(values)
       if (selectedCategory) {
         await updateCategory(selectedCategory.id, values);
-        toast.success('Cập nhật danh mục thành công');
+        toast.success(t('messages.updateSuccess'));
       } else {
         await createCategory(values);
-        toast.success('Tạo danh mục thành công');
+        toast.success(t('messages.createSuccess'));
       }
       closeModal();
       // Refresh data
       await fetchData();
       setSelectedCategory(null);
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi lưu dữ liệu');
+      toast.error(t('messages.saveError'));
     } finally {
       setLoading(false);
     }
@@ -254,7 +258,7 @@ export default function CategoriesManagement() {
 
   const listAction: Action[] = [
     {
-      title: 'Thêm danh mục',
+      title: t('add'),
       icon: <Plus className="mr-2 h-4 w-4" />,
       onClick: () => {
         setSelectedCategory(null);
@@ -267,16 +271,16 @@ export default function CategoriesManagement() {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Danh sách danh mục" />
+      <PageBreadcrumb pageTitle={t('pageTitle')} />
       <div className="space-y-6">
-        <ComponentCard title="Danh sách danh mục" listAction={listAction}>
+        <ComponentCard title={t('title')} listAction={listAction}>
           <div className="mb-4">
             <Select value={selectedType?.id} onValueChange={(value) => handleChangeType(value)}>
               <SelectTrigger className="w-[200px]">
-                <SelectValue placeholder="Chọn loại danh mục" />
+                <SelectValue placeholder={t('selectType')} />
               </SelectTrigger>
               <SelectContent className="w-[200px] bg-white" >
-                <SelectItem value="all">Tất cả</SelectItem>
+                <SelectItem value="all">{t('all')}</SelectItem>
                 {categoryTypes.map((type) => (
                   <SelectItem key={type.id} value={type.id}>
                     <div className="flex flex-start items-center">
@@ -303,7 +307,7 @@ export default function CategoriesManagement() {
             className="max-w-[600px] p-5 lg:p-10"
           >
             <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
-              {selectedCategory ? 'Cập nhật danh mục' : 'Thêm danh mục mới'}
+              {selectedCategory ? t('update') : t('add')}
             </h4>
             <CategoryForm
               initialData={selectedCategory}

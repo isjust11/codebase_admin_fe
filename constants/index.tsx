@@ -7,6 +7,7 @@ export const AppConstants = {
   Username: 'username',
   Password: 'password',
   Feature: 'feature',
+  Permissions: 'permissions',
 }
 export const AppCategoryCode = {
   FeatureType: 'Menu chức năng',

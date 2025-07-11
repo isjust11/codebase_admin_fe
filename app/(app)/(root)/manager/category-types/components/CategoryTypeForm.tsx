@@ -23,6 +23,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { IconType } from "@/enums/icon-type.enum"
 import { Slider } from "@radix-ui/react-slider"
 import { Icon } from "@/components/ui/icon"
+import { useTranslations } from "next-intl";
 
 const formSchema = z.object({
   code: z.string().min(2, {
@@ -44,6 +45,8 @@ interface CategoryTypeFormProps {
 }
 
 export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTypeFormProps) {
+  const t = useTranslations("CategoryTypesPage");
+  const tUtils = useTranslations("Utils");
   const [iconSize, setIconSize] = useState(20);
   if (initialData && initialData?.icon !== null) {
     initialData.icon = unicodeToEmoji(initialData.icon ?? '');
@@ -72,11 +75,11 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
           name="code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Loại danh mục</FormLabel>
+              <FormLabel>{t('type')}</FormLabel>
               <Select value={field.value} onValueChange={field.onChange} defaultValue={field.value}>
                 <FormControl>
                   <SelectTrigger>
-                    <SelectValue placeholder="Chọn loại danh mục" />
+                    <SelectValue placeholder={t('selectType')} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
@@ -98,9 +101,9 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên loại</FormLabel>
+              <FormLabel>{t('name')}</FormLabel>
               <FormControl>
-                <Input className="input-focus" placeholder="Nhập tên loại" {...field} />
+                <Input className="input-focus" placeholder={t('enterName')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -111,9 +114,9 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mô tả</FormLabel>
+              <FormLabel>{t('description')}</FormLabel>
               <FormControl>
-                <Textarea className="input-focus" placeholder="Nhập mô tả" {...field} />
+                <Textarea className="input-focus" placeholder={t('enterDescription')} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -126,7 +129,7 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
             render={({ field }) => (
               <FormItem className="w-1/2">
                 <Switch
-                  label="Trạng thái"
+                  label={t('status')}
                   defaultChecked={field.value}
                   {...field}
                 />
@@ -147,7 +150,7 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
                           className="input-focus"
                           {...field}
                           value={unicodeToEmoji(field.value || "")}
-                          placeholder="Chọn icon"
+                          placeholder={t('selectIcon')}
                         />
                       </FormControl>
                       :
@@ -168,7 +171,7 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
                             }}
                           />
                           <div className="text-xs text-gray-500 mt-1">
-                            Kích thước: {iconSize}px
+                            {t('iconSize')}: {iconSize}px
                           </div>
                         </div>)}
                       </div>
@@ -191,10 +194,10 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
         </div>
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="outline" onClick={onCancel}>
-            Hủy
+              {tUtils('cancel')}
           </Button>
           <Button type="submit">
-            {initialData ? "Cập nhật" : "Tạo mới"}
+            {initialData ? tUtils('update') : tUtils('add')}
           </Button>
         </div>
       </form>

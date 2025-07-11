@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react';
 import { userApi, User } from '@/services/user-api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash, Lock, Unlock } from 'lucide-react';
+import { Pencil, ArrowDown, ArrowUp, BadgeInfo, Trash, Lock, Unlock, CircleSlash2 } from 'lucide-react';
 import { Checkbox } from '@radix-ui/react-checkbox';
-// import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { useRouter } from 'next/navigation';
 import { Action } from '@/types/actions';
@@ -17,10 +16,13 @@ import Badge from '@/components/ui/badge/Badge';
 import { MoreDotIcon } from '@/public/icons';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function UsersPage() {
   const t = useTranslations('UsersPage');
   const router = useRouter();
+  const { hasPermission, hasResourcePermission } = useAuth();
+  const hasPermissionToManageUsers = hasResourcePermission('user');
   const [users, setUsers] = useState<User[]>([]);
   const [pageCount, setPageCount] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
@@ -37,12 +39,17 @@ export default function UsersPage() {
     }
   };
 
+  useEffect(() => {
+    if (!hasPermissionToManageUsers) {
+      router.push('/');
+    }
+  }, [hasPermissionToManageUsers]);
 
   useEffect(() => {
     fetchUsers(pageIndex, pageSize, search);
   }, [pageIndex, pageSize, search]);
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: string) => {
     if (!confirm(t('confirmDelete'))) return;
 
     try {
@@ -54,7 +61,7 @@ export default function UsersPage() {
     }
   };
 
-  const handleBlock = async (id: number, isBlocked: boolean) => {
+  const handleBlock = async (id: string, isBlocked: boolean) => {
     try {
       if (isBlocked) {
         await userApi.unblock(id);
@@ -198,47 +205,61 @@ export default function UsersPage() {
         const user = row.original;
         return (
           <div className="p-2">
-            <DropdownMenu >
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">{t('openMenu')}</span>
-                  <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 " />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className='shadow-sm rounded-sm bg-white dark:bg-gray-800 dark:text-gray-200 dark:border-gray-700'>
-                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => router.push(`/manager/admin/users/${user.id}`)}>
-                  <BadgeInfo className="mr-2 h-4 w-4" />
-                  {t('viewDetail')}
-                </DropdownMenuItem>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700'
-                  onClick={() => router.push(`/manager/admin/users/update/${user.id}`)}
-                >
-                  <Pencil className="mr-2 h-4 w-4" />
-                  {t('edit')}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                  onClick={() => handleBlock(user.id, user.isBlocked)}
-                >
-                  {user.isBlocked ? (
-                    <>
-                      <Unlock className="mr-2 h-4 w-4" />
-                      {t('unblock')}
-                    </>
-                  ) : (
-                    <>
-                      <Lock className="mr-2 h-4 w-4" />
-                      {t('block')}
-                    </>
+            {hasPermissionToManageUsers ?
+              <DropdownMenu >
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="h-8 w-8 p-0">
+                    <span className="sr-only">{t('openMenu')}</span>
+                    <MoreDotIcon className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 " />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className='shadow-sm rounded-sm bg-white dark:bg-gray-600 dark:text-gray-200 dark:border-gray-700'>
+                  {hasPermission('USER_READ') && (
+                    <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
+                      onClick={() => router.push(`/manager/admin/users/${user.id}`)}>
+                      <BadgeInfo className="mr-2 h-4 w-4 text-gray-600" />
+                      {t('viewDetail')}
+                    </DropdownMenuItem>
                   )}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20"
-                  onClick={() => handleDelete(user.id)}>
-                  <Trash className="mr-2 h-4 w-4" />
-                  {t('delete')}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  {hasPermission('USER_UPDATE') && (
+                    <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-500 hover:text-blue-600'
+                      onClick={() => router.push(`/manager/admin/users/update/${user.id}`)}
+                    >
+                      <Pencil className="mr-2 h-4 w-4 text-blue-500 hover:text-blue-600" />
+                      {t('edit')}
+                    </DropdownMenuItem>
+                  )}
+                  {hasPermission('USER_BLOCK') && (
+                    <DropdownMenuItem className={`flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 ${user.isBlocked ? 'text-green-500 hover:text-green-600' : 'text-amber-500 hover:text-amber-600'}`}
+                      onClick={() => handleBlock(user.id, user.isBlocked)}
+                    >
+                      {user.isBlocked ? (
+                        <>
+                          <Unlock className="mr-2 h-4 w-4 text-green-500 hover:text-green-600" />
+                          {t('unblock')}
+                        </>
+                      ) : (
+                        <>
+                          <Lock className="mr-2 h-4 w-4 text-amber-500 hover:text-amber-600" />
+                          {t('block')}
+                        </>
+                      )}
+                    </DropdownMenuItem>
+                  )}
+                  {hasPermission('USER_DELETE') && (
+                    <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-red-50 dark:hover:bg-red-900/20"
+                      onClick={() => handleDelete(user.id)}>
+                      <Trash className="mr-2 h-4 w-4" />
+                      {t('delete')}
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+              :
+              <div className="text-sm text-gray-500 text-center">
+                <CircleSlash2 className="h-4 w-4" />
+              </div>
+            }
           </div>
         )
       },

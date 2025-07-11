@@ -165,6 +165,12 @@ export const isAuthenticated = async (): Promise<boolean> => {
   }
 };
 
+export const getPermissionsStorage = (): Permission[] | [] => {
+  const user = localStorage.getItem(AppConstants.User);
+  const userData = user ? JSON.parse(user) : [];
+  return userData ? userData.permissions : [];
+};
+
 // lấy thông tin người dùng đã đăng nhập
 export const getCurrentUser = (): User | null => {
   const user = localStorage.getItem(AppConstants.User);

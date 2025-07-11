@@ -8,6 +8,7 @@ import { ArrowRight, ChevronRight, X, ChevronDown, ChevronRight as ChevronRightI
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
+import { useTranslations } from 'next-intl';
 
 interface EnhancedAssignListProps {
     assignedItems?: string[];
@@ -54,6 +55,8 @@ export default function AssignHandleForm({
     onChange,
     isView = false
 }: EnhancedAssignListProps) {
+    const t = useTranslations('RolesPage');
+    const tUtils = useTranslations('Utils');
     const [features, setFeatures] = useState<Feature[]>([]);
     const [unassigned, setUnassigned] = useState<Feature[]>([]);
     const [assigned, setAssigned] = useState<Feature[]>([]);
@@ -285,19 +288,19 @@ export default function AssignHandleForm({
                 {/* Unassigned List */}
                 <div className="flex-1">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-semibold">Danh sách chức năng ({unassigned.length})</h2>
+                        <h2 className="text-lg font-semibold">{t('featureList')} ({unassigned.length})</h2>
                         {selectedUnassigned.length > 0 && (
                             <button
                                 onClick={assignSelected}
                                 className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
                             >
-                                Gán đã chọn ({selectedUnassigned.length})
+                                {tUtils('assignSelected')} ({selectedUnassigned.length})
                             </button>
                         )}
                     </div>
                     <input
                         type="text"
-                        placeholder="Tìm kiếm chức năng..."
+                        placeholder={t('searchFeature')}
                         className="w-full p-2 border rounded mb-4"
                         value={searchUnassigned}
                         onChange={handleSearchUnassigned}
@@ -312,10 +315,10 @@ export default function AssignHandleForm({
                                             feature={item}
                                             isAssigned={false}
                                         />
-                                    )) : <div className="text-center text-gray-500">Không có chức năng nào</div>}
+                                    )) : <div className="text-center text-gray-500">{tUtils('noFeatureAssigned')}</div>}
                                 </ul>
                             ) : (
-                                <div className="h-[300px] flex items-center justify-center text-center text-gray-500">Không có chức năng nào</div>
+                                <div className="h-[300px] flex items-center justify-center text-center text-gray-500">{tUtils('noFeatureAssigned')}</div>
                             )
                         }
 
@@ -325,19 +328,19 @@ export default function AssignHandleForm({
                 {/* Assigned List */}
                 <div className="flex-1">
                     <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-lg font-semibold">Chức năng đã gán ({assigned.length})</h2>
+                        <h2 className="text-lg font-semibold">{t('assignedFeature')} ({assigned.length})</h2>
                         {selectedAssigned.length > 0 && (
                             <button
                                 onClick={unassignSelected}
                                 className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
                             >
-                                Bỏ chọn ({selectedAssigned.length})
+                                {tUtils('unassignSelected')} ({selectedAssigned.length})
                             </button>
                         )}
                     </div>
                     <input
                         type="text"
-                        placeholder="Tìm kiếm chức năng đã gán..."
+                        placeholder={t('searchAssignedFeature')}
                         className="w-full p-2 border rounded mb-4"
                         value={searchAssigned}
                         onChange={handleSearchAssigned}
@@ -355,7 +358,7 @@ export default function AssignHandleForm({
                                     ))}
                                 </ul>
                             ) : (
-                                <div className="h-[300px] flex items-center justify-center text-center text-gray-500">Không có chức năng nào</div>
+                                <div className="h-[300px] flex items-center justify-center text-center text-gray-500">{tUtils('noAssignedFeature')}</div>
                             )
                         }
                     </ScrollArea>

@@ -15,8 +15,11 @@ import { Category } from '@/types/category';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { unicodeToEmoji, mergeImageUrl, base64decrypt } from '@/lib/utils';
 import { Table } from '@/types/table';
+import { useTranslations } from 'next-intl';
 
 const TableForm = () => {
+  const t = useTranslations("TablesPage");
+  const tUtils = useTranslations("Utils");
   const router = useRouter();
   const params = useParams();
   const [loading, setLoading] = useState(false);
@@ -61,7 +64,7 @@ const TableForm = () => {
     },
   });
 
-  const title = id ? 'Cập nhật bàn' : 'Thêm bàn mới';
+  const title = id ? t('update') : t('addNewTable');
   useEffect(() => {
     if (id) {
       setIsEditing(true);
@@ -103,7 +106,7 @@ const TableForm = () => {
       });
       console.log(formData)
     } catch (_error) {
-      toast.error('Không thể tải thông tin bàn');
+      toast.error(t('messages.loadError'));
       router.push('/manager/tables');
     }
   };
@@ -120,7 +123,7 @@ const TableForm = () => {
       setTableStatusCategory(tableStatusCategory);
       setTableAreaCategory(tableAreaCategory)
     } catch (_error) {
-      toast.error('Không thể load danh mục');
+      toast.error(t('messages.loadError'));
     }
   }
   const handleSubmit = async () => {
@@ -142,14 +145,14 @@ const TableForm = () => {
 
       if (isEditing) {
         await updateTable(id, submitData);
-        toast.success('Bàn đã được cập nhật thành công');
+        toast.success(t('messages.updateSuccess'));
       } else {
         await createTable(submitData);
-        toast.success('Bàn đã được thêm thành công');
+        toast.success(t('messages.createSuccess'));
       }
       router.push('/manager/tables');
     } catch (_error) {
-      toast.error(isEditing ? 'Có lỗi xảy ra khi cập nhật bàn' : 'Có lỗi xảy ra khi thêm bàn');
+      toast.error(isEditing ? t('messages.updateError') : t('messages.createError'));
     } finally {
       setLoading(false);
     }
@@ -199,7 +202,7 @@ const TableForm = () => {
   const changeDescription = (description: string) => {
     // Kiểm tra độ dài description
     if (description.length > 2500) {
-      toast.error('Mô tả không được quá 2500 ký tự');
+      toast.error(t('messages.descriptionLengthError'));
       return;
     }
 
@@ -215,14 +218,14 @@ const TableForm = () => {
       onClick: () => {
         router.back();
       },
-      title: "Hủy",
+      title: tUtils('cancel'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",
       variant: 'outline'
     },
     {
       icon: isEditing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />,
       onClick: () => handleSubmit(),
-      title: isEditing ? "Cập nhật" : "Thêm mới",
+      title: isEditing ? tUtils('update') : tUtils('add'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
       isLoading: loading
     },
@@ -230,8 +233,8 @@ const TableForm = () => {
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Thêm mới bàn" items={[
-        { title: 'Danh sách bàn', href: '/manager/tables' },
+      <PageBreadcrumb pageTitle={t('pageTitle')} items={[
+        { title: t('title'), href: '/manager/tables' },
         { title: '', href: '#' }
       ]} />
       <div className="space-y-2">
@@ -250,7 +253,7 @@ const TableForm = () => {
                       />
                       <button
                         type="button"
-                        title="Xóa hình ảnh"
+                        title={t('deleteImage')}
                         onClick={() => {
                           setSelectedFile(null);
                           setPreviewUrl(null);
@@ -297,15 +300,15 @@ const TableForm = () => {
 
                         {/* Text Content */}
                         <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                          {isDragActive ? "Thả file vào đây" : "Kéo & và thả file vào đây"}
+                          {isDragActive ? t('dropFileHere') : t('dragAndDropFileHere')}
                         </h4>
 
                         <span className=" text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-                          Kéo và thả file PNG, JPG, WebP, SVG vào đây
+                          {t('dragAndDropFile')}
                         </span>
 
                         <span className="font-medium underline text-theme-sm text-brand-500">
-                          Chọn ảnh
+                          {t('selectImage')}
                         </span>
                       </div>
                     </form>
@@ -319,11 +322,11 @@ const TableForm = () => {
               <form className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Tên bàn</Label>
+                    <Label htmlFor="name">{t('tableName')}</Label>
                     <Input
                       id="name"
                       name="name"
-                      placeholder='Nhập tên bàn'
+                      placeholder={t('enterTableName')}
                       type="text"
                       value={formData.name}
                       onChange={handleChange}
@@ -332,7 +335,7 @@ const TableForm = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="capacity">Sức chứa</Label>
+                    <Label htmlFor="capacity">{t('capacity')}</Label>
                     <Input
                       id="capacity"
                       name="capacity"
@@ -345,10 +348,10 @@ const TableForm = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="tableTypeId">Loại bàn</Label>
+                    <Label htmlFor="tableTypeId">{t('tableType')}</Label>
                     <Select value={selectedTableType?.id || formData.tableTypeId} onValueChange={(value) => handleSelectTableTypeChange(value)}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Chọn loại bàn" />
+                        <SelectValue placeholder={t('selectTableType')} />
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white" >
                         {tableTypeCategory?.length ? (tableTypeCategory?.map((type) => (
@@ -359,8 +362,8 @@ const TableForm = () => {
                             </div>
                           </SelectItem>
                         ))) : (
-                          <div className='h-14 flex justify-items-center'>
-                            Không có dữ liệu
+                          <div className='h-14 flex justify-items-center text-gray-500 items-center'>
+                            {tUtils('noData')}
                           </div>
                         )}
                       </SelectContent>
@@ -368,10 +371,10 @@ const TableForm = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="tableStatusId">Trạng thái bàn</Label>
+                    <Label htmlFor="tableStatusId">{t('tableStatus')}</Label>
                     <Select value={selectedTableStatus?.id || formData.tableStatusId} onValueChange={(value) => handleSelectTableStatusChange(value)}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Chọn trạng thái bàn" />
+                        <SelectValue placeholder={t('selectTableStatus')} />
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white" >
                         {tableStatusCategory?.length ? (tableStatusCategory?.map((type) => (
@@ -382,8 +385,8 @@ const TableForm = () => {
                             </div>
                           </SelectItem>
                         ))) : (
-                          <div className='h-14 flex justify-items-center'>
-                            Không có dữ liệu
+                          <div className='h-14 flex justify-items-center text-gray-500 items-center'>
+                            {tUtils('noData')}
                           </div>
                         )}
                       </SelectContent>
@@ -391,10 +394,10 @@ const TableForm = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="areaId">Khu vực</Label>
+                    <Label htmlFor="areaId">{t('tableArea')}</Label>
                     <Select value={selectedTableArea?.id || formData.areaId} onValueChange={(value) => handleSelectTableAreaChange(value)}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Chọn khu vực" />
+                        <SelectValue placeholder={t('selectTableArea')} />
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white" >
                         {tableAreaCategory?.length ? (tableAreaCategory?.map((type) => (
@@ -405,8 +408,8 @@ const TableForm = () => {
                             </div>
                           </SelectItem>
                         ))) : (
-                          <div className='h-14 flex justify-items-center'>
-                            Không có dữ liệu
+                          <div className='h-14 flex justify-items-center text-gray-500 items-center'>
+                            {tUtils('noData')}
                           </div>
                         )}
                       </SelectContent>
@@ -415,12 +418,12 @@ const TableForm = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Mô tả</Label>
+                  <Label htmlFor="description">{t('description')}</Label>
                   <div className="ring-1 ring-gray-100/5 rounded-md shadow-sm p-2">
                     <SimpleEditor
                       key={table?.id || 'new'}
                       initialContent={table?.description || ''}
-                      placeholder="Nhập mô tả bàn (tối đa 2500 ký tự)"
+                      placeholder={tUtils('enterDescription', { maxLength: 2500 })}
                       onContentChange={(content) => changeDescription(content)}
                     />
                   </div>

@@ -14,8 +14,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Badge from '@/components/ui/badge/Badge';
 import ComponentCard from '@/components/common/ComponentCard';
 import { Action } from '@/types/actions';
+import { useTranslations } from 'next-intl';
 
 export default function TableDetail() {
+    const t = useTranslations("TablesPage");
     const params = useParams();
     const router = useRouter();
     const [table, setTable] = useState<Table | null>(null);
@@ -27,7 +29,7 @@ export default function TableDetail() {
                 const response = await getTableById(id);
                 setTable(response);
             } catch (error) {
-                toast.error('Có lỗi xảy ra khi tải thông tin bàn');
+                toast.error(t('messages.loadError'));
             } finally {
                 setLoading(false);
             }
@@ -41,40 +43,40 @@ export default function TableDetail() {
 
         try {
             await deleteTable(table.id);
-            toast.success('Bàn đã được xóa thành công');
+            toast.success(t('messages.deleteSuccess'));
             router.push('/manager/tables');
         } catch (error) {
-            toast.error('Có lỗi xảy ra khi xóa bàn');
+            toast.error(t('messages.deleteError'));
         }
     };
 
     if (loading) {
-        return <div>Đang tải...</div>;
+        return <div>{t('loading')}</div>;
     }
 
     if (!table) {
-        return <div className='max-w-full center'>Không tìm thấy thông tin bàn</div>;
+        return <div className='max-w-full center'>{t('messages.notFound')}</div>;
     }
 
     const lstAction: Action[] = [
         {
             icon: <Pencil className="mr-2 h-4 w-4" />,
             onClick: () => router.push(`/manager/tables/update/${table.id}`),
-            title: 'Chỉnh sửa',
+            title: t('edit'),
             variant: 'primary',
             className: 'bg-primary-400 hover:bg-primary-500 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'
         },
         {
             icon: <QrCodeIcon className="mr-2 h-4 w-4" />,
             onClick: () => router.push(`/manager/tables/qrcodes/${table.id}`),
-            title: 'QR Code',
+            title: t('qrCodes'),
             variant: 'outline',
             className: 'hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'
         },
         {
             icon: <Trash className="mr-2 h-4 w-4" />,
             onClick: () => handleDelete(),
-            title: 'Xóa',
+            title: t('delete'),
             variant: 'outline',
             className: 'bg-red-500 hover:bg-red-600 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'
         },
@@ -83,14 +85,14 @@ export default function TableDetail() {
     return (
         <div>
             <PageBreadcrumb
-                pageTitle="Chi tiết bàn"
+                pageTitle={t('pageTitle')}
                 items={[
-                    { title: 'Danh sách bàn', href: '/manager/tables' },
+                    { title: t('title'), href: '/manager/tables' },
                     { title: table.name, href: '#' }
                 ]}
             />
             <div className="space-y-6">
-                <ComponentCard title="Thông tin chi tiết" listAction={lstAction}>
+                <ComponentCard title={t('detail')} listAction={lstAction}>
                     <div className="flex gap-6">
                         <div className="w-1/3">
                             {table.imageUrl ? (
@@ -120,7 +122,7 @@ export default function TableDetail() {
                                             variant="light"
                                             color={table.tableStatus.name ? 'success' : 'error'}
                                         >
-                                            {table.tableStatus.name ? 'Đang bán' : 'Ngừng bán'}
+                                            {table.tableStatus.name ? t('selling') : t('notSelling')}
                                         </Badge> :
                                         <></>
                                 }
@@ -128,21 +130,21 @@ export default function TableDetail() {
 
                             <div className="space-y-2">
                                 <div className="flex mb-3 border-b border-gray-300 pb-3">
-                                    <span className="w-32">Tên bàn:</span>
+                                    <span className="w-32">{t('tableName')}:</span>
                                     <span className="text-lg">
                                         {table.name}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center  mb-3 border-b border-gray-300 pb-3">
-                                    <span className="w-32">Số lượng khách:</span>
+                                    <span className="w-32">{t('capacity')}:</span>
                                     <span className="text-lg">
                                         {table.capacity}
                                     </span>
                                 </div>
 
                                 <div className="flex items-center mb-3 border-b border-gray-200/100 pb-3">
-                                    <span className="w-32">Loại bàn:</span>
+                                    <span className="w-32">{t('tableType')}:</span>
                                     <div className="flex">
                                         {table.tableType?.icon && (
                                             <span className="mr-2">{unicodeToEmoji(table.tableType.icon)}</span>
@@ -152,7 +154,7 @@ export default function TableDetail() {
                                 </div>
 
                                 <div className="flex items-center mb-3 border-b border-gray-200/100 pb-3">
-                                    <span className="w-32">Loại bàn:</span>
+                                    <span className="w-32">{t('tableArea')}:</span>
                                     <div className="flex">
                                         {table.tableArea?.icon && (
                                             <span className="mr-2">{unicodeToEmoji(table.tableArea.icon)}</span>
@@ -161,9 +163,9 @@ export default function TableDetail() {
                                     </div>
                                 </div>
                                 <div className="flex mb-3 ">
-                                    <span className="w-32">Mô tả:</span>
+                                    <span className="w-32">{t('description')}:</span>
                                     <div className="flex px-3 py-2 border border-gray-200/100 rounded-md w-full min-h-20 bg-gray-50">
-                                        <span dangerouslySetInnerHTML={{ __html: table.description || 'Không có mô tả' }}></span>
+                                        <span dangerouslySetInnerHTML={{ __html: table.description || t('noDescription') }}></span>
                                     </div>
                                 </div>
                             </div>

@@ -14,6 +14,7 @@ import { SmilePlus } from "lucide-react";
 import { IconPickerModal } from "@/components/IconPickerModal";
 import { unicodeToEmoji } from "@/lib/utils";
 import { IconType } from "@/enums/icon-type.enum";
+import { useTranslations } from "next-intl";
 
 const formSchema = z.object({
     name: z.string().min(2, {
@@ -37,6 +38,8 @@ interface CategoryFormProps {
 }
 
 export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }: CategoryFormProps) {
+    const t = useTranslations("CategoriesPage");
+    const tUtils = useTranslations("Utils");
     if (initialData && initialData?.icon !== null) {
         initialData.icon = unicodeToEmoji(initialData.icon ?? '');
     }
@@ -74,9 +77,9 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                     name="name"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Tên danh mục</FormLabel>
+                            <FormLabel>{t('name')}</FormLabel>
                             <FormControl>
-                                <Input className="input-focus" placeholder="Nhập tên danh mục" {...field} />
+                                <Input className="input-focus" placeholder={tUtils('enterName')} {...field} />
                             </FormControl>
                             <FormMessage className="text-red-500"/>
                         </FormItem>
@@ -87,9 +90,9 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                     name="code"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Mã danh mục</FormLabel>
+                            <FormLabel>{t('code')}</FormLabel>
                             <FormControl>
-                                <Input className="input-focus" placeholder="Nhập mã danh mục" {...field} />
+                                <Input className="input-focus" placeholder={tUtils('enterCode')} {...field} />
                             </FormControl>
                             <FormMessage className="text-red-500"/>
                         </FormItem>
@@ -100,9 +103,9 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                     name="description"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Mô tả</FormLabel>
+                            <FormLabel>{t('description')}</FormLabel>
                             <FormControl>
-                                <Textarea className="input-focus" placeholder="Nhập mô tả" {...field} />
+                                <Textarea className="input-focus" placeholder={tUtils('enterDescription')} {...field} />
                             </FormControl>
                             <FormMessage className="text-red-500"/>
                         </FormItem>
@@ -114,11 +117,11 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                     name="categoryTypeId"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Loại danh mục</FormLabel>
+                            <FormLabel>{t('type')}</FormLabel>
                             <Select value={field.value} onValueChange={field.onChange} defaultValue={field.value}>
                                 <FormControl>
                                     <SelectTrigger>
-                                        <SelectValue placeholder="Chọn loại danh mục" />
+                                        <SelectValue placeholder={t('selectType')} />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
@@ -143,7 +146,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                         render={({ field }) => (
                             <FormItem className="w-1/2">
                                 <Switch
-                                    label="Trạng thái"
+                                    label={t('status')}
                                     defaultChecked={field.value}
                                     {...field}
                                 />
@@ -162,7 +165,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                                             className="input-focus"
                                             {...field}
                                             value={field.value || ""}
-                                            placeholder="Chọn icon"
+                                            placeholder={t('selectIcon')}
                                         />
                                     </FormControl>
                                     <Button
@@ -184,10 +187,10 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
 
                 <div className="flex justify-end space-x-4">
                     <Button variant="outline" onClick={onCancel}>
-                        Hủy
+                        {tUtils('cancel')}
                     </Button>
                     <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
-                        {initialData ? "Cập nhật" : "Thêm mới"}
+                        {initialData ? tUtils('update') : tUtils('add')}
                     </Button>
                 </div>
             </form>

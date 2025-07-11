@@ -1,31 +1,24 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { login, register, logout, isAuthenticated, getCurrentUser, getFeature } from '@/services/auth-api';
+import { login, register, logout, isAuthenticated, getCurrentUser, getFeature, getPermissionsStorage } from '@/services/auth-api';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types/user';
 import { Feature } from '@/types/feature';
-  // interface User {
-  //   id: number;
-  //   username: string;
-  //   fullName?: string;
-  //   isAdmin: boolean;
-  //   picture?: string;
-  //   isGoogleUser?: boolean;
-  //   googleId?: string;
-  //   email?: string;
-  //   roleId?: string;
-  // }
+import { Permission } from '@/types/permission';
 
 interface AuthContextType {
   user: User | null;
   feature: Feature[];
+  permissions: Permission[];
   loading: boolean;
   error: string | null;
   isLoggedIn: boolean;
   login: (username: string, password: string) => Promise<void>;
   register: (username: string, password: string, fullName?: string, email?: string) => Promise<void>;
   logout: () => void;
+  hasPermission: (permission: string) => boolean;
+  hasResourcePermission: (resource: string) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,6 +38,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [permissions, setPermissions] = useState<Permission[]>([]);
 
   const checkAuthAndRedirect = async () => {
     try {
@@ -52,9 +46,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isAuth) {
         const currentUser = getCurrentUser();
         const feature = getFeature();
+        const permissions = getPermissionsStorage();
         setUser(currentUser);
         setFeature(feature || []);
-        console.log(currentUser);
+        setPermissions(permissions || []);
         setIsLoggedIn(true);
       } else {
         setUser(null);
@@ -94,6 +89,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const hasResourcePermission = (resource: string) => {
+    return permissions.some(p => p.resource === resource);
+  };
+
+  const hasPermission = (permission: string) => {
+    return permissions.some(p => p.code === permission);
+  };
 
   const handleRegister = async (username: string, password: string, fullName?: string, email?: string) => {
     setLoading(true);
@@ -125,12 +127,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const value = {
     user,
     feature,
+    permissions,
     loading,
     error,
     isLoggedIn,
     login: handleLogin,
     register: handleRegister,
     logout: handleLogout,
+    hasPermission,
+    hasResourcePermission,
   };
 
   return (
