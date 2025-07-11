@@ -14,16 +14,19 @@ import { DataTable } from '@/components/DataTable';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
 import { Modal } from '@/components/ui/modal';
-// import { RoleForm } from './components/role-form';
 import { useModal } from '@/hooks/useModal';
 import Badge from '@/components/ui/badge/Badge';
 import { Role } from '@/types/role';
 import { useTranslations } from 'next-intl';
 import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import RolePermissionManager from './components/RolePermissionManager';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function RolesPage() {
   const t = useTranslations('RolesPage');
+  const tUtils = useTranslations('Utils');
+  const {hasResourcePermission, hasPermission} = useAuth();
+  const hasPermissionToManageRoles = hasResourcePermission('role');
   const router = useRouter()
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -32,6 +35,12 @@ export default function RolesPage() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    if (!hasPermissionToManageRoles) {
+      router.push('/');
+    }
+  }, [hasPermissionToManageRoles]);
 
   const fetchRoles = async () => {
     try {
@@ -66,6 +75,10 @@ export default function RolesPage() {
 
   const handleSearch = (searchValue: string) => {
     setSearch(searchValue);
+  }
+
+  const handleSizeChange = (size: number) => {
+    setPageSize(size);
   }
 
   const columns: ColumnDef<Role>[] = [
@@ -148,27 +161,35 @@ export default function RolesPage() {
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
+                <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
+                {hasPermission('ROLE_READ') && (
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                   onClick={() => router.push(`/manager/admin/roles/${role.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
                   {t('viewDetail')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                  onClick={() => router.push(`/manager/admin/roles/rolepermission/${role.id}`)}>
-                  <Shield className="mr-2 h-4 w-4" />
+                )}
+                {hasPermission('ROLE_ASSIGN_PERMISSION') && (
+                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-slate-500 dark:text-slate-400"
+                    onClick={() => router.push(`/manager/admin/roles/rolepermission/${role.id}`)}>
+                  <Shield className="mr-2 h-4 w-4 text-slate-500 dark:text-slate-500" />
                   {t('managePermissions')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                )}
+                {hasPermission('ROLE_UPDATE') && (
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-blue-500 dark:text-blue-400'
                   onClick={() => router.push(`/manager/admin/roles/update/${role.id}`)}
                 >
-                  <Pencil className="mr-2 h-4 w-4" />
+                  <Pencil className="mr-2 h-4 w-4 text-blue-500 dark:text-blue-400" />
                   {t('edit')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(role.id)}>
-                  <Trash className="mr-2 h-4 w-4" />
+                )}
+                {hasPermission('ROLE_DELETE') && (
+                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 dark:text-red-400" onClick={() => handleDelete(role.id)}>
+                  <Trash className="mr-2 h-4 w-4 text-red-600 dark:text-red-400" />
                   {t('delete')}
-                </DropdownMenuItem>
+                  </DropdownMenuItem>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -181,9 +202,11 @@ export default function RolesPage() {
     {
       icon: <Plus className="w-4 h-4 mr-2" />,
       onClick: () => {
-        // setSelectedRole(null)
-        // openModal();
-        router.push('/manager/admin/roles/create')
+        if (hasPermission('ROLE_CREATE')) {
+          router.push('/manager/admin/roles/create')
+        } else {
+          toast.error(t('noPermission'));
+        }
       },
       title: t('addRole'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
@@ -201,6 +224,7 @@ export default function RolesPage() {
             pageCount={pageCount}
             onPaginationChange={handlePaginationChange}
             onSearchChange={handleSearch}
+            onSizeChange={handleSizeChange}
             manualPagination={true}
           />
           <Modal

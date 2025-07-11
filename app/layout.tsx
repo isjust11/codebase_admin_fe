@@ -76,7 +76,7 @@ export default function LocaleLayout({children}: Props) {
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>
-        <title>Base - Admin web system</title>
+        <title>{SITE.title}</title>
       </head>
       <body 
         className={`${inter.variable} font-sans dark:bg-gray-900`}

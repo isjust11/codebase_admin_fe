@@ -26,6 +26,8 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuChe
 import { ChevronDown, Search } from "lucide-react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+import { useTranslations } from "next-intl"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -50,7 +52,7 @@ export function DataTable<TData, TValue>({
   allowPagination = true,
   onSizeChange,
 }: DataTableProps<TData, TValue>) {
-
+  const t = useTranslations('Utils');
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
@@ -58,7 +60,6 @@ export function DataTable<TData, TValue>({
   const [pageSize, setPageSize] = React.useState(10)
   const [pageIndex, setPageIndex] = React.useState(0)
   const [search, setSearch] = React.useState("")
-  const [isLoading, setIsLoading] = React.useState(false)
   const [expandedRows, setExpandedRows] = React.useState<Record<string, boolean>>({})
 
   const toggleRow = (rowId: string) => {
@@ -136,7 +137,7 @@ export function DataTable<TData, TValue>({
       <div className="flex items-center py-4">
         <div className="relative flex items-center w-full max-w-sm mr-4">
           <Input
-            placeholder="Tìm tên..."
+            placeholder={t('search')}
             value={(search) ?? ""}
             className="input-focus dark:bg-white/[0.05] dark:text-white/90 dark:border-white/[0.05] pr-10"
             autoFocus
@@ -152,7 +153,7 @@ export function DataTable<TData, TValue>({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90">
-              Hiển thị <ChevronDown />
+              {t('display')} <ChevronDown />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="shadow-sm rounded-sm bg-white dark:bg-gray-800 dark:text-white/90 dark:border-white/[0.05]">
@@ -246,7 +247,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Không có kết quả.
+                  {t('noResult')}
                 </TableCell>
               </TableRow>
             )}
@@ -254,31 +255,37 @@ export function DataTable<TData, TValue>({
         </Table>
       </div>
       {allowPagination && <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground dark:text-gray-400">
-          Đã chọn
-          <span className="text-bold"> {table.getFilteredSelectedRowModel().rows.length} /{" "}
-            {table.getFilteredRowModel().rows.length} </span>
-        </div>
+        {table.getFilteredSelectedRowModel().rows.length > 0 && (
+          <div className="flex-1 text-sm text-muted-foreground dark:text-gray-400">
+            {t('selected')}
+            <span className="text-bold"> {table.getFilteredSelectedRowModel().rows.length} /{" "}
+              {table.getFilteredRowModel().rows.length} </span>
+          </div>
+        )}
         {data.length > 0 ?
           <div className="flex items-center space-x-2">
             <div className="flex items-center space-x-2">
-              <p className="text-sm font-medium dark:text-gray-400">Số hàng trên trang</p>
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value))
+              <p className="text-sm font-medium dark:text-gray-400">{t('rowsPerPage')}</p>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => {
+                  setPageSize(Number(value))
                   table.setPageIndex(0)
-                  onSizeChange?.(Number(e.target.value))
+                  onSizeChange?.(Number(value))
                 }}
-                className="h-8 w-[70px] rounded-md border border-input bg-background px-2 py-1 text-sm dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90"
-                aria-label="Số hàng trên trang"
+                aria-label={t('rowsPerPage')}
               >
+                <SelectTrigger className="h-8 w-[70px] rounded-md bg-background px-2 py-1 text-sm dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90">
+                  <SelectValue placeholder={t('rowsPerPage')} />
+                </SelectTrigger>
+                <SelectContent className="max-w-20">
                 {[5, 10, 20, 30, 40, 50].map((size) => (
-                  <option key={size} value={size}>
+                  <SelectItem key={size} value={size.toString()} className="dark:text-white/90 bg-white dark:bg-white/[0.05] hover:bg-gray-200">
                     {size}
-                  </option>
+                  </SelectItem>
                 ))}
-              </select>
+                </SelectContent>
+              </Select>
             </div>
             <Button
               variant="outline"
@@ -287,7 +294,7 @@ export function DataTable<TData, TValue>({
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
-              Previous
+              {t('previous')}
             </Button>
             {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map((page) => (
               <Button
@@ -308,7 +315,7 @@ export function DataTable<TData, TValue>({
               onClick={() => table.nextPage()}
               disabled={!table.getCanNextPage()}
             >
-              Next
+              {t('next')}
             </Button>
           </div> :
           <></>

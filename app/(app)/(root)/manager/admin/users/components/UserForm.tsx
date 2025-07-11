@@ -8,6 +8,7 @@ import { Plus, Save, X } from 'lucide-react';
 import { User } from '@/services/user-api';
 import { userApi } from '@/services/user-api';
 import { UserFormInput } from './UserFormInput';
+import { useTranslations } from 'next-intl';
 
 interface UserFormProps {
   isView?: boolean;
@@ -22,8 +23,10 @@ const UserForm = ({ isView = false }: UserFormProps) => {
   const [formValues, setFormValues] = useState<any>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(false);
   const id = params.id as string;
+  const t = useTranslations('UsersPage');
+  const tUtils = useTranslations('Utils');
 
-  const title = isView ? 'Chi tiết người dùng' : (id ? 'Cập nhật người dùng' : 'Thêm người dùng');
+  const title = isView ? t('viewDetail') : (id ? t('edit') : t('add'));
   
   useEffect(() => {
     if (id) {
@@ -38,7 +41,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
       const userData = await userApi.getById(id);
       setUser(userData);
     } catch (_error) {
-      toast.error('Không thể tải thông tin người dùng');
+      toast.error(t('fetchError'));
       router.push('/manager/admin/users');
     } finally {
       setIsLoadingUser(false);
@@ -47,7 +50,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
 
   const handleSubmit = async () => {
     if (!formValues) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error(t('fillAllInfo'));
       return;
     }
 
@@ -59,14 +62,14 @@ const UserForm = ({ isView = false }: UserFormProps) => {
 
       if (isEditing) {
         await userApi.update(id, submitData);
-        toast.success('Người dùng đã được cập nhật thành công');
+        toast.success(t('updateSuccess'));
       } else {
         await userApi.create(submitData);
-        toast.success('Người dùng đã được thêm thành công');
+        toast.success(t('addSuccess'));
       }
       router.push('/manager/admin/users');
     } catch (_error) {
-      toast.error(isEditing ? 'Có lỗi xảy ra khi cập nhật người dùng' : 'Có lỗi xảy ra khi thêm người dùng');
+        toast.error(isEditing ? t('updateError') : t('addError'));
     } finally {
       setLoading(false);
     }
@@ -78,7 +81,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
       onClick: () => {
         router.back();
       },
-      title: "Quay lại",
+      title: tUtils('back'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",
       variant: 'outline'
     }
@@ -88,14 +91,14 @@ const UserForm = ({ isView = false }: UserFormProps) => {
       onClick: () => {
         router.back();
       },
-      title: "Hủy",
+      title: tUtils('cancel'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",
       variant: 'outline'
     },
     {
       icon: isEditing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />,
       onClick: () => handleSubmit(),
-      title: isEditing ? "Cập nhật" : "Thêm mới",
+      title: isEditing ? tUtils('update') : tUtils('add'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
       isLoading: loading
     },
@@ -104,7 +107,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
   return (
     <div>
       <PageBreadcrumb pageTitle={title} items={[
-        { title: 'Danh sách người dùng', href: '/manager/admin/users' },
+        { title: t('userList'), href: '/manager/admin/users' },
         { title: '', href: '#' }
       ]} />
       <div className="space-y-2">
@@ -115,7 +118,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
                 {isLoadingUser ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-                    <span className="ml-2">Đang tải thông tin người dùng...</span>
+                    <span className="ml-2">{t('loading')}</span>
                   </div>
                 ) : (
                   <UserFormInput 

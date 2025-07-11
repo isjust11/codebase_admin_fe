@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Badge from '@/components/ui/badge/Badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -40,6 +39,7 @@ interface PermissionGroup {
 
 export default function RolePermissionsPage() {
   const t = useTranslations('RolesPage');
+  const tUtils = useTranslations('Utils');
   const params = useParams();
   const router = useRouter();
   const roleId = params.id as string;
@@ -203,13 +203,13 @@ export default function RolePermissionsPage() {
     {
       icon: <ArrowLeft className="w-4 h-4 mr-1" />,
       onClick: () => router.back(),
-      title: t('back'),
-      className: "hover:bg-gray-600 dark:hover:bg-gray-800 rounded-md transition-colors bg-gray-500 dark:bg-gray-800 text-white",
+      title: tUtils('back'),
+      className: "hover:bg-gray-600 dark:hover:bg-gray-800 rounded-md transition-colors bg-gray-300 dark:bg-gray-800 text-white",
     },
     {
       icon: <Save className="w-4 h-4 mr-1" />,
       onClick: handleSave,
-      title:saving ? t('saving') : t('save'),
+      title:saving ? tUtils('saving') : tUtils('save'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
 

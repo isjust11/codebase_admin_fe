@@ -11,12 +11,15 @@ import { createRole, getRole, updateRole } from '@/services/auth-api';
 import { RoleFormInput } from './RoleFormInput';
 import AssignHandleForm from './AssignHandleForm';
 import RolePermissionSummary from './RolePermissionSummary';
+import { useTranslations } from 'next-intl';
 
 interface RoleFormProps {
   isView?: boolean;
 }
 
 const RoleForm = ({ isView = false }: RoleFormProps) => {
+  const t = useTranslations('RolesPage');
+  const tUtils = useTranslations('Utils');
   const router = useRouter();
   const params = useParams();
   const [loading, setLoading] = useState(false);
@@ -26,7 +29,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
   const [assignFeatures, setAssignFeatures] = useState<string[]>([]);
   const id = params.id as string;
 
-  const title = isView ? 'Chi tiết vai trò' : (id ? 'Cập nhật vai trò' : 'Thêm vai trò');
+  const title = isView ? t('viewDetail') : (id ? t('updateRole') : t('addRole'));
   
   useEffect(() => {
     if (id) {
@@ -41,14 +44,14 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
       setRole(roleData);
       setAssignFeatures(roleData.features?.map(item => item.id)??[]);
     } catch (_error) {
-      toast.error('Không thể tải thông tin vai trò');
+      toast.error(t('cannotLoadRoleInformation'));
       router.push('/manager/admin/roles');
     }
   };
 
   const handleSubmit = async () => {
     if (!formValues) {
-      toast.error('Vui lòng điền đầy đủ thông tin');
+      toast.error(t('pleaseFillAllInformation'));
       return;
     }
 
@@ -60,14 +63,14 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
 
       if (isEditing) {
         await updateRole(id, submitData);
-        toast.success('Vai trò đã được cập nhật thành công');
+        toast.success(t('updateSuccess'));
       } else {
         await createRole(submitData);
-        toast.success('Vai trò đã được thêm thành công');
+        toast.success(t('addSuccess'));
       }
       router.push('/manager/admin/roles');
     } catch (_error) {
-      toast.error(isEditing ? 'Có lỗi xảy ra khi cập nhật vai trò' : 'Có lỗi xảy ra khi thêm vai trò');
+      toast.error(isEditing ? t('updateError') : t('addError'));
     } finally {
       setLoading(false);
     }
@@ -89,7 +92,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
       onClick: () => {
         router.back();
       },
-      title: "Quay lại",
+      title: tUtils('back'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",
       variant: 'outline'
     }
@@ -99,14 +102,14 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
       onClick: () => {
         router.back();
       },
-      title: "Hủy",
+      title: tUtils('cancel'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",
       variant: 'outline'
     },
     {
       icon: isEditing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />,
       onClick: () => handleSubmit(),
-      title: isEditing ? "Cập nhật" : "Thêm mới",
+      title: isEditing ? tUtils('update') : tUtils('add'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
       isLoading: loading
     },
@@ -115,7 +118,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
   return (
     <div>
       <PageBreadcrumb pageTitle={title} items={[
-        { title: 'Danh sách vai trò', href: '/manager/roles' },
+        { title: t('roles'), href: '/manager/roles' },
         { title: '', href: '#' }
       ]} />
       <div className="space-y-2">
@@ -142,8 +145,8 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
               />
             </div>
 
-            {/* Phần permission summary - chỉ hiển thị khi xem chi tiết */}
-            {isView && role && (
+            {/* Phần permission summary */}
+            {role && (
               <div className="w-full">
                 <RolePermissionSummary
                   role={role}

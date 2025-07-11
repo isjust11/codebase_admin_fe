@@ -15,6 +15,7 @@ import {
 } from '@/services/auth-api';
 import { DataTable } from '@/components/DataTable';
 import type { ColumnDef } from '@tanstack/react-table';
+import { useTranslations } from 'next-intl';
 
 interface PermissionTemplate {
   name: string;
@@ -34,6 +35,7 @@ interface Action {
 }
 
 const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefObject<{ refresh: () => void }> }>((props, ref) => {
+  const t = useTranslations('PermissionsPage');
   const [resources, setResources] = useState<Resource>({});
   const [actions, setActions] = useState<Action>({});
   const [templates, setTemplates] = useState<{ [key: string]: PermissionTemplate }>({});
@@ -84,7 +86,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
 
     } catch (error) {
       console.error('Error fetching constants:', error);
-      toast.error('Lỗi khi tải dữ liệu');
+      toast.error(t('errorFetchingData'));
     } finally {
       setLoading(false);
     }
@@ -118,7 +120,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
 
   const handleCreatePermissions = async () => {
     if (!selectedResource || selectedActions.length === 0) {
-      toast.error('Vui lòng chọn resource và ít nhất một action');
+      toast.error(t('pleaseSelectResourceAndAction'));
       return;
     }
 
@@ -129,11 +131,11 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
         selectedActions: selectedActions,
       });
       
-      toast.success(`Đã tạo ${result.length} permission thành công!`);
+      toast.success(t('createPermissionSuccess', { count: result.length }));
       setSelectedActions([]);
     } catch (error: any) {
       console.error('Error creating permissions:', error);
-      toast.error('Có lỗi xảy ra khi tạo permission: ' + error.message);
+      toast.error(t('errorCreatingPermission', { message: error.message }));
     } finally {
       setLoading(false);
     }
@@ -141,42 +143,42 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
 
   const getResourceDisplayName = (resourceKey: string) => {
     const resourceNames: { [key: string]: string } = {
-      user: 'Người dùng',
-      role: 'Vai trò',
-      permission: 'Quyền',
-      feature: 'Tính năng',
-      article: 'Bài viết',
-      category: 'Danh mục',
-      order: 'Đơn hàng',
-      payment: 'Thanh toán',
-      reservation: 'Đặt bàn',
-      table: 'Bàn',
-      exam: 'Bài thi',
-      question: 'Câu hỏi',
-      media: 'Media',
-      notification: 'Thông báo',
-      history: 'Lịch sử',
-      food_item: 'Món ăn',
+      user: t('user'),
+      role: t('role'),
+      permission: t('permission'),
+      feature: t('feature'),
+      article: t('article'),
+      category: t('category'),
+      order: t('order'),
+      payment: t('payment'),
+      reservation: t('reservation'),
+      table: t('table'),
+      exam: t('exam'),
+      question: t('question'),
+      media: t('media'),
+      notification: t('notification'),
+      history: t('history'),
+      food_item: t('foodItem'),
     };
     return resourceNames[resourceKey] || resourceKey;
   };
 
   const getActionDisplayName = (actionKey: string) => {
     const actionNames: { [key: string]: string } = {
-      CREATE: 'Tạo mới',
-      READ: 'Xem',
-      UPDATE: 'Cập nhật',
-      DELETE: 'Xóa',
-      EXPORT: 'Xuất',
-      IMPORT: 'Nhập',
-      APPROVE: 'Phê duyệt',
-      REJECT: 'Từ chối',
-      PUBLISH: 'Xuất bản',
-      BLOCK: 'Khóa',
-      UNBLOCK: 'Mở khóa',
-      ASSIGN: 'Phân quyền',
-      UPLOAD: 'Tải lên',
-      DOWNLOAD: 'Tải xuống',
+      CREATE: t('create'),
+      READ: t('read'),
+      UPDATE: t('update'),
+      DELETE: t('delete'),
+      EXPORT: t('export'),
+      IMPORT: t('import'),
+      APPROVE: t('approve'),
+      REJECT: t('reject'),
+      PUBLISH: t('publish'),
+      BLOCK: t('block'),
+      UNBLOCK: t('unblock'),
+      ASSIGN: t('assign'),
+      UPLOAD: t('upload'),
+      DOWNLOAD: t('download'),
     };
     return actionNames[actionKey] || actionKey;
   };
@@ -214,29 +216,29 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
     },
     {
       accessorKey: 'action',
-      header: 'Action',
+      header: t('action'),
       cell: ({ row }) => getActionDisplayName(row.original.action),
     },
     {
       accessorKey: 'name',
-      header: 'Tên quyền',
+      header: t('permissionName'),
     },
     {
       accessorKey: 'code',
-      header: 'Mã quyền',
+      header: t('permissionCode'),
       cell: ({ row }) => (
         <Badge variant="secondary" className="text-xs">{row.original.code}</Badge>
       ),
     },
     {
       accessorKey: 'description',
-      header: 'Mô tả',
+      header: t('description'),
       cell: ({ row }) => row.original.name,
     },
   ];
 
   if (loading) {
-    return <div className="flex items-center justify-center p-8">Đang tải...</div>;
+    return <div className="flex items-center justify-center p-8">{t('loading')}</div>;
   }
 
   return (
@@ -244,7 +246,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
       <div className="mb-4">
         <Select value={selectedResource} onValueChange={handleResourceChange}>
           <SelectTrigger>
-            <SelectValue placeholder="Chọn resource..." />
+            <SelectValue placeholder={t('selectResource')} />
           </SelectTrigger>
           <SelectContent className='bg-white dark:bg-gray-800'>
             {Object.entries(resources).map(([key, value]) => (
@@ -267,7 +269,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
       {selectedActions.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle>Quyền sẽ được tạo</CardTitle>
+            <CardTitle>{t('permissionsToBeCreated')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
@@ -286,7 +288,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
                 disabled={loading}
                 className="w-full"
               >
-                {loading ? 'Đang tạo...' : `Tạo ${selectedActions.length} quyền`}
+                {loading ? t('creating') : t('create', { count: selectedActions.length })}
               </Button>
             </div>
           </CardContent>
@@ -295,12 +297,12 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
       {/* Resource Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Thông tin về Resources và Actions</CardTitle>
+          <CardTitle>{t('resourceAndActionInformation')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <h3 className="font-semibold mb-3">Resources có sẵn:</h3>
+              <h3 className="font-semibold mb-3">{t('availableResources')}:</h3>
               <div className="space-y-2">
                 {Object.entries(resources).map(([key, value]) => (
                   <div key={key} className="flex items-center gap-2">
@@ -311,7 +313,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
               </div>
             </div>
             <div>
-              <h3 className="font-semibold mb-3">Actions có sẵn:</h3>
+              <h3 className="font-semibold mb-3">{t('availableActions')}:</h3>
               <div className="space-y-2">
                 {Object.entries(actions).map(([key, value]) => (
                   <div key={key} className="flex items-center gap-2">

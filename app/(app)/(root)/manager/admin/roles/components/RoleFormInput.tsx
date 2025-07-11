@@ -20,6 +20,7 @@ import { featureService } from '@/services/feature-api';
 import { Feature } from '@/types/feature';
 import { Role } from '@/types/role';
 import Switch from '@/components/form/switch/Switch';
+import { useTranslations } from 'next-intl';
 const formSchema = z.object({
   name: z.string().min(1, 'Tên vai trò không được để trống'),
   code: z.string().min(1, 'Mã vai trò không được để trống'),
@@ -36,6 +37,8 @@ type RoleFormProps = {
 };
 
 export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormProps) {
+  const t = useTranslations('RolesPage');
+  const tUtils = useTranslations('Utils');
   const [features, setFeatures] = useState<Feature[]>([]);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -97,9 +100,9 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên vai trò</FormLabel>
+              <FormLabel>{t('name')}</FormLabel>
               <FormControl>
-                <Input className='input-focus' placeholder="Nhập tên vai trò" {...field} disabled={isView} />
+                <Input className='input-focus' placeholder={t('namePlaceholder')} {...field} disabled={isView} />
               </FormControl>
               <FormMessage className='text-red-500'/>
             </FormItem>
@@ -110,9 +113,9 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
           name="code"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mã vai trò</FormLabel>
+              <FormLabel>{t('code')}</FormLabel>
               <FormControl>
-                <Input className='input-focus' disabled={role?.id != null || isView || role?.code == 'ADMIN'} placeholder="Nhập mã vai trò" {...field} />
+                <Input className='input-focus' disabled={role?.id != null || isView || role?.code == 'ADMIN'} placeholder={t('codePlaceholder')} {...field} />
               </FormControl>
               <FormMessage className='text-red-500'/>
             </FormItem>
@@ -124,7 +127,7 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
           render={({ field }) => (
             <FormItem>
               <Switch
-                label="Trạng thái"
+                label={t('status')}
                 defaultChecked={field.value}
                 {...field}
                 disabled={isView || role?.code == 'ADMIN'}
@@ -137,10 +140,10 @@ export function RoleFormInput({ role, onFormChange, isView = false }: RoleFormPr
           name="description"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Mô tả</FormLabel>
+              <FormLabel>{t('description')}</FormLabel>
               <FormControl>
                 <Textarea className='input-focus'
-                  placeholder="Nhập mô tả cho vai trò này"
+                  placeholder={t('descriptionPlaceholder')}
                   {...field}
                   disabled={isView}
                 />

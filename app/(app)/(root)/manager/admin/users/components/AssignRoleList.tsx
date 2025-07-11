@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Role } from '@/types/role';
+import { ArrowLeftToLine, ArrowRightToLine, CircleSlash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface AssignRoleListProps {
   roles: Role[];
@@ -14,6 +16,7 @@ export default function AssignRoleList({
   onChange,
   isView = false,
 }: AssignRoleListProps) {
+  const t = useTranslations('UsersPage');
   const [selectedUnassigned, setSelectedUnassigned] = useState<string[]>([]);
   const [selectedAssigned, setSelectedAssigned] = useState<string[]>([]);
 
@@ -52,20 +55,11 @@ export default function AssignRoleList({
   return (
     <div className="flex gap-8">
       {/* Unassigned List */}
-      <div className="flex-1 ring-1 ring-gray-300 rounded-md p-2">
+      <div className="flex-12 ring-1 ring-gray-300 rounded-md p-2">
         <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2 p-2">
-          <h2 className="text-lg font-semibold">Roles chưa gán ({unassigned.length})</h2>
-          {selectedUnassigned.length > 0 && (
-            <button
-              onClick={handleAssignSelected}
-              className="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-              disabled={isView}
-            >
-              Gán đã chọn ({selectedUnassigned.length})
-            </button>
-          )}
+          <h2 className="text-lg font-semibold">{t('unassignedRoles')} <span className="text-red-500">({unassigned.length})</span></h2>
         </div>
-        <ul className="space-y-2 space-x-2">
+        <ul className="space-y-2">
           {unassigned.length > 0 ? (
             unassigned.map((role) => (
               <li key={role.id} className="p-3 border rounded flex items-center gap-3">
@@ -76,30 +70,46 @@ export default function AssignRoleList({
                   className="h-4 w-4"
                   disabled={isView}
                   key={role.id}
-                  title={`Chọn role ${role.name}`}
-                  aria-label={`Chọn role ${role.name}`}
+                  title={`${t('selectRole')} ${role.name}`}
+                  aria-label={`${t('selectRole')} ${role.name}`}
                 />
                 <span>{role.name}</span>
               </li>
             ))
           ) : (
-            <div className="text-gray-500 text-center py-8">Không có role nào</div>
+            <div className="text-gray-500 text-center py-8">{t('noRoles')}</div>
           )}
         </ul>
       </div>
+      <div className="flex-1">
+        <div className="flex justify-center items-center h-full">
+          <button className={`px-3 py-1 rounded-sm w-full text-white ${selectedUnassigned.length > 0 ? 'bg-blue-500 hover:bg-blue-600' :
+            selectedAssigned.length + selectedUnassigned.length == 0 ? 'bg-gray-500 hover:bg-gray-600' : 'bg-red-500 hover:bg-red-600'}`}
+            onClick={selectedUnassigned.length > 0 ? handleAssignSelected : selectedAssigned.length > 0 ? handleUnassignSelected : undefined}
+            disabled={isView || selectedUnassigned.length + selectedAssigned.length == 0}
+            title={selectedUnassigned.length > 0 ? `${t('assignRoles')} ${selectedUnassigned.length}` : selectedAssigned.length > 0 ? `${t('unassignRoles')} ${selectedAssigned.length}` : ''}
+            aria-label={selectedUnassigned.length > 0 ? `${t('assignRoles')} ${selectedUnassigned.length}` : selectedAssigned.length > 0 ? `${t('unassignRoles')} ${selectedAssigned.length}` : ''}
+          >
+            {selectedUnassigned.length > 0 ? (
+              <>
+                <ArrowRightToLine className="h-6 w-6 " />
+              </>
+            ) : selectedAssigned.length + selectedUnassigned.length == 0 ? (
+              <>
+                <CircleSlash2 className="h-6 w-6 " />
+              </>
+            ) : (
+              <>
+                <ArrowLeftToLine className="h-6 w-6" />
+              </>
+            )}
+          </button>
+        </div>
+      </div>
       {/* Assigned List */}
-      <div className="flex-1 ring-1 ring-gray-300 rounded-md p-2">
+      <div className="flex-12 ring-1 ring-gray-300 rounded-md p-2">
         <div className="flex justify-between items-center mb-4 border-b border-gray-300 pb-2 p-2">
-          <h2 className="text-lg font-semibold">Roles đã gán ({assigned.length})</h2>
-          {selectedAssigned.length > 0 && (
-            <button
-              onClick={handleUnassignSelected}
-              className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              disabled={isView}
-            >
-              Bỏ gán đã chọn ({selectedAssigned.length})
-            </button>
-          )}
+          <h2 className="text-lg font-semibold">{t('assignedRoles')} <span className="text-blue-500">({assigned.length})</span></h2>
         </div>
         <ul className="space-y-2">
           {assigned.length > 0 ? (
@@ -112,14 +122,14 @@ export default function AssignRoleList({
                   className="h-4 w-4"
                   disabled={isView}
                   key={role.id}
-                  title={`Bỏ chọn role ${role.name}`}
-                  aria-label={`Bỏ chọn role ${role.name}`}
+                  title={`${t('unassignRoles')} ${role.name}`}
+                  aria-label={`${t('unassignRoles')} ${role.name}`}
                 />
                 <span>{role.name}</span>
               </li>
             ))
           ) : (
-            <div className="text-gray-500 text-center py-8">Không có role nào</div>
+            <div className="text-gray-500 text-center py-8">{t('noRoles')}</div>
           )}
         </ul>
       </div>

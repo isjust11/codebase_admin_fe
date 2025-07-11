@@ -74,42 +74,42 @@ export default function PermissionsPage() {
 
   const getResourceDisplayName = (resourceKey: string) => {
     const resourceNames: { [key: string]: string } = {
-      user: 'Người dùng',
-      role: 'Vai trò',
-      permission: 'Quyền',
-      feature: 'Tính năng',
-      article: 'Bài viết',
-      category: 'Danh mục',
-      order: 'Đơn hàng',
-      payment: 'Thanh toán',
-      reservation: 'Đặt bàn',
-      table: 'Bàn',
-      exam: 'Bài thi',
-      question: 'Câu hỏi',
-      media: 'Media',
-      notification: 'Thông báo',
-      history: 'Lịch sử',
-      food_item: 'Món ăn',
+      user: t('user'),
+      role: t('role'),
+      permission: t('permission'),
+      feature: t('feature'),
+      article: t('article'),
+      category: t('category'),
+      order: t('order'),
+      payment: t('payment'),
+      reservation: t('reservation'),
+      table: t('table'),
+      exam: t('exam'),
+      question: t('question'),
+      media: t('media'),
+      notification: t('notification'),
+      history: t('history'),
+      food_item: t('foodItem'),
     };
     return resourceNames[resourceKey] || resourceKey;
   };
 
   const getActionDisplayName = (actionKey: string) => {
     const actionNames: { [key: string]: string } = {
-      CREATE: 'Tạo mới',
-      READ: 'Xem',
-      UPDATE: 'Cập nhật',
-      DELETE: 'Xóa',
-      EXPORT: 'Xuất',
-      IMPORT: 'Nhập',
-      APPROVE: 'Phê duyệt',
-      REJECT: 'Từ chối',
-      PUBLISH: 'Xuất bản',
-      BLOCK: 'Khóa',
-      UNBLOCK: 'Mở khóa',
-      ASSIGN: 'Phân quyền',
-      UPLOAD: 'Tải lên',
-      DOWNLOAD: 'Tải xuống',
+      CREATE: t('create'),
+      READ: t('read'),
+      UPDATE: t('update'),
+      DELETE: t('delete'),
+      EXPORT: t('export'),
+      IMPORT: t('import'),
+      APPROVE: t('approve'),
+      REJECT: t('reject'),
+      PUBLISH: t('publish'),
+      BLOCK: t('block'),
+      UNBLOCK: t('unblock'),
+      ASSIGN: t('assign'),
+      UPLOAD: t('upload'),
+      DOWNLOAD: t('download'),
     };
     return actionNames[actionKey] || actionKey;
   };
@@ -154,7 +154,7 @@ export default function PermissionsPage() {
     },
     {
       accessorKey: "resource",
-      header: "Resource",
+      header: t('resource'),
       cell: ({ row }) => {
         const resource = row.getValue("resource") as string;
         return resource ? (
@@ -168,7 +168,7 @@ export default function PermissionsPage() {
     },
     {
       accessorKey: "action",
-      header: "Action",
+      header: t('action'),
       cell: ({ row }) => {
         const action = row.getValue("action") as string;
         return action ? (
@@ -182,7 +182,7 @@ export default function PermissionsPage() {
     },
     {
       accessorKey: "code",
-      header: "Mã quyền",
+      header: t('permissionCode'),
       cell: ({ row }) => {
         const code = row.getValue("code") as string;
         return (
@@ -194,12 +194,12 @@ export default function PermissionsPage() {
     },
     {
       accessorKey: "isActive",
-      header: "Trạng thái",
+      header: t('status'),
       cell: ({ row }) => {
         const status = row.getValue("isActive") as boolean;
         return (
           <Badge variant="light" color={status === true ? 'success' : 'error'}>
-            {status === true ? 'Kích hoạt' : 'Vô hiệu'}
+            {status === true ? t('active') : t('inactive')}
           </Badge>
         );
       },
@@ -293,13 +293,13 @@ export default function PermissionsPage() {
               value="list"
               className="data-[state=active]:bg-fuchsia-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
             >
-              Danh sách Quyền
+              {t('permissionList')}
             </TabsTrigger>
             <TabsTrigger 
               value="template"
               className="data-[state=active]:bg-fuchsia-500 data-[state=active]:text-white data-[state=active]:shadow-md transition-all duration-200"
             >
-              Quản lý theo Template
+              {t('permissionManagementTemplate')}
             </TabsTrigger>
           </TabsList>
 

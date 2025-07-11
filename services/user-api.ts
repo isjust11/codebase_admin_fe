@@ -2,7 +2,7 @@ import { Role } from '@/types/role';
 import axiosApi from './base/api';
 
 export interface User {
-  id: number;
+  id: string;
   username: string;
   fullName?: string;
   email?: string;
@@ -17,14 +17,14 @@ export interface CreateUserDto {
   fullName?: string;
   email?: string;
   isAdmin?: boolean;
-  roleIds?: number[];
+  roleIds?: string[];
 }
 
 export interface UpdateUserDto {
   fullName?: string;
   email?: string;
   isAdmin?: boolean;
-  roleIds?: number[];
+  roleIds?: string[];
 }
 
 export const userApi = {

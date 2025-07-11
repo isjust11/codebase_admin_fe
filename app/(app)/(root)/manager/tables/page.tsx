@@ -18,9 +18,12 @@ import Image from 'next/image'
 import { Category } from '@/types/category';
 import { Action } from '@/types/actions';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@/contexts/AuthContext';
 
 export default function TablesManagement() {
   const t = useTranslations("TablesPage");
+
+  // const { hasPermission, hasResourcePermission } = useAuth();
   
   const [tables, setTables] = useState<TableType[]>([]);
   const [pageCount, setPageCount] = useState(0);
@@ -30,11 +33,17 @@ export default function TablesManagement() {
 
   const router = useRouter();
 
+  // useEffect(() => {
+  //   if (!hasResourcePermission('table')) {
+  //     router.push('/');
+  //   }
+  // }, [hasResourcePermission, router]);
+
   const fetchTables = async (page: number, size: number, search: string) => {
     try {
       const response = await getTables({ page: page + 1, size, search });
       setTables(response.data);
-      setPageCount(response.total);
+      setPageCount(response.totalPages);
     } catch (error) {
       toast.error(t('messages.loadError'));
     }
@@ -52,6 +61,10 @@ export default function TablesManagement() {
   const handleSearch=(searchValue: string)=>{
     setSearch(searchValue);
   }
+
+  const handleSizeChange = (size: number) => {
+    setPageSize(size);
+  };
 
   const handleDelete = async (tableId: number) => {
     try {
@@ -219,6 +232,7 @@ export default function TablesManagement() {
             onPaginationChange={handlePaginationChange}
             onSearchChange={handleSearch}
             manualPagination={true}
+            onSizeChange={handleSizeChange}
           />
         </ComponentCard>
       </div>

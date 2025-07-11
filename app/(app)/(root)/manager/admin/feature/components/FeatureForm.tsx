@@ -17,6 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { Category } from "@/types/category";
 import { getCategoryByCode } from "@/services/manager-api";
 import { AppCategoryCode } from "@/constants";
+import { useTranslations } from "next-intl";
 
 const formSchema = z.object({
     label: z.string().min(2, {
@@ -45,6 +46,7 @@ interface FeatureFormProps {
 }
 
 export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, featureParent }: FeatureFormProps) {
+    const t = useTranslations('FeaturePage');
     const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
     const [iconType, setIconType] = useState(IconType.lucide);
     const [iconSize, setIconSize] = useState(20)
@@ -108,9 +110,9 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                     name="label"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Tên chức năng</FormLabel>
+                            <FormLabel>{t('name')}</FormLabel>
                             <FormControl>
-                                <Input className="input-focus" placeholder="Nhập tên chức năng" {...field} />
+                                <Input className="input-focus" placeholder={t('namePlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage className="text-red-500" />
                         </FormItem>
@@ -121,7 +123,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                     name="featureTypeId"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Loại chức năng</FormLabel>
+                            <FormLabel>{t('featureType')}</FormLabel>
                             <FormControl>
                                 <Select
                                     value={field.value}
@@ -129,7 +131,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                                 >
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Chọn loại chức năng" />
+                                            <SelectValue placeholder={t('selectFeatureType')} />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
@@ -151,7 +153,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                                         )) : (
                                             <div className="flex flex-start items-center">
                                                 <span className="text-sm px-2 py-2">
-                                                    Không có dữ liệu
+                                                    {t('noData')}
                                                 </span>
                                             </div>
                                         )}
@@ -167,9 +169,9 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                     name="link"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Đường dẫn</FormLabel>
+                            <FormLabel>{t('link')}</FormLabel>
                             <FormControl>
-                                <Input className="input-focus" placeholder="Nhập đường dẫn" {...field} />
+                                <Input className="input-focus" placeholder={t('linkPlaceholder')} {...field} />
                             </FormControl>
                             <FormMessage className="text-red-500" />
                         </FormItem>
@@ -181,18 +183,18 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                         name="parentId"
                         render={({ field }) => (
                             <FormItem className="w-2/3">
-                                <FormLabel>Danh mục cha</FormLabel>
+                                <FormLabel>{t('parentCategory')}</FormLabel>
                                 <Select value={field.value} onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Chọn danh mục cha" />
+                                            <SelectValue placeholder={t('selectParentCategory')} />
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
                                         {featureParents.length == 0 && (
                                             <div className="flex flex-start items-center">
                                                 <span className="text-sm px-2 py-2">
-                                                    Không có dữ liệu
+                                                    {t('noData')}
                                                 </span>
                                             </div>
                                         )}
@@ -227,12 +229,12 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                         name="sortOrder"
                         render={({ field }) => (
                             <FormItem className="w-1/3">
-                                <FormLabel>Thứ tự</FormLabel>
+                                <FormLabel>{t('sortOrder')}</FormLabel>
                                 <FormControl>
                                     <Input
                                         className="input-focus"
                                         type="text"
-                                        placeholder="Thứ tự"
+                                        placeholder={t('sortOrderPlaceholder')}
                                         {...field}
                                         value={field.value || "0"}
                                     />
@@ -266,7 +268,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                                                     className="input-focus"
                                                     {...field}
                                                     value={unicodeToEmoji(field.value || "")}
-                                                    placeholder="Chọn icon"
+                                                    placeholder={t('selectIcon')}
                                                 />
                                             </FormControl>
                                             :
@@ -287,7 +289,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                                                         }}
                                                     />
                                                     <div className="text-xs text-gray-500 mt-1">
-                                                        Kích thước: {iconSize}px
+                                                        {t('iconSize')}: {iconSize}px
                                                     </div>
                                                 </div>)}
                                             </div>
@@ -305,7 +307,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                         render={({ field }) => (
                             <FormItem>
                                 <Switch
-                                    label="Trạng thái"
+                                    label={t('status')}
                                     defaultChecked={field.value}
                                     {...field}
                                 />
@@ -317,10 +319,10 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
 
                 <div className="flex justify-end space-x-4">
                     <Button variant="outline" onClick={onCancel}>
-                        Hủy
+                        {t('cancel')}
                     </Button>
                     <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
-                        {initialData ? "Cập nhật" : "Thêm mới"}
+                        {initialData ? t('update') : t('add')}
                     </Button>
                 </div>
 
