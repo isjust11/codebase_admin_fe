@@ -51,7 +51,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                 ...initialData,
                 isActive: initialData.isActive || true,
                 icon: initialData.icon || "",
-                categoryTypeId: initialData.categoryType.id,
+                categoryTypeId: initialData.type.id,
                 iconType: initialData.iconType
             }
             : {
@@ -79,7 +79,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                         <FormItem>
                             <FormLabel>{t('name')}</FormLabel>
                             <FormControl>
-                                <Input className="input-focus" placeholder={tUtils('enterName')} {...field} />
+                                <Input className="input-focus" placeholder={t('enterName')} {...field} />
                             </FormControl>
                             <FormMessage className="text-red-500"/>
                         </FormItem>
@@ -92,7 +92,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                         <FormItem>
                             <FormLabel>{t('code')}</FormLabel>
                             <FormControl>
-                                <Input className="input-focus" placeholder={tUtils('enterCode')} {...field} />
+                                <Input className="input-focus" placeholder={t('enterCode')} {...field} />
                             </FormControl>
                             <FormMessage className="text-red-500"/>
                         </FormItem>
@@ -105,7 +105,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                         <FormItem>
                             <FormLabel>{t('description')}</FormLabel>
                             <FormControl>
-                                <Textarea className="input-focus" placeholder={tUtils('enterDescription')} {...field} />
+                                <Textarea className="input-focus" placeholder={t('enterDescription')} {...field} />
                             </FormControl>
                             <FormMessage className="text-red-500"/>
                         </FormItem>

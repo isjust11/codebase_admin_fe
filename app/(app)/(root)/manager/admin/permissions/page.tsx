@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash, RefreshCcw } from 'lucide-react';
-import { deletePermission, getPermissions } from '@/services/auth-api';
+import { Plus, Pencil, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, Trash, RefreshCcw, ArrowLeftRight } from 'lucide-react';
+import { deletePermission, getPermissions, updatePermission } from '@/services/auth-api';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
@@ -21,10 +21,16 @@ import { useTranslations } from 'next-intl';
 import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import PermissionManager from './components/permission-manager';
+import { useAuth } from '@/contexts/AuthContext';
+import { AlertDialogUtils } from '@/components/AlertDialogUtils';
+
 
 export default function PermissionsPage() {
   const t = useTranslations('PermissionsPage');
+  const tUtils = useTranslations('Utils');
   const router = useRouter();
+  const { hasPermission,hasResourcePermission } = useAuth();
+  const hasResourcePermissionStatus = hasResourcePermission('permission');
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
@@ -33,6 +39,8 @@ export default function PermissionsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const actionRef = useRef<{ refresh: () => void }>({ refresh: () => {} });
+  const [openDialog, setOpenDialog] = useState(false);
+  const [dialogContent, setDialogContent] = useState('');
   const fetchPermissions = async () => {
     try {
       const response = await getPermissions({ page: pageIndex + 1, size: pageSize, search });
@@ -44,18 +52,30 @@ export default function PermissionsPage() {
   };
 
   useEffect(() => {
+    if (!hasResourcePermissionStatus) {
+      router.push('/manager/admin/permissions/template');
+    }
+  }, [hasResourcePermissionStatus]);
+
+  useEffect(() => {
     fetchPermissions();
   }, [pageIndex, pageSize, search]);
 
   const handleDelete = async (id: string) => {
-    if (!confirm(t('confirmDelete'))) return;
-    
+    setSelectedPermission(permissions.find(permission => permission.id === id) || null);
+    setDialogContent(t('confirmDelete'))  ;
+    setOpenDialog(true);
+  };
+
+  const confirmDelete = async () => {
     try {
-      await deletePermission(id);
+      await deletePermission(selectedPermission?.id || '');
       toast.success(t('deleteSuccess'));
       fetchPermissions();
+      setOpenDialog(false);
     } catch (error: any) {
-      toast.error(t('deleteError') + error.message);
+      toast.error(t('deleteError', { message: error.message }));
+      setOpenDialog(false);
     }
   };
 
@@ -112,6 +132,16 @@ export default function PermissionsPage() {
       DOWNLOAD: t('download'),
     };
     return actionNames[actionKey] || actionKey;
+  };
+
+  const handleChangeStatus = async (permission: Permission) => {
+    try {
+      await updatePermission(permission.id, { isActive: !permission.isActive });
+      toast.success(t('updateSuccess'));
+      fetchPermissions();
+    } catch (error: any) {
+      toast.error(t('updateError', { message: error.message }));
+    }
   };
 
   const columns: ColumnDef<Permission>[] = [
@@ -239,22 +269,31 @@ export default function PermissionsPage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs'>
-                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
+                {hasPermission('PERMISSION_READ') && <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                   onClick={() => router.push(`/manager/admin/permissions/${permission.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
                   {t('viewDetail')}
-                </DropdownMenuItem>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                </DropdownMenuItem>}
+                {hasPermission('PERMISSION_UPDATE') && 
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-blue-500 dark:text-blue-400'
                   onClick={() => router.push(`/manager/admin/permissions/update/${permission.id}`)}
                 >
-                  <Pencil className="mr-2 h-4 w-4" />
+                  <Pencil className="mr-2 h-4 w-4 text-blue-500 dark:text-blue-400" />
                   {t('edit')}
-                </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" 
+                </DropdownMenuItem>}
+                {hasPermission('PERMISSION_UPDATE') && <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
+                  onClick={() => {
+                    handleChangeStatus(permission)
+                  }}
+                >
+                  <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
+                  {permission.isActive ? t('inactive') : t('active')}
+                </DropdownMenuItem>}
+                {hasPermission('PERMISSION_DELETE') && <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" 
                   onClick={() => handleDelete(permission.id.toString())}>
-                  <Trash className="mr-2 h-4 w-4" />
+                  <Trash className="mr-2 h-4 w-4 text-red-600" />
                   {t('delete')}
-                </DropdownMenuItem>
+                </DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -333,6 +372,16 @@ export default function PermissionsPage() {
             {selectedPermission ? t('updatePermission') : t('addPermissionNew')}
           </h4>
         </Modal>
+        <AlertDialogUtils
+            type="warning"
+            title={tUtils('notify')}
+            content={dialogContent}
+            confirmText={tUtils('confirm')}
+            cancelText={tUtils('cancel')}
+            isOpen={openDialog}
+            onConfirm={() => confirmDelete()}
+            onCancel={() => { setOpenDialog(false) }}
+          />
       </div>
     </AsyncWrapper>
   );

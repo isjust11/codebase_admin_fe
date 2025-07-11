@@ -435,9 +435,7 @@
     "loadError": "Cannot load permission information",
     "fillRequiredFields": "Please fill in all required fields",
     "createSuccess": "Permission added successfully",
-    "updateSuccess": "Permission updated successfully",
     "createError": "Error occurred while adding permission",
-    "updateError": "Error occurred while updating permission",
     "back": "Back",
     "cancel": "Cancel",
     "add": "Add",
@@ -484,7 +482,12 @@
     "creating": "Creating...",
     "selectResource": "Select resource",
     "selectAction": "Select action",
-    "loading": "Loading..."
+    "loading": "Loading...",
+    "confirmDelete": "Are you sure you want to delete this permission?",
+    "deleteSuccess": "Delete permission successfully!",
+    "deleteError": "Error deleting permission: {message}",
+    "updateSuccess": "Update permission successfully!",
+    "updateError": "Error updating permission: {message}"
   },
   "UserForm": {
     "username": "Username",
@@ -523,13 +526,18 @@
     "all": "All",
     "active": "Active",
     "inactive": "Inactive",
+    "code": "Code",
+    "enterCode": "Enter category code",
+    "enterName": "Enter category name",
+    "enterDescription": "Enter category description",
     "messages": {
       "loadError": "Error loading category list",
       "deleteSuccess": "Category deleted successfully",
       "deleteError": "Error deleting category",
       "saveError": "Error saving category",
       "createSuccess": "Category created successfully",
-      "updateSuccess": "Category updated successfully"
+      "updateSuccess": "Category updated successfully",
+      "confirmDelete":"Are you sure you want to delete this category?"
     }
   },
   "CategoryTypesPage": {

@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal } from 'lucide-react';
+import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ArrowLeftRight } from 'lucide-react';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -24,6 +24,9 @@ import { Icon } from '@/components/ui/icon';
 import { IconType } from '@/enums/icon-type.enum';
 import { useAsyncEffect } from '@/hooks/useAsyncEffect';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@/contexts/AuthContext';
+import router from 'next/router';
+import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 
 export default function CategoriesManagement() {
   const t = useTranslations("CategoriesPage");
@@ -39,7 +42,10 @@ export default function CategoriesManagement() {
   const [selectedType, setSelectedType] = useState<CategoryType | null>(null);
   const [filterByType, setFilterByType] = useState<Category[]>([]);
   const { isOpen, openModal, closeModal } = useModal();
-
+  const { hasPermission,hasResourcePermission } = useAuth();
+  const hasResourcePermissionStatus = hasResourcePermission('category');
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [dialogContent, setDialogContent] = useState<string>();
   const columns: ColumnDef<Category>[] = [
     {
       id: "select",
@@ -131,17 +137,7 @@ export default function CategoriesManagement() {
       header: t('actions'),
       cell: ({ row }) => {
         const category = row.original as Category;
-        const handleDelete = async (id: string) => {
-          try {
-            await deleteCategory(id);
-            toast.success(t('messages.deleteSuccess'));
-            // Refresh data
-            await fetchData();
-            setSelectedCategory(null);
-          } catch (_error) {
-            toast.error(t('messages.deleteError'));
-          }
-        }
+       
         return (
           <div className="p-2 ">
             <DropdownMenu>
@@ -161,16 +157,24 @@ export default function CategoriesManagement() {
                   <Pencil className="mr-2 h-4 w-4 text-blue-400 hover:text-blue-500" />
                   {t('edit')}
                 </DropdownMenuItem>
-
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
+                {hasPermission('CATEGORY_UPDATE') && <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
+                  onClick={() => {
+                    handleChangeStatus(category)
+                  }}
+                >
+                  <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
+                  {category.isActive ? t('inactive') : t('active')}
+                </DropdownMenuItem>
+                }
+                {hasPermission('CATEGORY_DELETE') && <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                   onClick={() => {
                     if (category.id) {
-                      handleDelete(category.id);
+                      handleDelete(category);
                     }
                   }}>
                   <Trash className="mr-2 h-4 w-4" />
                   {t('delete')}
-                </DropdownMenuItem>
+                </DropdownMenuItem>}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -178,7 +182,17 @@ export default function CategoriesManagement() {
       },
     },
   ]
-
+  const handleDelete = async (category: Category) => {
+    setSelectedCategory(category)
+    setOpenDialog(true);
+    setDialogContent(t('messages.confirmDelete'));
+  }
+  const confirmDelete = async () => {
+    await deleteCategory(selectedCategory?.id || '');
+    await fetchData();
+    setOpenDialog(false)
+    toast.success(t('deleteSuccess'))
+  }
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -198,9 +212,19 @@ export default function CategoriesManagement() {
     }
   };
 
+  useEffect(() => {
+    if (!hasResourcePermissionStatus) {
+      router.push('/');
+    }
+  }, [hasResourcePermissionStatus]);
+
   useAsyncEffect(async () => {
     await fetchData();
   }, [pageIndex, pageSize, search]);
+
+  const handleSizeChange = (size: number) => {
+    setPageSize(size);
+  };
 
   const handlePaginationChange = (newPageIndex: number, newPageSize: number) => {
     setPageIndex(newPageIndex);
@@ -213,7 +237,7 @@ export default function CategoriesManagement() {
 
   const setFilters = (data: Category[]) => {
     if (selectedType) {
-      const filters = categories.filter((category) => category.categoryType.id === selectedType.id)
+      const filters = categories.filter((category) => category.type.id === selectedType.id)
       setFilterByType(filters);
     }
     else {
@@ -250,11 +274,17 @@ export default function CategoriesManagement() {
       setSelectedType(null);
       return;
     }
-    const filters = categories.filter((category) => category.categoryType.id === id)
+    const filters = categories.filter((category) => category.type.id === id)
     setFilterByType(filters);
     const foundType = categoryTypes.find(type => type.id === id);
     setSelectedType(foundType || null);
   }
+
+  const handleChangeStatus = async (category: Category) => {
+    await updateCategory(category.id, { isActive: !category.isActive });
+    await fetchData();
+    toast.success(t('messages.updateSuccess'));
+  };
 
   const listAction: Action[] = [
     {
@@ -298,6 +328,7 @@ export default function CategoriesManagement() {
             pageCount={pageCount}
             onPaginationChange={handlePaginationChange}
             onSearchChange={handleSearch}
+            onSizeChange={handleSizeChange}
             manualPagination={true}
             getRowChildren={(row) => (row as any).children}
           />
@@ -305,6 +336,7 @@ export default function CategoriesManagement() {
             isOpen={isOpen}
             onClose={closeModal}
             className="max-w-[600px] p-5 lg:p-10"
+            modalSize='2xl'
           >
             <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
               {selectedCategory ? t('update') : t('add')}
@@ -315,6 +347,16 @@ export default function CategoriesManagement() {
               onCancel={closeModal}
               categoryTypes={categoryTypes} />
           </Modal>
+          <AlertDialogUtils
+            type="warning"
+            title={tUtils('notify')}
+            content={dialogContent}
+            confirmText={tUtils('confirm')}
+            cancelText={tUtils('cancel')}
+            isOpen={openDialog}
+            onConfirm={() => confirmDelete()}
+            onCancel={() => { setOpenDialog(false) }}
+          />
         </ComponentCard>
       </div>
     </div>

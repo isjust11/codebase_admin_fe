@@ -24,6 +24,8 @@ import Link from "next/link";
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import { useTranslations } from 'next-intl';
+import { useAuth } from '@/contexts/AuthContext';
+import router from 'next/router';
 
 export default function FeaturePage() {
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -37,7 +39,9 @@ export default function FeaturePage() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const t = useTranslations('FeaturePage');
-  // const { socket } = useSocket();
+  
+  const { hasPermission,hasResourcePermission } = useAuth();
+  const hasResourcePermissionStatus = hasResourcePermission('feature');
 
   const fetchFeatures = async () => {
     const response = await getAllFeatures(search);
@@ -45,6 +49,12 @@ export default function FeaturePage() {
     setFeatures(featureTree);
     // setPageCount(response.totalPages);
   };
+
+  useEffect(() => {
+    if (!hasResourcePermissionStatus) {
+      router.push('/');
+    }
+  }, [hasResourcePermissionStatus]);
 
   useEffect(() => {
     fetchFeatures();
@@ -215,7 +225,7 @@ export default function FeaturePage() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='shadow-sm rounded-sm bg-white dark:bg-gray-800'>
-                {
+                {hasPermission('FEATURE_CREATE') &&
                   feature.parentId == null && <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-green-500 dark:text-white"
                     onClick={() => {
                       setSelectedFeature(null);
@@ -226,7 +236,7 @@ export default function FeaturePage() {
                     {t('addChildFeature')}
                   </DropdownMenuItem>
                 }
-                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-gray-700 dark:text-white"
+                {hasPermission('FEATURE_READ') && <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-gray-700 dark:text-white"
                   onClick={() => {
                     setSelectedFeature(feature)
                     openModal();
@@ -234,7 +244,8 @@ export default function FeaturePage() {
                   <BadgeInfo className="mr-2 h-4 w-4 text-gray-700 dark:text-white" />
                   {t('viewDetail')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
+                }
+                {hasPermission('FEATURE_UPDATE') && <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
                   onClick={() => {
                     handleChangeStatus(feature)
                   }}
@@ -242,7 +253,8 @@ export default function FeaturePage() {
                   <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
                   {feature.isActive ? t('inactive') : t('active')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-blue-500 dark:text-white'
+                }
+                {hasPermission('FEATURE_UPDATE') && <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-blue-500 dark:text-white'
                   onClick={() => {
                     setSelectedFeature(feature)
                     openModal();
@@ -251,10 +263,12 @@ export default function FeaturePage() {
                   <Pencil className="mr-2 h-4 w-4 text-blue-500 dark:text-white" />
                   {t('edit')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10" onClick={() => handleDelete(feature)}>
+                }
+                {hasPermission('FEATURE_DELETE') &&   <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10" onClick={() => handleDelete(feature)}>
                   <Trash className="mr-2 h-4 w-4" />
                   {t('delete')}
                 </DropdownMenuItem>
+                }
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
