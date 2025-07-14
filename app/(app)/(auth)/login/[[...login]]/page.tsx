@@ -70,7 +70,7 @@ export default function LoginPage() {
     try {
       const username = form.getValues('username')
       if(username){
-        setIsLoading(true);
+        setIsForgotPasswordLoading(true);
         const response = await forgotPassword(form.getValues('username'));
         toast.success(response.message);
       }else{
@@ -79,7 +79,7 @@ export default function LoginPage() {
     } catch (_error) {
       toast.error(t('messages.emailError'));
     } finally {
-      setIsLoading(false);
+      setIsForgotPasswordLoading(false);
     }
   }
   const onSubmit = async (values: z.infer<typeof formSchema>) => {

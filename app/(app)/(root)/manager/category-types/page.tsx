@@ -197,6 +197,9 @@ export default function CategoryTypesManagement() {
   const handleSearch = (searchValue: string) => {
     setSearch(searchValue);
   }
+  const handleSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+  }
   const fetchData = async () => {
     setLoading(true);
     try {
@@ -243,6 +246,7 @@ export default function CategoryTypesManagement() {
           <DataTable columns={columns} data={categoryTypes} pageCount={pageCount}
             onPaginationChange={handlePaginationChange}
             onSearchChange={handleSearch}
+            onSizeChange={handleSizeChange}
             manualPagination={true} />
           <Modal
             isOpen={isOpen}

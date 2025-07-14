@@ -107,7 +107,7 @@ export default function RegisterPage() {
             <p className="text-gray-500 mt-2">
               {t('emailSentDescription')}
             </p>
-            <Button disabled={isLoading} onClick={handleResendEmail} className="mt-4 w-full bg-primary text-white">
+            <Button disabled={isLoading} onClick={handleResendEmail} className="mt-4 w-full bg-fuchsia-700 text-white">
               {isLoading ? t('sendingEmail') : t('resendEmailButton')}
             </Button>
           </div>
