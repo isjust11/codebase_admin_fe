@@ -25,7 +25,7 @@ import { useTranslations } from 'next-intl';
 // Tạo schema validation với đa ngôn ngữ
 const createFormSchema = (t: any) => z.object({
   name: z.string().min(6, t('validation.nameMinLength')),
-  code: z.string().min(6, t('validation.codeMinLength')),
+  code: z.string().min(1, t('validation.codeMinLength')),
   isActive: z.boolean(),
   description: z.string().optional(),
   features: z.array(z.string()).optional(),

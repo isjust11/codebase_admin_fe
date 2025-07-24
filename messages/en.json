@@ -337,9 +337,9 @@
     "errorNotify": "Error loading role list: ",
     "validation": {
       "nameRequired": "Role name is required",
-      "nameMinLength": "Role name must be at least 6 characters",
+      "nameMinLength": "Role name must be at least {0} characters",
       "codeRequired": "Role code is required",
-      "codeMinLength": "Role code must be at least 6 characters"
+      "codeMinLength": "Role code must be at least {0} characters"
     }
   },
   "FeaturePage": {

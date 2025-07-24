@@ -2,7 +2,7 @@ import { Permission } from "./permission";
 import { Role } from "./role";
 
 export interface User {
-    id: number;
+    id: string;
   
     username: string;
   
