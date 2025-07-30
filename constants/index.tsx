@@ -18,5 +18,6 @@ export const AppCategoryCode = {
   TableType: 'Loại bàn',
   TableStatus: 'Trạng thái bàn',
   TableArea: 'Khu vực bàn',
+  FolkMedicineCategory: 'Danh mục bài thuốc dân gian',
   FEATURE_MENU: 'FEATURE_MENU',
 }
