@@ -6,8 +6,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { createFolkMedicine, updateFolkMedicine, getFolkMedicine } from '@/services/folk-medicine-api';
 import { uploadFile } from '@/services/media-api';
-import { getAllCategories } from '@/services/category-api';
-import { userApi } from '@/services/user-api';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
@@ -19,10 +17,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { mergeImageUrl } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/types/category';
-import { User } from '@/types/user';
-import { FolkMedicine, CreateFolkMedicineDto, UpdateFolkMedicineDto } from '@/types/folk-medicine';
+import { FolkMedicine, CreateFolkMedicineDto } from '@/types/folk-medicine';
+import { useTranslations } from 'next-intl';
+import { getCategories } from '@/services/category-api';
 
 const FolkMedicineForm = () => {
+  const t = useTranslations('FolkMedicinesPage');
+  const tUtils = useTranslations('Utils');
   const { user } = useAuth();
   const router = useRouter();
   const params = useParams();
@@ -32,7 +33,6 @@ const FolkMedicineForm = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [folkMedicine, setFolkMedicine] = useState<FolkMedicine | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
 
   const [formData, setFormData] = useState<CreateFolkMedicineDto>({
     title: '',
@@ -43,7 +43,7 @@ const FolkMedicineForm = () => {
     usage: '',
     notes: '',
     thumbnail: '',
-    authorId: undefined,
+    authorId: '',
     categoryId: '',
     isActive: true,
   });
@@ -69,19 +69,17 @@ const FolkMedicineForm = () => {
     },
   });
 
-  const title = id ? 'Cập nhật bài thuốc dân gian' : 'Thêm bài thuốc dân gian mới';
+  const title = id ? t('updateFolkMedicine') : t('addFolkMedicine');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoriesData, usersData] = await Promise.all([
-          getAllCategories(),
-          userApi.getAll(),
+        const [categoriesData] = await Promise.all([
+          getCategories({page: 1, size: 1000, search: ''}),
         ]);
-        setCategories(categoriesData);
-        setUsers(usersData);
+        setCategories(categoriesData.data || []);
       } catch (error) {
-        toast.error('Có lỗi xảy ra khi tải dữ liệu');
+        toast.error(t('messages.error'));
       }
     };
 
@@ -106,12 +104,12 @@ const FolkMedicineForm = () => {
         usage: data.usage || '',
         notes: data.notes || '',
         thumbnail: data.thumbnail ? mergeImageUrl(data.thumbnail) : '',
-        authorId: data.authorId,
+        authorId: data.authorId?.toString() || '',
         categoryId: data.categoryId || '',
         isActive: data.isActive,
       });
     } catch (_error) {
-      toast.error('Không thể tải thông tin bài thuốc');
+      toast.error(t('messages.error'));
       router.push('/manager/folk-medicines');
     }
   };
@@ -129,21 +127,21 @@ const FolkMedicineForm = () => {
 
       const submitData = {
         ...formData,
-        authorId: formData.authorId || user?.id,
+        authorId: formData.authorId || user?.id?.toString() || '' ,
         // Nếu là URL đầy đủ, chuyển về đường dẫn tương đối trước khi lưu
         thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : thumbnail,
       };
 
       if (isEditing) {
         await updateFolkMedicine(id || '', submitData);
-        toast.success('Bài thuốc dân gian đã được cập nhật thành công');
+        toast.success(t('messages.updateSuccess'));
       } else {
         await createFolkMedicine(submitData);
-        toast.success('Bài thuốc dân gian đã được thêm thành công');
+        toast.success(t('messages.createSuccess'));
       }
       router.push('/manager/folk-medicines');
     } catch (_error) {
-      toast.error(isEditing ? 'Có lỗi xảy ra khi cập nhật bài thuốc' : 'Có lỗi xảy ra khi thêm bài thuốc');
+      toast.error(isEditing ? t('messages.updateError') : t('messages.createError'));
     } finally {
       setLoading(false);
     }
@@ -227,7 +225,7 @@ const FolkMedicineForm = () => {
                       />
                       <button
                         type="button"
-                        title="Xóa hình ảnh"
+                        title={tUtils('delete')}
                         onClick={() => {
                           setSelectedFile(null);
                           setPreviewUrl(null);
@@ -274,15 +272,15 @@ const FolkMedicineForm = () => {
 
                         {/* Text Content */}
                         <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                          {isDragActive ? "Thả file vào đây" : "Kéo & và thả file vào đây"}
+                          {isDragActive ? tUtils('dropFile') : tUtils('dragAndDropFile')}
                         </h4>
 
                         <span className=" text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-                          Kéo và thả file PNG, JPG, WebP, SVG vào đây
+                          {tUtils('dragAndDropFile')}
                         </span>
 
                         <span className="font-medium underline text-theme-sm text-brand-500">
-                          Chọn ảnh
+                          {tUtils('selectImage')}
                         </span>
                       </div>
                     </form>
@@ -295,12 +293,12 @@ const FolkMedicineForm = () => {
             <div className="w-7/10">
               <form className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">Tên bài thuốc *</Label>
+                  <div className="space-y-2"> 
+                    <Label htmlFor="title">{t('title')} *</Label>
                     <Input
                       id="title"
-                      name="title"
-                      placeholder='Nhập tên bài thuốc'
+                      name="title"  
+                      placeholder={t('enterTitle')}
                       type="text"
                       value={formData.title}
                       onChange={handleChange}
@@ -309,13 +307,13 @@ const FolkMedicineForm = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="categoryId">Danh mục</Label>
+                    <Label htmlFor="categoryId">{t('category')}</Label>
                     <Select
                       value={formData.categoryId}
                       onValueChange={(value) => handleSelectChange('categoryId', value)}
                     >
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Chọn danh mục" />
+                        <SelectValue placeholder={t('selectCategory')} />
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white">
                         {categories.map((category) => (
@@ -330,26 +328,19 @@ const FolkMedicineForm = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="authorId">Tác giả</Label>
-                    <Select
-                      value={formData.authorId?.toString()}
-                      onValueChange={(value) => handleSelectChange('authorId', parseInt(value))}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Chọn tác giả" />
-                      </SelectTrigger>
-                      <SelectContent className="w-full bg-white">
-                        {users.map((user) => (
-                          <SelectItem key={user.id} value={user.id.toString()}>
-                            {user.fullName}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Label htmlFor="authorId">{t('author')}</Label>
+                    <Input
+                      id="authorId"
+                      name="authorId"
+                      placeholder={t('enterAuthor')}
+                      type="text"
+                      value={formData.authorId}
+                      onChange={handleChange}
+                    />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="isActive">Trạng thái</Label>
+                    <Label htmlFor="isActive">{t('isActive')}</Label>
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="isActive"
@@ -357,18 +348,18 @@ const FolkMedicineForm = () => {
                         onCheckedChange={(checked) => handleSelectChange('isActive', checked)}
                       />
                       <span className="text-sm text-gray-600">
-                        {formData.isActive ? 'Hoạt động' : 'Không hoạt động'}
+                        {formData.isActive ? t('active') : t('inactive')}
                       </span>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="summary">Tóm tắt</Label>
+                  <Label htmlFor="summary">{t('summary')}</Label>
                   <Textarea
                     id="summary"
                     name="summary"
-                    placeholder='Nhập tóm tắt bài thuốc (tối đa 500 ký tự)'
+                    placeholder={t('enterSummary')}
                     value={formData.summary}
                     onChange={handleChange}
                     rows={3}
@@ -380,12 +371,12 @@ const FolkMedicineForm = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="content">Nội dung chính *</Label>
+                  <Label htmlFor="content">{t('content')} *</Label>
                   <div className="ring-1 ring-gray-100/5 rounded-md shadow-sm p-2">
                     <SimpleEditor
                       key={folkMedicine?.id || 'new'}
                       initialContent={folkMedicine?.content || ''}
-                      placeholder="Nhập nội dung chi tiết bài thuốc"
+                      placeholder={t('enterContent')}
                       onContentChange={(content) => changeContent(content)}
                     />
                   </div>
@@ -393,11 +384,11 @@ const FolkMedicineForm = () => {
 
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="ingredients">Thành phần</Label>
+                    <Label htmlFor="ingredients">{t('ingredients')}</Label>
                     <Textarea
                       id="ingredients"
                       name="ingredients"
-                      placeholder='Nhập các thành phần của bài thuốc'
+                      placeholder={t('enterIngredients')}
                       value={formData.ingredients}
                       onChange={handleChange}
                       rows={3}
@@ -405,11 +396,11 @@ const FolkMedicineForm = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="preparation">Cách chế biến</Label>
+                    <Label htmlFor="preparation">{t('preparation')}</Label>
                     <Textarea
                       id="preparation"
                       name="preparation"
-                      placeholder='Nhập cách chế biến bài thuốc'
+                      placeholder={t('enterPreparation')}
                       value={formData.preparation}
                       onChange={handleChange}
                       rows={3}
@@ -417,11 +408,11 @@ const FolkMedicineForm = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="usage">Cách sử dụng</Label>
+                    <Label htmlFor="usage">{t('usage')}</Label>
                     <Textarea
                       id="usage"
                       name="usage"
-                      placeholder='Nhập cách sử dụng bài thuốc'
+                      placeholder={t('enterUsage')}
                       value={formData.usage}
                       onChange={handleChange}
                       rows={3}
@@ -429,11 +420,11 @@ const FolkMedicineForm = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="notes">Ghi chú</Label>
+                    <Label htmlFor="notes">{t('notes')}</Label>
                     <Textarea
                       id="notes"
                       name="notes"
-                      placeholder='Nhập ghi chú bổ sung'
+                      placeholder={t('enterNotes')}
                       value={formData.notes}
                       onChange={handleChange}
                       rows={3}

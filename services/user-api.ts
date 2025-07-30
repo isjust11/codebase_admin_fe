@@ -1,15 +1,6 @@
 import { Role } from '@/types/role';
 import axiosApi from './base/api';
-
-export interface User {
-  id: string;
-  username: string;
-  fullName?: string;
-  email?: string;
-  isAdmin: boolean;
-  isBlocked: boolean;
-  roles?: Role[];
-}
+import { User } from '@/types/user';
 
 export interface CreateUserDto {
   username: string;

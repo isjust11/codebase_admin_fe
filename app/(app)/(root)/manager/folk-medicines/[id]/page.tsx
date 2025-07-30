@@ -199,7 +199,7 @@ export default function FolkMedicineDetail() {
                       <User className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600">Tác giả:</span>
                       <span className="text-sm font-medium">
-                        {folkMedicine.author?.name || 'Không xác định'}
+                        {folkMedicine.author || 'Không xác định'}
                       </span>
                     </div>
 

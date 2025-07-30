@@ -11,12 +11,8 @@ export interface FolkMedicine {
   thumbnail?: string;
   viewCount: number;
   likeCount: number;
-  authorId?: number;
-  author?: {
-    id: number;
-    name: string;
-    email: string;
-  };
+  authorId?: string;
+  author?: string;
   categoryId?: string;
   category?: {
     id: string;
@@ -37,7 +33,7 @@ export interface CreateFolkMedicineDto {
   usage?: string;
   notes?: string;
   thumbnail?: string;
-  authorId?: number;
+  authorId?: string;
   categoryId?: string;
   isActive?: boolean;
 }

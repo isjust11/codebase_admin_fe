@@ -15,9 +15,12 @@ import { ColumnDef } from '@tanstack/react-table';
 import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image'
 import { Action } from '@/types/actions';
-import { FolkMedicine } from '@/types/folk-medicine';
+import { FolkMedicine } from '@/types/folk-medicine'; 
+import { useTranslations } from 'next-intl';
 
 export default function FolkMedicinesManagement() {
+  const t = useTranslations('FolkMedicinesPage');
+  const tUtils = useTranslations('Utils');
   
   const [folkMedicines, setFolkMedicines] = useState<FolkMedicine[]>([]);
   const [pageCount, setPageCount] = useState(0);
@@ -35,7 +38,7 @@ export default function FolkMedicinesManagement() {
       setFolkMedicines(response.data || []);
       setPageCount(response.totalPages || 0);
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi tải danh sách bài thuốc dân gian');
+      toast.error(t('messages.error'));
       setFolkMedicines([]);
       setPageCount(0);
     } finally {
@@ -61,9 +64,9 @@ export default function FolkMedicinesManagement() {
       await deleteFolkMedicine(folkMedicineId.toString());
       setFolkMedicines(folkMedicines.filter(medicine => medicine.id !== folkMedicineId));
       fetchFolkMedicines(pageIndex, pageSize, search);
-      toast.success('Bài thuốc dân gian đã được xóa thành công');
+      toast.success(t('messages.deleteSuccess'));
     } catch (_error) {
-      toast.error('Có lỗi xảy ra khi xóa bài thuốc dân gian');
+      toast.error(t('messages.deleteError'));
     }
   };
 
@@ -78,14 +81,14 @@ export default function FolkMedicinesManagement() {
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={tUtils('selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={tUtils('selectAll')}
         />
       ),
       enableSorting: false,
@@ -93,7 +96,7 @@ export default function FolkMedicinesManagement() {
     },
     {
       accessorKey: "thumbnail",
-      header: "Hình ảnh",
+      header: t('thumbnail'),
       cell: ({ row }) => {
         const thumbnail = mergeImageUrl(row.getValue("thumbnail") as string)
         return (
@@ -120,7 +123,7 @@ export default function FolkMedicinesManagement() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tên bài thuốc
+            {t('title')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -128,31 +131,31 @@ export default function FolkMedicinesManagement() {
     },
     {
       accessorKey: "summary",
-      header: "Tóm tắt",
+      header: t('summary'),
       cell: ({ row }) => {
         const summary = row.getValue("summary") as string
         return (
           <div className="text-sm text-gray-500 max-w-xs truncate">
-            {summary || 'Không có tóm tắt'}
+            {summary || t('noSummary')}
           </div>
         )
       }
     },
     {
       accessorKey: "category",
-      header: "Danh mục",
+      header: t('category'),
       cell: ({ row }) => {
         const category = row.original.category
         return (
           <div className="text-sm text-gray-600">
-            {category?.name || 'Chưa phân loại'}
+            {category?.name || t('noCategory')}
           </div>
         )
       },
     },
     {
       accessorKey: "viewCount",
-      header: "Lượt xem",
+      header: t('viewCount'),
       cell: ({ row }) => {
         const viewCount = row.getValue("viewCount") as number
         return (
@@ -164,7 +167,7 @@ export default function FolkMedicinesManagement() {
     },
     {
       accessorKey: "likeCount",
-      header: "Lượt thích",
+      header: t('likeCount'),
       cell: ({ row }) => {
         const likeCount = row.getValue("likeCount") as number
         return (
@@ -176,21 +179,21 @@ export default function FolkMedicinesManagement() {
     },
     {
       accessorKey: "isActive",
-      header: "Trạng thái",
+      header: t('isActive'),
       cell: ({ row }) => {
         const isActive = row.getValue("isActive") as boolean
         return (
           <div className={`capitalize px-2 py-1 rounded-full text-xs ${
             isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
           }`}>
-            {isActive ? 'Hoạt động' : 'Không hoạt động'}
+            {isActive ? t('active') : t('inactive')}
           </div>
         )
       },
     },
     {
       accessorKey: "createdAt",
-      header: "Ngày tạo",
+            header: t('createdAt'),
       cell: ({ row }) => {
         const createdAt = row.getValue("createdAt") as string
         return (
@@ -202,7 +205,7 @@ export default function FolkMedicinesManagement() {
     },
     {
       id: "actions",
-      header: 'Thao tác',
+      header: t('actions'),
       cell: ({ row }) => {
         const folkMedicine = row.original
         return (
@@ -210,7 +213,7 @@ export default function FolkMedicinesManagement() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Mở menu</span>
+                    <span className="sr-only">{t('openMenu')}</span>
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -218,22 +221,22 @@ export default function FolkMedicinesManagement() {
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                     onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.id}`)}>
                     <BadgeInfo className="mr-2 h-4 w-4" />
-                    Xem chi tiết
+                    {t('viewDetail')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
                     onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}>
                     <Eye className="mr-2 h-4 w-4 color-yellow-300" />
-                    Xem bài thuốc
+                    {t('viewFolkMedicine')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
                     onClick={() => router.push(`/manager/folk-medicines/update/${folkMedicine.id}`)}
                   >
                     <Pencil className="mr-2 h-4 w-4" />
-                    Chỉnh sửa
+                    {t('edit')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(folkMedicine.id)}>
                     <Trash className="mr-2 h-4 w-4" />
-                    Xóa
+                    {t('delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -249,19 +252,23 @@ export default function FolkMedicinesManagement() {
       onClick: () => {
         router.push('/manager/folk-medicines/create')
       },
-      title: "Thêm bài thuốc mới",
+      title: t('add-folk-medicine'),
       className: "hover:bg-green-100 dark:hover:bg-green-800 rounded-md transition-colors text-green-500",
     },
   ]
 
+  const handleSizeChange = (newPageSize: number) => {
+    setPageSize(newPageSize);
+  };
+
   return (
     <div>
-      <PageBreadcrumb pageTitle="Danh sách bài thuốc dân gian" />
+      <PageBreadcrumb pageTitle={t('title')} />
       <div className="space-y-6">
-        <ComponentCard title="Danh sách bài thuốc dân gian" listAction={lstActions}>
+        <ComponentCard title={t('title')} listAction={lstActions}>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <span className="text-gray-500 ">Đang tải dữ liệu...</span>
+              <span className="text-gray-500 ">{t('loading')}</span>
             </div>
           ) : (
             <DataTable 
@@ -269,6 +276,7 @@ export default function FolkMedicinesManagement() {
               data={folkMedicines}
               pageCount={pageCount}
               onPaginationChange={handlePaginationChange}
+              onSizeChange={handleSizeChange}
               onSearchChange={handleSearch}
               manualPagination={true}
             />

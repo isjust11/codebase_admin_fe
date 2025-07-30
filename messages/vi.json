@@ -26,7 +26,12 @@
     "noFeatureAssigned": "Không có chức năng đã gán",
     "enterDescription": "Nhập mô tả (tối đa 2500 ký tự)",
     "noData": "Không có dữ liệu",
-    "notify": "Thông báo"
+    "notify": "Thông báo",
+    "selectAll": "Chọn tất cả",
+    "dropFile": "Thả file vào đây",
+    "dragAndDropFile": "Kéo và thả file PNG, JPG, WebP, SVG vào đây",
+    "selectImage": "Chọn ảnh",
+    "deleteImage": "Xóa ảnh"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -568,6 +573,50 @@
       "saveError": "Có lỗi xảy ra khi lưu dữ liệu",
       "createSuccess": "Loại danh mục đã được thêm thành công",
       "updateSuccess": "Loại danh mục đã được cập nhật thành công"  
+    }
+  },
+  "FolkMedicinesPage": {
+    "title": "Danh sách bài thuốc dân gian",
+    "add-folk-medicine": "Thêm bài thuốc mới",
+    "loading": "Đang tải dữ liệu...",
+    "thumbnail": "Hình ảnh",
+    "summary": "Tóm tắt",
+    "category": "Danh mục",
+    "viewCount": "Lượt xem",
+    "likeCount": "Lượt thích",
+    "isActive": "Trạng thái",
+    "createdAt": "Ngày tạo",
+    "actions": "Thao tác",
+    "openMenu": "Mở menu",
+    "viewDetail": "Xem chi tiết",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "viewFolkMedicine": "Xem bài thuốc",
+    "noSummary": "Không có tóm tắt",
+    "noCategory": "Chưa phân loại",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động",
+    "addFolkMedicine": "Thêm bài thuốc mới",
+    "updateFolkMedicine": "Cập nhật bài thuốc",
+    "enterTitle": "Nhập tên bài thuốc",
+    "enterAuthor": "Nhập tên tác giả",
+    "enterSummary": "Nhập tóm tắt bài thuốc",
+    "enterContent": "Nhập nội dung chi tiết bài thuốc",
+    "enterIngredients": "Nhập các thành phần của bài thuốc",
+    "enterPreparation": "Nhập cách chế biến bài thuốc",
+    "enterUsage": "Nhập cách sử dụng bài thuốc",
+    "enterNotes": "Nhập ghi chú bổ sung",
+    "selectCategory": "Chọn danh mục",
+    "author": "Tác giả",
+    "content": "Nội dung",
+    "ingredients": "Thành phần",
+    "preparation": "Cách chế biến",
+    "usage": "Cách sử dụng",
+    "notes": "Ghi chú",
+    "messages": {
+      "error": "Lỗi tải danh sách bài thuốc dân gian",
+      "deleteSuccess": "Bài thuốc dân gian đã được xóa thành công",
+      "deleteError": "Lỗi khi xóa bài thuốc dân gian"
     }
   }
 }

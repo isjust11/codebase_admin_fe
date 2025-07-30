@@ -26,7 +26,12 @@
     "noFeatureAssigned": "No feature assigned",
     "enterDescription": "Enter description (maximum 2500 characters)",
     "noData": "No data",
-    "notify": "Notify"
+    "notify": "Notify",
+    "selectAll": "Select all",
+    "dropFile": "Drop file here",
+    "dragAndDropFile": "Drag and drop file here",
+    "selectImage": "Select image",
+    "deleteImage": "Delete image"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -571,6 +576,49 @@
       "createSuccess": "Category type created successfully",
       "updateSuccess": "Category type updated successfully"
     }
+  },
+  "FolkMedicinesPage": {
+    "title": "Folk Medicine List",
+    "add-folk-medicine": "Add folk medicine",
+    "loading": "Loading...",
+    "thumbnail": "Thumbnail",
+    "summary": "Summary",
+    "category": "Category",
+    "viewCount": "View count",
+    "likeCount": "Like count",
+    "isActive": "Is active",
+    "createdAt": "Created at",
+    "actions": "Actions",
+    "openMenu": "Open menu",
+    "viewDetail": "View detail",
+    "edit": "Edit",
+    "delete": "Delete",
+    "viewFolkMedicine": "View folk medicine", 
+    "noSummary": "No summary",
+    "noCategory": "No category",
+    "active": "Active",
+    "inactive": "Inactive",
+    "addFolkMedicine": "Add folk medicine",
+    "updateFolkMedicine": "Update folk medicine",
+    "enterTitle": "Enter title",
+    "enterAuthor": "Enter author",
+    "enterSummary": "Enter summary",
+    "enterContent": "Enter content",
+    "enterIngredients": "Enter ingredients",
+    "enterPreparation": "Enter preparation",
+    "enterUsage": "Enter usage",
+    "enterNotes": "Enter notes",
+    "selectCategory": "Select category",
+    "author": "Author",
+    "content": "Content",
+    "ingredients": "Ingredients",
+    "preparation": "Preparation",
+    "usage": "Usage",
+    "notes": "Notes",
+    "messages": {
+      "error": "Error loading folk medicine list",
+      "deleteSuccess": "Folk medicine deleted successfully",
+      "deleteError": "Error deleting folk medicine"
+    }
   }
-  
 }
