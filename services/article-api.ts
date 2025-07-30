@@ -3,6 +3,8 @@ import { Article } from '@/types/article';
 
 
 export interface ArticleDto {
+  id?: string;
+  authorId?: string;
   title: string;
   content: string;
   thumbnail?: string;

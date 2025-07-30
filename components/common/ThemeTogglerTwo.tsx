@@ -1,11 +1,12 @@
 "use client";
 import { useTheme } from "@/contexts/ThemeContext";
 import React from "react";
+import { Button } from "../ui/button";
 
 export default function ThemeTogglerTwo() {
   const { toggleTheme } = useTheme();
   return (
-    <button
+    <Button
       onClick={toggleTheme}
       className="inline-flex size-14 items-center justify-center rounded-full bg-brand-500 text-white transition-colors hover:bg-brand-600"
     >
@@ -37,6 +38,6 @@ export default function ThemeTogglerTwo() {
           fill="currentColor"
         />
       </svg>
-    </button>
+    </Button>
   );
 }

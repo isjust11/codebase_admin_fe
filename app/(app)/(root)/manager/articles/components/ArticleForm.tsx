@@ -3,7 +3,7 @@ import { useParams, useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Article, ArticleDto } from '@/services/article-api';
+import { ArticleDto } from '@/services/article-api';
 import { createArticle, updateArticle, getArticle } from '@/services/article-api';
 import { uploadFile } from '@/services/media-api';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -25,7 +25,7 @@ const ArticleForm = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [article, setArticle] = useState<Article>();
+  const [article, setArticle] = useState<ArticleDto>();
   const [formData, setFormData] = useState<ArticleDto>({
     title: '',
     content: '',
@@ -93,7 +93,7 @@ const ArticleForm = () => {
 
       const submitData = {
         ...formData,
-        authorId: user?.id || null, // Sử dụng ID của người dùng hiện tại
+        authorId: user?.id || '', // Sử dụng ID của người dùng hiện tại
         // Nếu là URL đầy đủ, chuyển về đường dẫn tương đối trước khi lưu
         thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : thumbnail,
       };
