@@ -17,6 +17,7 @@ import Image from 'next/image'
 import { Action } from '@/types/actions';
 import { FolkMedicine } from '@/types/folk-medicine'; 
 import { useTranslations } from 'next-intl';
+import Badge from '@/components/ui/badge/Badge';
 
 export default function FolkMedicinesManagement() {
   const t = useTranslations('FolkMedicinesPage');
@@ -183,11 +184,9 @@ export default function FolkMedicinesManagement() {
       cell: ({ row }) => {
         const isActive = row.getValue("isActive") as boolean
         return (
-          <div className={`capitalize px-2 py-1 rounded-full text-xs ${
-            isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}>
-            {isActive ? t('active') : t('inactive')}
-          </div>
+          <Badge variant="light" color={isActive === true ? 'success' : 'error'} >
+            {isActive == true ? t('active') : t('inactive')}
+          </Badge>  
         )
       },
     },

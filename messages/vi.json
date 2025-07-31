@@ -32,7 +32,8 @@
     "dragAndDropFile": "Kéo và thả file PNG, JPG, WebP, SVG vào đây",
     "selectImage": "Chọn ảnh",
     "deleteImage": "Xóa ảnh",
-    "addCategory": "Thêm danh mục"
+    "addCategory": "Thêm danh mục",
+    "delete": "Xóa"
   },
   "LocaleSwitcher": {
     "en": "English",

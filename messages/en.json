@@ -32,7 +32,8 @@
     "dragAndDropFile": "Drag and drop file here",
     "selectImage": "Select image",
     "deleteImage": "Delete image",
-    "addCategory": "Add category"
+    "addCategory": "Add category",
+    "delete": "Delete"
   },
   "LocaleSwitcher": {
     "en": "English",
