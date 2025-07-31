@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,7 +11,7 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Switch } from '@/components/ui/switch';
 import { Action } from '@/types/actions';
-import { Plus, Save, X } from 'lucide-react';
+import { Loader2, Plus, Save, X } from 'lucide-react';
 import { useDropzone } from "react-dropzone";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mergeImageUrl } from '@/lib/utils';
@@ -19,10 +19,12 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/types/category';
 import { FolkMedicine, CreateFolkMedicineDto } from '@/types/folk-medicine';
 import { useTranslations } from 'next-intl';
-import { getCategories } from '@/services/category-api';
+import { getCategoryByCode } from '@/services/manager-api';
+import { AppCategoryCode } from '@/constants';
 
 const FolkMedicineForm = () => {
   const t = useTranslations('FolkMedicinesPage');
+  const [isPending, startTransition] = useTransition();
   const tUtils = useTranslations('Utils');
   const { user } = useAuth();
   const router = useRouter();
@@ -74,10 +76,8 @@ const FolkMedicineForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoriesData] = await Promise.all([
-          getCategories({page: 1, size: 1000, search: ''}),
-        ]);
-        setCategories(categoriesData.data || []);
+        const categoriesData = await getCategoryByCode(AppCategoryCode.FolkMedicine);
+        setCategories(categoriesData || []);
       } catch (error) {
         toast.error(t('messages.error'));
       }
@@ -198,10 +198,16 @@ const FolkMedicineForm = () => {
       icon: isEditing ? <Save className="h-4 w-4" /> : <Plus className="h-4 w-4" />,
       onClick: () => handleSubmit(),
       title: isEditing ? "Cập nhật" : "Thêm mới",
-      className: "hover:bg-green-100 dark:hover:bg-green-800 rounded-md transition-colors text-green-500",
+      className: "bg-blue-500 hover:bg-blue-600 rounded-md transition-colors text-white",
       isLoading: loading
     },
   ];
+
+  const handleCreateCategory = () => {
+    startTransition(() => {
+      router.push('/manager/categories?onCreate=true');
+    });
+  }
 
   return (
     <div>
@@ -312,15 +318,29 @@ const FolkMedicineForm = () => {
                       value={formData.categoryId}
                       onValueChange={(value) => handleSelectChange('categoryId', value)}
                     >
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full ">
                         <SelectValue placeholder={t('selectCategory')} />
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white">
-                        {categories.map((category) => (
-                          <SelectItem key={category.id} value={category.id}>
+
+                        {categories.length > 0?
+                        categories.map((category) => (
+
+                          <SelectItem key={category.id} value={category.id} className='hover:bg-gray-100 '>
                             {category.name}
                           </SelectItem>
-                        ))}
+                        )):
+                        (
+                          <div className="flex flex-col items-start gap-2 justify-between p-4">
+                            <div>Chưa có danh mục</div>
+                            <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
+                              handleCreateCategory();
+                            }}>
+                              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tUtils('addCategory')}
+                            </span>
+                          </div>
+                        )
+                        }
                       </SelectContent>
                     </Select>
                   </div>

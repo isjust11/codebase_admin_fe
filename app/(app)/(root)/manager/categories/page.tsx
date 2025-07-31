@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ArrowLeftRight } from 'lucide-react';
+import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ArrowLeftRight, RefreshCcw } from 'lucide-react';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -10,7 +10,7 @@ import { DataTable } from '@/components/DataTable';
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { createCategory, deleteCategory, getCategories, getCategoryTypes, updateCategory } from '@/services/manager-api';
+import { createCategory, deleteCategory, getAllCategoryTypes, getCategories, updateCategory } from '@/services/manager-api';
 import { CategoryType } from '@/types/category-type';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Category } from '@/types/category';
@@ -27,6 +27,7 @@ import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import router from 'next/router';
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
+import { useSearchParams } from 'next/navigation';
 
 export default function CategoriesManagement() {
   const t = useTranslations("CategoriesPage");
@@ -46,6 +47,7 @@ export default function CategoriesManagement() {
   const hasResourcePermissionStatus = hasResourcePermission('category');
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [dialogContent, setDialogContent] = useState<string>();
+  const searchParams = useSearchParams();
   const columns: ColumnDef<Category>[] = [
     {
       id: "select",
@@ -182,11 +184,19 @@ export default function CategoriesManagement() {
       },
     },
   ]
+  const queryOpen = searchParams.get('onCreate');
   const handleDelete = async (category: Category) => {
     setSelectedCategory(category)
     setOpenDialog(true);
     setDialogContent(t('messages.confirmDelete'));
   }
+
+  useEffect(() => {
+    if (queryOpen) {
+      openModal();
+    }
+  }, [queryOpen]);
+
   const confirmDelete = async () => {
     await deleteCategory(selectedCategory?.id || '');
     await fetchData();
@@ -198,11 +208,11 @@ export default function CategoriesManagement() {
     try {
       const [categoriesData, typesData] = await Promise.all([
         getCategories({ page: pageIndex + 1, size: pageSize, search }),
-        getCategoryTypes()
+        getAllCategoryTypes()
       ]);
       setCategories(categoriesData.data);
       setFilters(categoriesData.data);
-      setCategoryTypes(typesData.data);
+      setCategoryTypes(typesData);
       setPageCount(categoriesData.totalPages);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -299,12 +309,13 @@ export default function CategoriesManagement() {
     },
   ]
 
+
   return (
     <div>
       <PageBreadcrumb pageTitle={t('pageTitle')} />
       <div className="space-y-6">
         <ComponentCard title={t('title')} listAction={listAction}>
-          <div className="mb-4">
+          <div className="mb-4 flex items-center gap-2">
             <Select value={selectedType?.id} onValueChange={(value) => handleChangeType(value)}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder={t('selectType')} />
@@ -321,6 +332,7 @@ export default function CategoriesManagement() {
                 ))}
               </SelectContent>
             </Select>
+           
           </div>
           <DataTable
             columns={columns}

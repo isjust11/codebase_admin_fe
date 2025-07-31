@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback, useTransition } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -17,6 +17,9 @@ import { getCategoryByCode } from "@/services/manager-api";
 import { AppCategoryCode } from "@/constants";
 import { buildFeature } from "@/lib/utils";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
+import { useRouter } from "next/navigation";
+import { Loader2 } from "lucide-react";
+import { useNavigationLoading } from "@/hooks/useNavigationLoading";
 type NavItem = {
   name: string;
   icon: React.ReactNode;
@@ -27,11 +30,14 @@ type NavItem = {
 
 const AppSidebar: React.FC = () => {
   const { user, feature } = useAuth();
+  const router = useRouter();
+  const { navigateTo, isLoading, clearLoading } = useNavigationLoading();
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
   const [menuTypes, setMenuTypes] = useState<Category[]>();
   const [features, setFeatures] = useState<Feature[]>();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isDataLoading, setIsDataLoading] = useState(true);
+  const [currentPath, setCurrentPath] = useState<string>('');
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: string;
     index: number;
@@ -44,13 +50,18 @@ const AppSidebar: React.FC = () => {
   // const isActive = (path: string) => path === pathname;
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
+  // Xóa loading state khi pathname thay đổi (navigation hoàn thành)
+  useEffect(() => {
+    clearLoading();
+  }, [pathname, clearLoading]);
+
   useAsyncEffect(async () => {
     if (typeof window === "undefined") {
       return;
     }
-    
+
     let isMounted = true;
-    
+
     const fetchMenuTypes = async () => {
       try {
         const appCode = Object.entries(AppCategoryCode);
@@ -63,13 +74,13 @@ const AppSidebar: React.FC = () => {
         console.error('Error fetching menu types:', error);
       } finally {
         if (isMounted) {
-          setIsLoading(false);
+          setIsDataLoading(false);
         }
       }
     };
-    
+
     fetchMenuTypes();
-    
+
     return () => {
       isMounted = false;
     };
@@ -91,15 +102,15 @@ const AppSidebar: React.FC = () => {
     }
 
     let submenuMatched = false;
-    
+
     // Lặp qua từng menu type
     menuTypes.forEach((menuType) => {
       // Lọc features theo menu type
       const items = features
         .map(convertFeatureToNavItem)
         .filter((x) => x.type === menuType.code);
-      
-      
+
+
       items.forEach((nav, index) => {
         if (nav.subItems && nav.subItems.length > 0) {
           nav.subItems.forEach((subItem) => {
@@ -150,7 +161,7 @@ const AppSidebar: React.FC = () => {
     };
   };
 
-  if (isLoading) {
+  if (isDataLoading) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2  border-s-fuchsia-600"></div>
@@ -199,8 +210,12 @@ const AppSidebar: React.FC = () => {
             </button>
           ) : (
             nav.path && (
-              <Link
-                href={nav.path}
+              <div
+                onClick={() => {
+                  if (nav.path) {
+                    navigateTo(nav.path as string);
+                  }
+                }}
                 className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
                   }`}
               >
@@ -215,7 +230,7 @@ const AppSidebar: React.FC = () => {
                 {(isExpanded || isHovered || isMobileOpen) && (
                   <span className={`menu-item-text`}>{nav.name}</span>
                 )}
-              </Link>
+              </div>
             )
           )}
           {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
@@ -234,14 +249,20 @@ const AppSidebar: React.FC = () => {
               <ul className="mt-2 space-y-1 ml-9">
                 {nav.subItems.map((subItem) => (
                   <li key={subItem.name}>
-                    <Link
-                      href={subItem.path}
+                    <div
+                      onClick={() => {
+                        if (subItem.path) {
+                          const path = subItem.path as string;
+                          setCurrentPath(path);
+                          navigateTo(path);
+                        }
+                      }}
                       className={`menu-dropdown-item ${isActive(subItem.path)
                         ? "menu-dropdown-item-active"
                         : "menu-dropdown-item-inactive"
                         }`}
                     >
-                      {subItem.name}
+                      <span>{subItem.name}</span>
                       <span className="flex items-center gap-1 ml-auto">
                         {subItem.new && (
                           <span
@@ -264,7 +285,8 @@ const AppSidebar: React.FC = () => {
                           </span>
                         )}
                       </span>
-                    </Link>
+                      {isLoading(subItem.path as string) && <Loader2 className="h-4 w-4 animate-spin text-fuchsia-600" />}
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -287,7 +309,7 @@ const AppSidebar: React.FC = () => {
       return { type: menuTypeCode, index };
     });
   };
- 
+
   return (
     <aside
       className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
@@ -351,7 +373,7 @@ const AppSidebar: React.FC = () => {
                     <HorizontaLDots />
                   )}
                 </h2>
-                {renderMenuItems(features?.map(convertFeatureToNavItem).filter((x)=>x.type == type.code) ?? [], type.code)}
+                {renderMenuItems(features?.map(convertFeatureToNavItem).filter((x) => x.type == type.code) ?? [], type.code)}
               </div>
             ))
 

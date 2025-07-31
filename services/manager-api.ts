@@ -223,6 +223,24 @@ export const getCategoryTypes = async (params?: PaginationParams): Promise<Pagin
   }
 };
 
+export const getAllCategoryTypes = async (): Promise<CategoryType[]> => {
+  try {
+    const response = await axiosApi.get('/category-types/all');
+    return response.data;
+  } catch (_error) {
+    console.error('Error fetching category types:', _error);
+    return [];
+  }
+};
+
+export const syncCategoryType = async (): Promise<void> => {
+  try {
+    await axiosApi.post('/category-type-sync/sync-all');
+  } catch (_error) {
+    console.error('Error syncing category types:', _error);
+    throw _error;
+  }
+};
 export const createCategoryType = async (data: CategoryType): Promise<CategoryType> => {
   const response = await axiosApi.post('/category-types', data,
   );

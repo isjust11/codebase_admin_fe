@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, Eye, Leaf } from 'lucide-react';
+import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, Eye, Leaf, Loader2 } from 'lucide-react';
 import { deleteFolkMedicine, getFolkMedicines } from '@/services/folk-medicine-api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -21,7 +21,7 @@ import { useTranslations } from 'next-intl';
 export default function FolkMedicinesManagement() {
   const t = useTranslations('FolkMedicinesPage');
   const tUtils = useTranslations('Utils');
-  
+  const [isPending, startTransition] = useTransition();
   const [folkMedicines, setFolkMedicines] = useState<FolkMedicine[]>([]);
   const [pageCount, setPageCount] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
@@ -248,12 +248,15 @@ export default function FolkMedicinesManagement() {
 
   const lstActions: Action[] = [
     {
-      icon: <Plus className="w-4 h-4 mr-2" />,
+      icon: isPending ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Plus className="w-4 h-4 mr-2" />,
+      disabled: isPending,
       onClick: () => {
-        router.push('/manager/folk-medicines/create')
+        startTransition(() => {
+          router.push('/manager/folk-medicines/create')
+        });
       },
       title: t('add-folk-medicine'),
-      className: "hover:bg-green-100 dark:hover:bg-green-800 rounded-md transition-colors text-green-500",
+      className: "bg-blue-500 hover:bg-blue-600 rounded-md transition-colors text-white",
     },
   ]
 

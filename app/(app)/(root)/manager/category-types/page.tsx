@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal } from 'lucide-react';
+import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, RefreshCcw } from 'lucide-react';
 import { CategoryType } from '@/types/category-type';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -12,7 +12,7 @@ import { DataTable } from '@/components/DataTable';
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { getCategoryTypes, deleteCategoryType, createCategoryType, updateCategoryType } from '@/services/manager-api';
+import { getCategoryTypes, deleteCategoryType, createCategoryType, updateCategoryType, syncCategoryType } from '@/services/manager-api';
 import { Action } from '@/types/actions';
 import { useModal } from '@/hooks/useModal';
 import { Modal } from '@/components/ui/modal';
@@ -37,6 +37,14 @@ export default function CategoryTypesManagement() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const listAction: Action[] = [
+    {
+      icon: <RefreshCcw className="w-4 h-4 mr-2" />,
+      onClick: () => {
+        _handleSyncCategoryType();
+      },
+      title: t('sync'),
+      className: "bg-gray-500 hover:bg-gray-500 hover:text-white rounded-md transition-colors text-white",
+    },
     {
       icon: <Plus className="w-4 h-4 mr-2" />,
       onClick: () => {
@@ -193,6 +201,12 @@ export default function CategoryTypesManagement() {
     setPageIndex(newPageIndex);
     setPageSize(newPageSize);
   };
+
+  const _handleSyncCategoryType = async () => {
+    await syncCategoryType();
+    await fetchData();
+    toast.success(t('messages.syncSuccess'));
+  }
 
   const handleSearch = (searchValue: string) => {
     setSearch(searchValue);

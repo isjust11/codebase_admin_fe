@@ -31,7 +31,8 @@
     "dropFile": "Thả file vào đây",
     "dragAndDropFile": "Kéo và thả file PNG, JPG, WebP, SVG vào đây",
     "selectImage": "Chọn ảnh",
-    "deleteImage": "Xóa ảnh"
+    "deleteImage": "Xóa ảnh",
+    "addCategory": "Thêm danh mục"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -533,6 +534,7 @@
     "enterCode": "Nhập mã danh mục",
     "enterName": "Nhập tên danh mục",
     "enterDescription": "Nhập mô tả danh mục",
+    "selectIcon": "Chọn icon",
     "messages": {
       "loadError": "Có lỗi xảy ra khi tải danh sách danh mục",
       "deleteSuccess": "Danh mục đã được xóa thành công",
@@ -540,7 +542,7 @@
       "saveError": "Có lỗi xảy ra khi lưu dữ liệu",
       "createSuccess": "Danh mục đã được thêm thành công",
       "updateSuccess": "Danh mục đã được cập nhật thành công",
-      "confirmDelete":"Bạn có chắc chắn muốn xóa chức năng này không?"  
+      "confirmDelete":"Bạn có chắc chắn muốn xóa chức năng này không?"
     }
   },
   "CategoryTypesPage": {
@@ -566,13 +568,16 @@
     "enterName": "Nhập tên loại danh mục",
     "enterCode": "Nhập mã loại danh mục",
     "enterDescription": "Nhập mô tả loại danh mục",
+    "sync": "Đồng bộ",
+    "code": "Mã",
     "messages": { 
       "loadError": "Có lỗi xảy ra khi tải danh sách loại danh mục",
       "deleteSuccess": "Loại danh mục đã được xóa thành công",
       "deleteError": "Có lỗi xảy ra khi xóa loại danh mục",
       "saveError": "Có lỗi xảy ra khi lưu dữ liệu",
       "createSuccess": "Loại danh mục đã được thêm thành công",
-      "updateSuccess": "Loại danh mục đã được cập nhật thành công"  
+      "updateSuccess": "Loại danh mục đã được cập nhật thành công",
+      "syncSuccess": "Đồng bộ loại danh mục thành công"
     }
   },
   "FolkMedicinesPage": {
@@ -616,7 +621,11 @@
     "messages": {
       "error": "Lỗi tải danh sách bài thuốc dân gian",
       "deleteSuccess": "Bài thuốc dân gian đã được xóa thành công",
-      "deleteError": "Lỗi khi xóa bài thuốc dân gian"
+      "deleteError": "Lỗi khi xóa bài thuốc dân gian",
+      "createSuccess": "Bài thuốc dân gian đã được thêm thành công",
+      "createError": "Lỗi khi thêm bài thuốc dân gian",
+      "updateSuccess": "Bài thuốc dân gian đã được cập nhật thành công",
+      "updateError": "Lỗi khi cập nhật bài thuốc dân gian"
     }
   }
 }
