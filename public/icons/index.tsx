@@ -56,6 +56,8 @@ import MobileCloseIcon from "./mobile-close.svg";
 import ViewMoreIcon from "./view-more.svg";
 import SquareIcon from "./square.svg";
 import  CircleAvatarIcon  from "./circle-avatar.svg";
+import HerbalIcon from "./ic_herbal.svg";
+import AuthorIcon from "./ic_author.svg";
 export {
   DownloadIcon,
   BellIcon,
@@ -114,5 +116,7 @@ export {
   MobileCloseIcon,
   ViewMoreIcon,
   SquareIcon,
-  CircleAvatarIcon
+  CircleAvatarIcon,
+  HerbalIcon,
+  AuthorIcon
 };

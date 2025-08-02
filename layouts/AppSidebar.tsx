@@ -257,7 +257,7 @@ const AppSidebar: React.FC = () => {
                           navigateTo(path);
                         }
                       }}
-                      className={`menu-dropdown-item ${isActive(subItem.path)
+                      className={`menu-dropdown-item cursor-default ${isActive(subItem.path)
                         ? "menu-dropdown-item-active"
                         : "menu-dropdown-item-inactive"
                         }`}
