@@ -1,106 +1,9 @@
-import { axiosInstance } from './base/axios-instance';
+import { axiosInstance } from "@/lib/axios";
+import { Author } from "@/types/author";
+import { AuthorDto } from "@/types/dto/AuthorDto";
 
-export interface Author {
-  id: number;
-  name: string;
-  slug: string;
-  alias?: string;
-  biography?: string;
-  career?: string;
-  achievements?: string;
-  contributions?: string;
-  works?: string;
-  philosophy?: string;
-  legacy?: string;
-  birthDate?: Date;
-  deathDate?: Date;
-  birthPlace?: string;
-  deathPlace?: string;
-  era?: string;
-  dynasty?: string;
-  specialty?: string;
-  teacher?: string;
-  students?: string;
-  portrait?: string;
-  quotes?: string;
-  anecdotes?: string;
-  honors?: string;
-  memorials?: string;
-  references?: string;
-  viewCount: number;
-  likeCount: number;
-  isActive: boolean;
-  herbals?: any[];
-  folkMedicines?: any[];
-  createdAt: Date;
-  updatedAt: Date;
-}
 
-export interface CreateAuthorDto {
-  name: string;
-  alias?: string;
-  biography?: string;
-  career?: string;
-  achievements?: string;
-  contributions?: string;
-  works?: string;
-  philosophy?: string;
-  legacy?: string;
-  birthDate?: Date;
-  deathDate?: Date;
-  birthPlace?: string;
-  deathPlace?: string;
-  era?: string;
-  dynasty?: string;
-  specialty?: string;
-  teacher?: string;
-  students?: string;
-  portrait?: string;
-  quotes?: string;
-  anecdotes?: string;
-  honors?: string;
-  memorials?: string;
-  references?: string;
-  isActive?: boolean;
-}
-
-export interface UpdateAuthorDto {
-  name?: string;
-  alias?: string;
-  biography?: string;
-  career?: string;
-  achievements?: string;
-  contributions?: string;
-  works?: string;
-  philosophy?: string;
-  legacy?: string;
-  birthDate?: Date;
-  deathDate?: Date;
-  birthPlace?: string;
-  deathPlace?: string;
-  era?: string;
-  dynasty?: string;
-  specialty?: string;
-  teacher?: string;
-  students?: string;
-  portrait?: string;
-  quotes?: string;
-  anecdotes?: string;
-  honors?: string;
-  memorials?: string;
-  references?: string;
-  isActive?: boolean;
-}
-
-export interface AuthorPaginationResponse {
-  data: Author[];
-  totalPages: number;
-  totalItems: number;
-  currentPage: number;
-  itemsPerPage: number;
-}
-
-export const getAllAuthors = async (params: { page: number; size: number; search?: string }): Promise<AuthorPaginationResponse> => {
+export const getAllAuthors = async (params: { page: number; size: number; search?: string }): Promise<PaginatedResponse<Author>> => {
   const response = await axiosInstance.get('/authors', { params });
   return response.data;
 };
@@ -110,12 +13,12 @@ export const getAuthorById = async (id: number): Promise<Author> => {
   return response.data;
 };
 
-export const createAuthor = async (data: CreateAuthorDto): Promise<Author> => {
+export const createAuthor = async (data: AuthorDto): Promise<Author> => {
   const response = await axiosInstance.post('/authors', data);
   return response.data;
 };
 
-export const updateAuthor = async (id: number, data: UpdateAuthorDto): Promise<Author> => {
+export const updateAuthor = async (id: number, data: AuthorDto): Promise<Author> => {
   const response = await axiosInstance.patch(`/authors/${id}`, data);
   return response.data;
 };

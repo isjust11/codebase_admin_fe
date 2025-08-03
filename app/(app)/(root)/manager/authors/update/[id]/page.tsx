@@ -29,8 +29,8 @@ const UpdateAuthorPage = () => {
     works: '',
     philosophy: '',
     legacy: '',
-    birthDate: '',
-    deathDate: '',
+    birthDate: new Date(),
+    deathDate: new Date(),
     birthPlace: '',
     deathPlace: '',
     era: '',
@@ -63,8 +63,8 @@ const UpdateAuthorPage = () => {
             works: response.works || '',
             philosophy: response.philosophy || '',
             legacy: response.legacy || '',
-            birthDate: response.birthDate ? new Date(response.birthDate).toISOString().split('T')[0] : '',
-            deathDate: response.deathDate ? new Date(response.deathDate).toISOString().split('T')[0] : '',
+            birthDate: response.birthDate ? new Date(response.birthDate) : new Date(),
+            deathDate: response.deathDate ? new Date(response.deathDate) : new Date(),
             birthPlace: response.birthPlace || '',
             deathPlace: response.deathPlace || '',
             era: response.era || '',
@@ -104,9 +104,13 @@ const UpdateAuthorPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-
     try {
-      await updateAuthor(parseInt(authorId), formData)
+      const updateData = {
+        ...formData,
+        birthDate: formData.birthDate ? new Date(formData.birthDate) : new Date(),
+        deathDate: formData.deathDate ? new Date(formData.deathDate) : new Date()
+      }
+      await updateAuthor(parseInt(authorId), updateData)
       toast.success('Tác giả đã được cập nhật thành công')
       router.push('/manager/authors')
     } catch (error) {
@@ -193,7 +197,7 @@ const UpdateAuthorPage = () => {
                 <Input
                   id="birthDate"
                   type="date"
-                  value={formData.birthDate}
+                  value={formData.birthDate.toISOString().split('T')[0]}
                   onChange={(e) => handleInputChange('birthDate', e.target.value)}
                 />
               </div>
@@ -204,7 +208,7 @@ const UpdateAuthorPage = () => {
                 <Input
                   id="deathDate"
                   type="date"
-                  value={formData.deathDate}
+                  value={formData.deathDate.toISOString().split('T')[0]}
                   onChange={(e) => handleInputChange('deathDate', e.target.value)}
                 />
               </div>

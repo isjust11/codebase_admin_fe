@@ -10,10 +10,12 @@ import { createHerbal } from '@/services/herbal-api'
 import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import ComponentCard from '@/components/common/ComponentCard'
-import { ArrowLeft, Save } from 'lucide-react'
-import { getAllCategories } from '@/services/category-api'
+import { ArrowLeft, Save, Image } from 'lucide-react'
+import { getCategories } from '@/services/manager-api'
 import { Category } from '@/types/category'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import HerbalImageUpload from '@/components/herbal/HerbalImageUpload'
 
 const CreateHerbalPage = () => {
   const router = useRouter()
@@ -41,7 +43,7 @@ const CreateHerbalPage = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await getAllCategories()
+        const response = await getCategories({ page: 1, size: 1000, search: '' })
         setCategories(response.data || [])
       } catch (error) {
         console.error('Lỗi khi tải danh mục:', error)
@@ -57,14 +59,17 @@ const CreateHerbalPage = () => {
     }))
   }
 
+  const [createdHerbalId, setCreatedHerbalId] = useState<number | null>(null)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      await createHerbal(formData)
+      const result = await createHerbal(formData)
+      setCreatedHerbalId(result.id)
       toast.success('Thảo dược đã được tạo thành công')
-      router.push('/manager/herbals')
+      // Không redirect ngay, để user có thể upload hình ảnh
     } catch (error) {
       console.error('Lỗi khi tạo thảo dược:', error)
       toast.error('Có lỗi xảy ra khi tạo thảo dược')
@@ -84,8 +89,9 @@ const CreateHerbalPage = () => {
       />
       
       <div className="space-y-6">
-        <ComponentCard title="Thông tin thảo dược">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        {!createdHerbalId ? (
+          <ComponentCard title="Thông tin thảo dược">
+            <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Tên thảo dược */}
               <div className="space-y-2">
@@ -303,6 +309,53 @@ const CreateHerbalPage = () => {
             </div>
           </form>
         </ComponentCard>
+        ) : (
+          <Tabs defaultValue="images" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="info" className="flex items-center gap-2">
+                <Save className="w-4 h-4" />
+                Thông tin cơ bản
+              </TabsTrigger>
+              <TabsTrigger value="images" className="flex items-center gap-2">
+                <Image className="w-4 h-4" />
+                Quản lý hình ảnh
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="info">
+              <ComponentCard title="Thông tin thảo dược đã tạo">
+                <div className="space-y-4">
+                  <p className="text-green-600 font-medium">
+                    ✅ Thảo dược đã được tạo thành công với ID: {createdHerbalId}
+                  </p>
+                  <div className="flex justify-end space-x-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => router.push('/manager/herbals')}
+                      className="flex items-center"
+                    >
+                      <ArrowLeft className="w-4 h-4 mr-2" />
+                      Quay lại danh sách
+                    </Button>
+                    <Button
+                      onClick={() => router.push(`/manager/herbals/update/${createdHerbalId}`)}
+                      className="flex items-center"
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      Chỉnh sửa thảo dược
+                    </Button>
+                  </div>
+                </div>
+              </ComponentCard>
+            </TabsContent>
+
+            <TabsContent value="images">
+              <ComponentCard title="Quản lý hình ảnh thảo dược">
+                <HerbalImageUpload herbalId={createdHerbalId} />
+              </ComponentCard>
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </div>
   )

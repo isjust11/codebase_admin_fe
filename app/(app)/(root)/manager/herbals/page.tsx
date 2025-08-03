@@ -5,7 +5,6 @@ import { ArrowDown, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal, Pencil, Plus, 
 import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/DataTable'
 import { deleteHerbal, getAllHerbals } from '@/services/herbal-api'
-import { Herbal } from '@/services/herbal-api'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
@@ -17,6 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Category } from '@/types/category'
 import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils'
 import Image from 'next/image'
+import { Herbal } from '@/types/herbal'
 
 const HerbalsPage = () => {
   const router = useRouter()
@@ -48,20 +48,39 @@ const HerbalsPage = () => {
       accessorKey: "thumbnail",
       header: "Hình ảnh",
       cell: ({ row }) => {
-        const thumbnail = mergeImageUrl(row.getValue("thumbnail") as string)
-        return (
-          thumbnail ? <Image
-            width={164}
-            height={124}
-            src={thumbnail}
-            alt="herbal-thumbnail"
-            className="w-16 h-16 object-cover rounded-md"
-          /> :
+        const thumbnail: any = mergeImageUrl(row.getValue("thumbnail") as string)
+        // check link image invalid
+        const isImageInvalid = thumbnail.split('.').pop() !== 'jpg' && thumbnail.split('.').pop() !== 'png' && thumbnail.split('.').pop() !== 'jpeg' && thumbnail.split('.').pop() !== 'webp'
+        if (!thumbnail || isImageInvalid) {
+          return (
             <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
               <span className="text-gray-500">
                 <ImageOff className="w-8 h-8" />
               </span>
             </div>
+          )
+        }
+        
+        return (
+          <Image
+            width={164}
+            height={124}
+            src={thumbnail}
+            alt="herbal-thumbnail"
+            className="w-16 h-16 object-cover rounded-md"
+            onLoad={() => {
+              console.log('image loaded')
+              setImageError(false)
+            }}
+            onInvalid={() => {
+              console.log('image invalid')
+              setImageError(true)
+            }}
+            onError={() => {
+              console.log('image error')
+              setImageError(true)
+            }}
+          />
         )
       },
     },
@@ -216,6 +235,7 @@ const HerbalsPage = () => {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
+  const [imageError, setImageError] = useState(false)
  
   const fetchHerbals = async () => {
     try {

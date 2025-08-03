@@ -25,8 +25,8 @@ const CreateAuthorPage = () => {
     works: '',
     philosophy: '',
     legacy: '',
-    birthDate: '',
-    deathDate: '',
+    birthDate: new Date(),
+    deathDate: new Date(),
     birthPlace: '',
     deathPlace: '',
     era: '',
@@ -131,7 +131,7 @@ const CreateAuthorPage = () => {
                 <Input
                   id="birthDate"
                   type="date"
-                  value={formData.birthDate}
+                  value={formData.birthDate.toISOString().split('T')[0]}
                   onChange={(e) => handleInputChange('birthDate', e.target.value)}
                 />
               </div>
@@ -142,7 +142,7 @@ const CreateAuthorPage = () => {
                 <Input
                   id="deathDate"
                   type="date"
-                  value={formData.deathDate}
+                  value={formData.deathDate.toISOString().split('T')[0]}
                   onChange={(e) => handleInputChange('deathDate', e.target.value)}
                 />
               </div>

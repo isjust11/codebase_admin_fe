@@ -10,10 +10,12 @@ import { getHerbalById, updateHerbal } from '@/services/herbal-api'
 import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import ComponentCard from '@/components/common/ComponentCard'
-import { ArrowLeft, Save } from 'lucide-react'
-import { getAllCategories } from '@/services/category-api'
+import { ArrowLeft, Save, Image } from 'lucide-react'
+import { getCategories } from '@/services/manager-api'
 import { Category } from '@/types/category'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import HerbalImageUpload from '@/components/herbal/HerbalImageUpload'
 
 const UpdateHerbalPage = () => {
   const router = useRouter()
@@ -47,7 +49,7 @@ const UpdateHerbalPage = () => {
       try {
         const [herbalResponse, categoriesResponse] = await Promise.all([
           getHerbalById(parseInt(herbalId)),
-          getAllCategories()
+          getCategories()
         ])
         
         setCategories(categoriesResponse.data || [])
@@ -130,8 +132,21 @@ const UpdateHerbalPage = () => {
       />
       
       <div className="space-y-6">
-        <ComponentCard title="Thông tin thảo dược">
-          <form onSubmit={handleSubmit} className="space-y-6">
+        <Tabs defaultValue="info" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="info" className="flex items-center gap-2">
+              <Save className="w-4 h-4" />
+              Thông tin cơ bản
+            </TabsTrigger>
+            <TabsTrigger value="images" className="flex items-center gap-2">
+              <Image className="w-4 h-4" />
+              Quản lý hình ảnh
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="info">
+            <ComponentCard title="Thông tin thảo dược">
+              <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Tên thảo dược */}
               <div className="space-y-2">
@@ -349,6 +364,14 @@ const UpdateHerbalPage = () => {
             </div>
           </form>
         </ComponentCard>
+          </TabsContent>
+
+          <TabsContent value="images">
+            <ComponentCard title="Quản lý hình ảnh thảo dược">
+              <HerbalImageUpload herbalId={parseInt(herbalId)} />
+            </ComponentCard>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )
