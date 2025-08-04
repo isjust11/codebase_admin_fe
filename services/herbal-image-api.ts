@@ -1,26 +1,16 @@
-import { axiosInstance } from "@/lib/axios";
+import axiosApi from './base/api';
 
 export interface HerbalImageDto {
+  id?: number;
+  herbalId: string;
   url: string;
-  alt?: string;
-  description?: string;
   type: 'main' | 'detail' | 'part' | 'growth' | 'processing' | 'usage' | 'other';
-  sortOrder?: number;
-  isActive?: boolean;
-  herbalId: number;
-}
-
-export interface HerbalImageResponse {
-  id: number;
-  url: string;
+  sortOrder: number;
   alt?: string;
   description?: string;
-  type: string;
-  sortOrder: number;
-  isActive: boolean;
-  herbalId: number;
-  createdAt: string;
-  updatedAt: string;
+  isActive?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface SortOrderDto {
@@ -28,47 +18,48 @@ export interface SortOrderDto {
   sortOrder: number;
 }
 
-// Lấy tất cả hình ảnh của một herbal
-export const getHerbalImages = async (herbalId: number): Promise<HerbalImageResponse[]> => {
-  const response = await axiosInstance.get(`/herbal-images/herbal/${herbalId}`);
+export const createHerbalImage = async (data: Omit<HerbalImageDto, 'id' | 'createdAt' | 'updatedAt'>): Promise<HerbalImageDto> => {
+  const response = await axiosApi.post('/herbal-images', data);
   return response.data;
 };
 
-// Lấy hình ảnh theo loại
-export const getHerbalImagesByType = async (herbalId: number, type: string): Promise<HerbalImageResponse[]> => {
-  const response = await axiosInstance.get(`/herbal-images/herbal/${herbalId}/type/${type}`);
+export const getHerbalImages = async (herbalId: string): Promise<HerbalImageDto[]> => {
+  const response = await axiosApi.get(`/herbal-images/herbal/${herbalId}`);
   return response.data;
 };
 
-// Lấy hình ảnh chính
-export const getMainHerbalImage = async (herbalId: number): Promise<HerbalImageResponse | null> => {
-  const response = await axiosInstance.get(`/herbal-images/herbal/${herbalId}/main`);
+export const getHerbalImage = async (id: string): Promise<HerbalImageDto> => {
+  const response = await axiosApi.get(`/herbal-images/${id}`);
   return response.data;
 };
 
-// Tạo hình ảnh mới
-export const createHerbalImage = async (data: HerbalImageDto): Promise<HerbalImageResponse> => {
-  const response = await axiosInstance.post('/herbal-images', data);
+export const updateHerbalImage = async (id: string, data: Partial<HerbalImageDto>): Promise<HerbalImageDto> => {
+  const response = await axiosApi.patch(`/herbal-images/${id}`, data);
   return response.data;
 };
 
-// Cập nhật hình ảnh
-export const updateHerbalImage = async (id: number, data: Partial<HerbalImageDto>): Promise<HerbalImageResponse> => {
-  const response = await axiosInstance.patch(`/herbal-images/${id}`, data);
-  return response.data;
+export const deleteHerbalImage = async (id: string): Promise<void> => {
+  await axiosApi.delete(`/herbal-images/${id}`);
 };
 
-// Xóa hình ảnh
-export const deleteHerbalImage = async (id: number): Promise<void> => {
-  await axiosInstance.delete(`/herbal-images/${id}`);
+export const deleteHerbalImages = async (herbalId: string): Promise<void> => {
+  await axiosApi.delete(`/herbal-images/herbal/${herbalId}`);
 };
 
-// Xóa tất cả hình ảnh của một herbal
-export const deleteHerbalImages = async (herbalId: number): Promise<void> => {
-  await axiosInstance.delete(`/herbal-images/herbal/${herbalId}`);
-};
-
-// Cập nhật thứ tự sắp xếp
 export const updateHerbalImageSortOrder = async (images: SortOrderDto[]): Promise<void> => {
-  await axiosInstance.post('/herbal-images/sort-order', images);
+  await axiosApi.post('/herbal-images/sort-order', images);
+};
+
+export const getMainHerbalImage = async (herbalId: string): Promise<HerbalImageDto | null> => {
+  try {
+    const response = await axiosApi.get(`/herbal-images/herbal/${herbalId}/main`);
+    return response.data;
+  } catch (error) {
+    return null;
+  }
+};
+
+export const getHerbalImagesByType = async (herbalId: string, type: string): Promise<HerbalImageDto[]> => {
+  const response = await axiosApi.get(`/herbal-images/herbal/${herbalId}/type/${type}`);
+  return response.data;
 }; 

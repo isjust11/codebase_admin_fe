@@ -3,32 +3,32 @@ import React, { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Image as ImageIcon, ZoomIn, ChevronLeft, ChevronRight, X } from 'lucide-react'
-import { getHerbalImages, HerbalImageResponse } from '@/services/herbal-image-api'
-
+import { getHerbalImages, HerbalImageDto } from '@/services/herbal-image-api'
+import { useTranslations } from 'next-intl'
 interface HerbalImageGalleryProps {
-  herbalId: number
+  herbalId: string
   showMainImageOnly?: boolean
 }
 
-const imageTypes = [
-  { value: 'main', label: 'Hình chính' },
-  { value: 'detail', label: 'Hình chi tiết' },
-  { value: 'part', label: 'Hình bộ phận' },
-  { value: 'growth', label: 'Hình sinh trưởng' },
-  { value: 'processing', label: 'Hình chế biến' },
-  { value: 'usage', label: 'Hình sử dụng' },
-  { value: 'other', label: 'Hình khác' }
+const imageTypes = (t: any) => [
+  { value: 'main', label: t('mainImage') },
+  { value: 'detail', label: t('detailImage') },
+  { value: 'part', label: t('partImage') },
+  { value: 'growth', label: t('growthImage') },
+  { value: 'processing', label: t('processingImage') },
+  { value: 'usage', label: t('usageImage') },
+  { value: 'other', label: t('otherImage') }
 ]
 
 const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({ 
   herbalId, 
   showMainImageOnly = false 
 }) => {
-  const [images, setImages] = useState<HerbalImageResponse[]>([])
+  const [images, setImages] = useState<HerbalImageDto[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedImage, setSelectedImage] = useState<HerbalImageResponse | null>(null)
+  const [selectedImage, setSelectedImage] = useState<HerbalImageDto | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-
+  const t = useTranslations('Herbals')
   useEffect(() => {
     const loadImages = async () => {
       try {
@@ -45,7 +45,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
           setImages(sortedImages)
         }
       } catch (error) {
-        console.error('Lỗi khi tải hình ảnh:', error)
+        console.error(t('errorLoadingImages'), error)
       } finally {
         setLoading(false)
       }
@@ -54,7 +54,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
     loadImages()
   }, [herbalId, showMainImageOnly])
 
-  const openLightbox = (image: HerbalImageResponse, index: number) => {
+  const openLightbox = (image: HerbalImageDto, index: number) => {
     setSelectedImage(image)
     setCurrentImageIndex(index)
   }
@@ -85,7 +85,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
-            Hình ảnh thảo dược
+            {t('herbalsImage')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -103,12 +103,12 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
-            Hình ảnh thảo dược
+            {t('herbalsImage')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            Chưa có hình ảnh nào
+            {t('noImage')}
           </div>
         </CardContent>
       </Card>
@@ -121,7 +121,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
-            Hình ảnh thảo dược ({images.length})
+              {t('herbalsImage')} ({images.length})
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -134,11 +134,11 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
               >
                 <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
                   <img
-                    src={image.url}
+                    src={`${process.env.NEXT_PUBLIC_API_URL}${image.url}`}
                     alt={image.alt || 'Herbal image'}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
-                  <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+                  <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
                     <ZoomIn className="w-8 h-8 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
                   </div>
                 </div>
@@ -146,7 +146,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
                 <div className="mt-2 space-y-1">
                   <div className="flex items-center justify-between">
                     <Badge variant="outline" className="text-xs">
-                      {imageTypes.find(t => t.value === image.type)?.label || image.type}
+                      {imageTypes(t).find((t: any) => t.value === image.type)?.label || image.type}
                     </Badge>
                     {image.alt && (
                       <span className="text-xs text-gray-600 truncate max-w-[120px]">
@@ -169,46 +169,46 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
 
       {/* Lightbox */}
       {selectedImage && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="relative max-w-4xl max-h-full p-4">
-            {/* Close button */}
-            <button
+            {/* Close Button */}
+            <div
               onClick={closeLightbox}
-              className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors"
+              className="absolute top-4 right-4 z-10 text-white hover:text-gray-300 transition-colors bg-black/50 rounded-full p-2"
             >
               <X className="w-6 h-6" />
-            </button>
+            </div>
 
             {/* Navigation buttons */}
             {images.length > 1 && (
               <>
-                <button
+                <div
                   onClick={prevImage}
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors"
+                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors bg-black/50 rounded-full p-2"
                 >
                   <ChevronLeft className="w-8 h-8" />
-                </button>
-                <button
+                </div>
+                <div
                   onClick={nextImage}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:text-gray-300 transition-colors bg-black/50 rounded-full p-2"
                 >
                   <ChevronRight className="w-8 h-8" />
-                </button>
+                </div>
               </>
             )}
 
             {/* Image */}
             <div className="flex items-center justify-center">
               <img
-                src={selectedImage.url}
+                src={`${process.env.NEXT_PUBLIC_API_URL}${selectedImage.url}`}
                 alt={selectedImage.alt || 'Herbal image'}
-                className="max-w-full max-h-full object-contain"
+                className="max-w-full max-h-full object-contain rounded-lg"
               />
             </div>
 
             {/* Image info */}
             <div className="absolute bottom-4 left-4 right-4 text-white text-center">
-              <div className="bg-black bg-opacity-50 rounded-lg p-3">
+              <div className="bg-black/50 rounded-lg p-3">
                 {selectedImage.alt && (
                   <h3 className="font-semibold mb-1">{selectedImage.alt}</h3>
                 )}
@@ -217,7 +217,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
                 )}
                 <div className="flex items-center justify-center gap-2 mt-2">
                   <Badge variant="secondary" className="text-xs">
-                    {imageTypes.find(t => t.value === selectedImage.type)?.label || selectedImage.type}
+                    {imageTypes(t).find((t: any) => t.value === selectedImage.type)?.label || selectedImage.type}
                   </Badge>
                   <span className="text-xs text-gray-300">
                     {currentImageIndex + 1} / {images.length}

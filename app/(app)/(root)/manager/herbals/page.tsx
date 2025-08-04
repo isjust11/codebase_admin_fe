@@ -17,9 +17,10 @@ import { Category } from '@/types/category'
 import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils'
 import Image from 'next/image'
 import { Herbal } from '@/types/herbal'
-
+import { useTranslations } from 'next-intl'
 const HerbalsPage = () => {
   const router = useRouter()
+  const t = useTranslations('Herbals')
   const columns: ColumnDef<Herbal>[] = [
     {
       id: "select",
@@ -31,14 +32,14 @@ const HerbalsPage = () => {
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={t('selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={t('selectRow')}
         />
       ),
       enableSorting: false,
@@ -46,7 +47,7 @@ const HerbalsPage = () => {
     },
     {
       accessorKey: "thumbnail",
-      header: "Hình ảnh",
+      header: t('image'),
       cell: ({ row }) => {
         const thumbnail: any = mergeImageUrl(row.getValue("thumbnail") as string)
         // check link image invalid
@@ -92,7 +93,7 @@ const HerbalsPage = () => {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tên thảo dược
+            {t('herbals')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -108,31 +109,31 @@ const HerbalsPage = () => {
     },
     {
       accessorKey: "scientificName",
-      header: "Tên khoa học",
+      header: t('scientificName'),
       cell: ({ row }) => {
         const scientificName = row.getValue("scientificName") as string;
         return (
           <div className="text-sm text-gray-600 italic">
-            {scientificName || 'Chưa có'}
+            {scientificName || t('noData')}
           </div>
         )
       },
     },
     {
       accessorKey: "family",
-      header: "Họ",
+      header: t('family'),
       cell: ({ row }) => {
         const family = row.getValue("family") as string;
         return (
           <div className="text-sm text-gray-600">
-            {family || 'Chưa có'}
+            {family || t('noData')}
           </div>
         )
       },
     },
     {
       accessorKey: "category",
-      header: "Danh mục",
+      header: t('category'),
       cell: ({ row }) => {
         const category = row.getValue("category") as Category
         return (
@@ -141,7 +142,7 @@ const HerbalsPage = () => {
               {category?.icon && unicodeToEmoji(category.icon)}
             </div>
             <div className="text-sm text-gray-500">
-              {category?.name || 'Chưa phân loại'}
+              {category?.name || t('noData')}
             </div>
           </div>
         )
@@ -149,7 +150,7 @@ const HerbalsPage = () => {
     },
     {
       accessorKey: "viewCount",
-      header: "Lượt xem",
+      header: t('viewCount'),
       cell: ({ row }) => {
         const viewCount = row.getValue("viewCount") as number;
         return (
@@ -161,7 +162,7 @@ const HerbalsPage = () => {
     },
     {
       accessorKey: "likeCount",
-      header: "Lượt thích",
+      header: t('likeCount'),
       cell: ({ row }) => {
         const likeCount = row.getValue("likeCount") as number;
         return (
@@ -173,29 +174,29 @@ const HerbalsPage = () => {
     },
     {
       accessorKey: "isActive",
-      header: "Trạng thái",
+      header: t('status'),
       cell: ({ row }) => {
         const status = row.getValue("isActive") as boolean
         return (
           <Badge className={status ? 'ring-green-400' : 'ring-red-400'} variant="light" color={status ? 'success' : 'error'} >
-            {status ? 'Hoạt động' : 'Không hoạt động'}
+            {status ? t('active') : t('inactive')}
           </Badge>
         )
       },
     },
     {
       id: "actions",
-      header: 'Thao tác',
+      header: t('actions'),
       cell: ({ row }) => {
         const herbal = row.original
-        const handleDelete = async (id: number) => {
+        const handleDelete = async (id: string) => {
           try {
             await deleteHerbal(id);
-            toast.success('Thảo dược đã được xóa thành công');
+            toast.success(t('herbalDeletedSuccess'));
             // Refresh data
             fetchHerbals();
           } catch (_error) {
-            toast.error('Có lỗi xảy ra khi xóa thảo dược');
+            toast.error(t('errorDeletingHerbal'));
           }
         }
         return (
@@ -203,7 +204,7 @@ const HerbalsPage = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Mở menu</span>
+                  <span className="sr-only">{t('openMenu')}</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -211,17 +212,17 @@ const HerbalsPage = () => {
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                   onClick={() => router.push(`/manager/herbals/${herbal.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
-                  Xem chi tiết
+                  {t('viewDetail')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
                   onClick={() => router.push(`/manager/herbals/update/${herbal.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  {t('edit')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(herbal.id)}>
+                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(herbal.id!.toString())}>
                   <Trash className="mr-2 h-4 w-4" />
-                  Xóa
+                    {t('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -245,8 +246,8 @@ const HerbalsPage = () => {
         setPageCount(response.totalPages);
       }
     } catch (error) {
-      console.error('Lỗi khi tải danh sách thảo dược:', error);
-      toast.error('Có lỗi xảy ra khi tải danh sách thảo dược');
+      console.error(t('errorLoadingHerbals'), error);
+      toast.error(t('errorLoadingHerbals'));
     }
   }
   
@@ -269,15 +270,15 @@ const HerbalsPage = () => {
       onClick: () => {
         router.push('/manager/herbals/create')
       },
-      title: "Thêm thảo dược mới",
+      title: t('addHerbal'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
   ]
   return (
     <div>
-      <PageBreadcrumb pageTitle="Danh sách thảo dược" items={[]} />
+      <PageBreadcrumb pageTitle={t('herbals')} items={[]} />
       <div className="space-y-6">
-        <ComponentCard title="Danh sách thảo dược" listAction={lstActions}>
+        <ComponentCard title={t('herbals')} listAction={lstActions}>
           <div className="container mx-auto">
           <DataTable
             columns={columns}

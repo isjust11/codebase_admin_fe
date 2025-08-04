@@ -8,7 +8,7 @@ export const getAllHerbals = async (params: { page: number; size: number; search
   return response.data;
 };
 
-export const getHerbalById = async (id: number): Promise<Herbal> => {
+export const getHerbalById = async (id: string): Promise<Herbal> => {
   const response = await axiosInstance.get(`/herbals/${id}`);
   return response.data;
 };
@@ -18,12 +18,12 @@ export const createHerbal = async (data: HerbalDto): Promise<Herbal> => {
   return response.data;
 };
 
-export const updateHerbal = async (id: number, data: HerbalDto): Promise<Herbal> => {
+export const updateHerbal = async (id: string, data: HerbalDto): Promise<Herbal> => {
   const response = await axiosInstance.patch(`/herbals/${id}`, data);
   return response.data;
 };
 
-export const deleteHerbal = async (id: number): Promise<void> => {
+export const deleteHerbal = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/herbals/${id}`);
 };
 
@@ -42,10 +42,10 @@ export const getHerbalsByFamily = async (family: string): Promise<Herbal[]> => {
   return response.data;
 };
 
-export const incrementViewCount = async (id: number): Promise<void> => {
+export const incrementViewCount = async (id: string): Promise<void> => {
   await axiosInstance.post(`/herbals/${id}/view`);
 };
 
-export const incrementLikeCount = async (id: number): Promise<void> => {
+export const incrementLikeCount = async (id: string): Promise<void> => {
   await axiosInstance.post(`/herbals/${id}/like`);
 }; 

@@ -3,32 +3,49 @@ import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useRouter, useParams } from 'next/navigation'
 import { getHerbalById } from '@/services/herbal-api'
-import { Herbal } from '@/services/herbal-api'
 import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import ComponentCard from '@/components/common/ComponentCard'
 import { ArrowLeft, Edit, Eye, Heart } from 'lucide-react'
 import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils'
 import Image from 'next/image'
-import { Category } from '@/types/category'
 import Badge from '@/components/ui/badge/Badge'
+import { Herbal } from '@/types/herbal'
+import { HerbalImageDto } from '@/services/herbal-image-api'
+import { getHerbalImages } from '@/services/herbal-image-api'
+import HerbalImageGallery from '../components/HerbalImageGallery'
+import { useTransition } from 'react'
+import { Action } from '@/types/actions'
+import { useTranslations } from 'next-intl'
 
 const HerbalDetailPage = () => {
+  const [isPending, startTransition] = useTransition()
+  const t = useTranslations('Herbals')
   const router = useRouter()
   const params = useParams()
   const herbalId = params.id as string
-  
+  const [imageDisplay, setImageDisplay] = useState<string>('')
   const [herbal, setHerbal] = useState<Herbal | null>(null)
   const [loading, setLoading] = useState(true)
-
+  const [images, setImages] = useState<HerbalImageDto[]>([])
   useEffect(() => {
     const fetchHerbal = async () => {
       try {
-        const response = await getHerbalById(parseInt(herbalId))
+        const response = await getHerbalById(herbalId)
+        const images = await getHerbalImages(herbalId)
+        if(images.length > 0) {
+          const image = images.find((image: HerbalImageDto) => image.type === 'main')
+          if(image) {
+            setImageDisplay(mergeImageUrl(image.url))
+          }else{
+            setImageDisplay(mergeImageUrl(images[0].url))
+          }
+        }
         setHerbal(response)
+        setImages(images)
       } catch (error) {
         console.error('Lỗi khi tải thông tin thảo dược:', error)
-        toast.error('Có lỗi xảy ra khi tải thông tin thảo dược')
+        toast.error(t('error'))
       } finally {
         setLoading(false)
       }
@@ -44,7 +61,7 @@ const HerbalDetailPage = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <p className="mt-4">Đang tải thông tin thảo dược...</p>
+          <p className="mt-4">{t('loading')}</p>
         </div>
       </div>
     )
@@ -54,37 +71,61 @@ const HerbalDetailPage = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <p className="text-lg text-gray-600">Không tìm thấy thảo dược</p>
+          <p className="text-lg text-gray-600">{t('notFound')}</p>
           <Button 
             onClick={() => router.push('/manager/herbals')}
             className="mt-4"
           >
-            Quay lại danh sách
+            {t('backToList')}
           </Button>
         </div>
       </div>
     )
   }
+  const lstAction: Action[] = [
+    {
+      icon: <ArrowLeft className="w-4 h-4" />,
+      onClick: () => {
+        startTransition(() => {
+          router.push('/manager/herbals')
+        })
+      },
+      title: t('back'),
+      className:isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300',
+      variant: 'outline'
+    },
+    {
+      icon: <Edit className="w-4 h-4" />,
+      onClick: () =>{
+        startTransition(() => {
+          router.push(`/manager/herbals/update/${herbalId}`)
+        })
+      },
+      title: t('edit'),
+      className: isPending ? 'opacity-50 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600 dark:hover:bg-blue-800 rounded-md transition-colors text-white',
+      variant: 'primary'
+    }
+  ]
 
   return (
     <div>
       <PageBreadcrumb 
-        pageTitle="Chi tiết thảo dược" 
+        pageTitle={t('detail')} 
         items={[
-          { title: 'Thảo dược', href: '/manager/herbals' },
+          { title: t('herbals'), href: '/manager/herbals' },
           { title: herbal.title, href: `/manager/herbals/${herbalId}` }
         ]} 
       />
       
       <div className="space-y-6">
         {/* Header với hình ảnh và thông tin cơ bản */}
-        <ComponentCard title="Thông tin cơ bản">
+        <ComponentCard title={t('basicInfo')} listAction={lstAction }>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Hình ảnh */}
             <div className="lg:col-span-1">
-              {herbal.thumbnail ? (
+              {imageDisplay ? (
                 <Image
-                  src={mergeImageUrl(herbal.thumbnail)}
+                  src={mergeImageUrl(imageDisplay)}
                   alt={herbal.title}
                   width={400}
                   height={300}
@@ -92,7 +133,7 @@ const HerbalDetailPage = () => {
                 />
               ) : (
                 <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">Không có hình ảnh</span>
+                  <span className="text-gray-500">{t('noImage')}</span>
                 </div>
               )}
             </div>
@@ -112,23 +153,23 @@ const HerbalDetailPage = () => {
                   variant="light" 
                   color={herbal.isActive ? 'success' : 'error'}
                 >
-                  {herbal.isActive ? 'Hoạt động' : 'Không hoạt động'}
+                  {herbal.isActive ? t('active') : t('inactive')}
                 </Badge>
                 
                 <div className="flex items-center space-x-2 text-gray-600">
                   <Eye className="w-4 h-4" />
-                  <span>{herbal.viewCount} lượt xem</span>
+                  <span>{herbal.viewCount} {t('views')}</span>
                 </div>
                 
                 <div className="flex items-center space-x-2 text-gray-600">
                   <Heart className="w-4 h-4" />
-                  <span>{herbal.likeCount} lượt thích</span>
+                    <span>{herbal.likeCount} {t('likes')}</span>
                 </div>
               </div>
 
               {herbal.category && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">Danh mục:</span>
+                  <span className="text-sm text-gray-600">{t('category')}:</span>
                   <div className="flex items-center space-x-2">
                     {herbal.category.icon && unicodeToEmoji(herbal.category.icon)}
                     <span className="text-sm font-medium">{herbal.category.name}</span>
@@ -138,7 +179,7 @@ const HerbalDetailPage = () => {
 
               {herbal.summary && (
                 <div>
-                  <h3 className="font-semibold text-gray-900 mb-2">Tóm tắt</h3>
+                  <h3 className="font-semibold text-gray-900 mb-2">{t('summary')}</h3>
                   <p className="text-gray-700 leading-relaxed">{herbal.summary}</p>
                 </div>
               )}
@@ -147,32 +188,32 @@ const HerbalDetailPage = () => {
         </ComponentCard>
 
         {/* Thông tin chi tiết */}
-        <ComponentCard title="Thông tin chi tiết">
+        <ComponentCard title={t('detailInfo')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {herbal.commonNames && (
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Tên thường gọi</h4>
+                <h4 className="font-semibold text-gray-900 mb-2">{t('commonNames')}</h4>
                 <p className="text-gray-700">{herbal.commonNames}</p>
               </div>
             )}
 
             {herbal.family && (
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Họ</h4>
+                <h4 className="font-semibold text-gray-900 mb-2">{t('family')}</h4>
                 <p className="text-gray-700">{herbal.family}</p>
               </div>
             )}
 
             {herbal.partsUsed && (
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Bộ phận sử dụng</h4>
+                <h4 className="font-semibold text-gray-900 mb-2">{t('partsUsed')}</h4>
                 <p className="text-gray-700">{herbal.partsUsed}</p>
               </div>
             )}
 
             {herbal.activeCompounds && (
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">Hợp chất hoạt tính</h4>
+                <h4 className="font-semibold text-gray-900 mb-2">{t('activeCompounds')}</h4>
                 <p className="text-gray-700">{herbal.activeCompounds}</p>
               </div>
             )}
@@ -180,42 +221,47 @@ const HerbalDetailPage = () => {
 
           {herbal.medicinalProperties && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">Tính chất dược liệu</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('medicinalProperties')}</h4>
               <p className="text-gray-700 leading-relaxed">{herbal.medicinalProperties}</p>
             </div>
           )}
 
           {herbal.preparationMethods && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">Phương pháp chế biến</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('preparationMethods')}</h4>
               <p className="text-gray-700 leading-relaxed">{herbal.preparationMethods}</p>
             </div>
           )}
 
           {herbal.dosage && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">Liều lượng</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('dosage')}</h4>
               <p className="text-gray-700 leading-relaxed">{herbal.dosage}</p>
             </div>
           )}
 
           {herbal.contraindications && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">Chống chỉ định</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('contraindications')}</h4>
               <p className="text-gray-700 leading-relaxed">{herbal.contraindications}</p>
             </div>
           )}
 
           {herbal.sideEffects && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">Tác dụng phụ</h4>
+              <h4 className="font-semibold text-gray-900 mb-2">{t('sideEffects')}</h4>
               <p className="text-gray-700 leading-relaxed">{herbal.sideEffects}</p>
             </div>
           )}
         </ComponentCard>
 
+          {/* Danh sách hình ảnh */}
+          <ComponentCard title={t('imageList')}>
+            <HerbalImageGallery herbalId={herbalId} />
+        </ComponentCard>
+
         {/* Nội dung chi tiết */}
-        <ComponentCard title="Nội dung chi tiết">
+        <ComponentCard title={t('content')}>
           <div className="prose max-w-none">
             <div 
               className="text-gray-700 leading-relaxed whitespace-pre-wrap"
@@ -225,49 +271,31 @@ const HerbalDetailPage = () => {
         </ComponentCard>
 
         {/* Thông tin hệ thống */}
-        <ComponentCard title="Thông tin hệ thống">
+        <ComponentCard title={t('systemInfo')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="font-medium text-gray-900">Ngày tạo:</span>
+              <span className="font-medium text-gray-900">{t('createdAt')}:</span>
               <span className="ml-2 text-gray-600">
                 {new Date(herbal.createdAt).toLocaleDateString('vi-VN')}
               </span>
             </div>
             <div>
-              <span className="font-medium text-gray-900">Ngày cập nhật:</span>
+              <span className="font-medium text-gray-900">{t('updatedAt')}:</span>
               <span className="ml-2 text-gray-600">
                 {new Date(herbal.updatedAt).toLocaleDateString('vi-VN')}
               </span>
             </div>
             <div>
-              <span className="font-medium text-gray-900">Slug:</span>
+              <span className="font-medium text-gray-900">{t('slug')}:</span>
               <span className="ml-2 text-gray-600">{herbal.slug}</span>
             </div>
             <div>
-              <span className="font-medium text-gray-900">ID:</span>
+              <span className="font-medium text-gray-900">{t('id')}:</span>
               <span className="ml-2 text-gray-600">{herbal.id}</span>
             </div>
           </div>
         </ComponentCard>
 
-        {/* Buttons */}
-        <div className="flex justify-end space-x-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push('/manager/herbals')}
-            className="flex items-center"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Quay lại
-          </Button>
-          <Button
-            onClick={() => router.push(`/manager/herbals/update/${herbalId}`)}
-            className="flex items-center"
-          >
-            <Edit className="w-4 h-4 mr-2" />
-            Chỉnh sửa
-          </Button>
-        </div>
       </div>
     </div>
   )
