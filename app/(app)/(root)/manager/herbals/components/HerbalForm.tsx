@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import { getCategories } from '@/services/manager-api';
 import { Category } from '@/types/category';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -11,6 +10,8 @@ import { Herbal } from '@/types/herbal';
 import { uploadFile } from '@/services/media-api';
 import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
+import { mergeImageUrl } from '@/lib/utils';
+import Switch from "@/components/form/switch/Switch";
 
 interface HerbalFormProps {
   initialData?: Partial<Herbal>;
@@ -31,9 +32,10 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const t = useTranslations('Herbals')
+  const tUtils = useTranslations('Utils')
   const [formData, setFormData] = useState<Herbal>({
     title: '',
-    summary: '', 
+    summary: '',
     content: '',
     scientificName: '',
     commonNames: '',
@@ -144,14 +146,24 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
           <div className="transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl hover:border-brand-500">
             {previewUrl || formData.thumbnail ? (
               <div className="relative">
-                <img
-                  src={previewUrl || formData.thumbnail || ''}
-                  alt="Preview"
-                  className="w-full h-64 object-cover rounded-xl"
-                />
+                {previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Preview"
+                    className="w-full h-64 object-cover rounded-xl"
+                  />
+                )}
+                {formData.thumbnail && (
+                  <img
+                    src={mergeImageUrl(formData.thumbnail)}
+                    alt="Preview"
+                    className="w-full h-64 object-cover rounded-xl"
+                  />
+                )}
+
                 <button
                   type="button"
-                  title="Xóa hình ảnh"
+                  title={tUtils('deleteImage')}
                   onClick={() => {
                     setSelectedFile(null);
                     setPreviewUrl(null);
@@ -195,16 +207,16 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                   </div>
 
                   {/* Text Content */}
-                  <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                    {isDragActive ? "Thả file vào đây" : "Kéo & và thả file vào đây"}
+                  <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90 text-center">
+                    {isDragActive ? tUtils('dropFileHere') : tUtils('dragAndDropFile')}
                   </h4>
 
                   <span className=" text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-                    Kéo và thả file PNG, JPG, WebP, SVG vào đây
+                    {tUtils('dragAndDropFile')}
                   </span>
 
                   <span className="font-medium underline text-theme-sm text-brand-500">
-                    Chọn ảnh
+                    {tUtils('selectImage')}
                   </span>
                 </div>
               </div>
@@ -234,9 +246,9 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 <SelectTrigger>
                   <SelectValue placeholder={t('category')} />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className='bg-white dark:bg-gray-900'>
                   {categories.map((category) => (
-                    <SelectItem key={category.id} value={category.id.toString()}>
+                    <SelectItem className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' key={category.id} value={category.id.toString()}>
                       {category.name}
                     </SelectItem>
                   ))}
@@ -274,7 +286,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 id="family"
                 value={formData.family}
                 onChange={(e) => handleInputChange('family', e.target.value)}
-                  placeholder={t('family')}
+                placeholder={t('family')}
               />
             </div>
 
@@ -334,7 +346,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-                <Label htmlFor="contraindications">{t('contraindications')}</Label>
+              <Label htmlFor="contraindications">{t('contraindications')}</Label>
               <Textarea
                 id="contraindications"
                 value={formData.contraindications}
@@ -383,11 +395,11 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
             <Label htmlFor="isActive">{t('isActive')}</Label>
             <div className="flex items-center space-x-2">
               <Switch
-                id="isActive"
-                checked={formData.isActive}
-                onCheckedChange={(checked) => handleInputChange('isActive', checked)}
+                label={formData.isActive ? t('active') : t('inactive')}
+                key={formData.id.toString()}
+                defaultChecked={formData.isActive}
+                onChange={(checked: boolean) => handleInputChange('isActive', checked)}
               />
-              <Label htmlFor="isActive">{formData.isActive ? t('active') : t('inactive')}</Label>
             </div>
           </div>
         </form>

@@ -20,6 +20,7 @@ const UpdateHerbalPage = () => {
   const [herbal, setHerbal] = useState<Herbal | null>(null)
   const [initialLoading, setInitialLoading] = useState(true)
   const t = useTranslations('Herbals')
+  const tUtils = useTranslations('Utils')
   const herbalId = params.id as string
 
   useEffect(() => {

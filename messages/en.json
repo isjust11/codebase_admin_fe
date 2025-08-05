@@ -33,7 +33,19 @@
     "selectImage": "Select image",
     "deleteImage": "Delete image",
     "addCategory": "Add category",
-    "delete": "Delete"
+    "delete": "Delete",
+    "create": "Create",
+    "herbals": "Herbals",
+    "views": "Views",
+    "likes": "Likes",
+    "status": "Status",
+    "actions": "Actions",
+    "openMenu": "Open menu",
+    "viewDetail": "View detail",
+    "edit": "Edit",
+    "noImage": "No image",
+    "category": "Category",
+    "updateHerbal": "Update herbal"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -713,6 +725,7 @@
     "detail": "Detail",
     "dosage": "Dosage",
     "isActive": "Is active",
-    "isInactive": "Is inactive"
+    "isInactive": "Is inactive",
+    "uploadHerbalsImage": "Upload herbal images"
   }
 }

@@ -21,6 +21,7 @@ import { useTranslations } from 'next-intl'
 const HerbalDetailPage = () => {
   const [isPending, startTransition] = useTransition()
   const t = useTranslations('Herbals')
+  const tUtils = useTranslations('Utils')
   const router = useRouter()
   const params = useParams()
   const herbalId = params.id as string
@@ -133,7 +134,7 @@ const HerbalDetailPage = () => {
                 />
               ) : (
                 <div className="w-full h-64 bg-gray-200 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-500">{t('noImage')}</span>
+                  <span className="text-gray-500">{tUtils('noImage')}</span>
                 </div>
               )}
             </div>
@@ -158,18 +159,18 @@ const HerbalDetailPage = () => {
                 
                 <div className="flex items-center space-x-2 text-gray-600">
                   <Eye className="w-4 h-4" />
-                  <span>{herbal.viewCount} {t('views')}</span>
+                  <span>{herbal.viewCount} {tUtils('views')}</span>
                 </div>
                 
                 <div className="flex items-center space-x-2 text-gray-600">
                   <Heart className="w-4 h-4" />
-                    <span>{herbal.likeCount} {t('likes')}</span>
+                    <span>{herbal.likeCount} {tUtils('likes')}</span>
                 </div>
               </div>
 
               {herbal.category && (
                 <div className="flex items-center space-x-2">
-                  <span className="text-sm text-gray-600">{t('category')}:</span>
+                  <span className="text-sm text-gray-600">{tUtils('category')}:</span>
                   <div className="flex items-center space-x-2">
                     {herbal.category.icon && unicodeToEmoji(herbal.category.icon)}
                     <span className="text-sm font-medium">{herbal.category.name}</span>

@@ -15,6 +15,7 @@ import { useTranslations } from 'next-intl'
 const CreateHerbalPage = () => {
   const router = useRouter()
   const t = useTranslations('Herbals')
+  const tUtils = useTranslations('Utils')
   const [loading, setLoading] = useState(false)
   const [createdHerbalId, setCreatedHerbalId] = useState<string | null>(null)
 
@@ -65,7 +66,7 @@ const CreateHerbalPage = () => {
         pageTitle={t('createHerbal')} 
         items={[
           { title: t('herbals'), href: '/manager/herbals' },
-          { title: t('create'), href: '/manager/herbals/create' }
+          { title: tUtils('create'), href: '/manager/herbals/create' }
         ]} 
       />
       

@@ -29,6 +29,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
   const [selectedImage, setSelectedImage] = useState<HerbalImageDto | null>(null)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const t = useTranslations('Herbals')
+  const tUtils = useTranslations('Utils')
   useEffect(() => {
     const loadImages = async () => {
       try {
@@ -108,7 +109,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            {t('noImage')}
+            {tUtils('noImage')}
           </div>
         </CardContent>
       </Card>

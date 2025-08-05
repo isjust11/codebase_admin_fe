@@ -38,7 +38,14 @@
     "viewDetail": "Xem chi tiết",
     "edit": "Chỉnh sửa",
     "addHerbal": "Thêm thảo dược",
-    "herbals": "Thảo dược"
+    "herbals": "Thảo dược",
+    "create": "Tạo mới",
+    "views": "Lượt xem",
+    "likes": "Lượt thích",
+    "status": "Trạng thái",
+    "actions": "Thao tác",
+    "noImage": "Không có ảnh",
+    "category": "Danh mục"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -714,6 +721,9 @@
     "back":"Quay lại",
     "dosage": "Liều dùng",
     "isActive": "Hoạt động",
-    "isInactive": "Ngừng hoạt động"
+    "isInactive": "Ngừng hoạt động",
+    "updateHerbal": "Cập nhật thảo dược",
+    "uploadHerbalsImage": "Tải lên hình ảnh thảo dược"
+
   }
 }

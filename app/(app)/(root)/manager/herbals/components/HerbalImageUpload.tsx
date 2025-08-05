@@ -18,6 +18,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
   const [uploading, setUploading] = useState(false);
   const [loading, setLoading] = useState(true);
   const t = useTranslations('Herbals')
+  const tUtils = useTranslations('Utils')
   const onDrop = async (acceptedFiles: File[]) => {
     if (acceptedFiles.length === 0) return;
 
@@ -42,10 +43,10 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
 
       const newImages = await Promise.all(uploadPromises);
       setImages(prev => [...prev, ...newImages]);
-      toast.success(`${t('uploadSuccess', { count: acceptedFiles.length })}`);
+      toast.success(`${tUtils('uploadSuccess', { count: acceptedFiles.length })}`);
     } catch (error) {
-      console.error('Lỗi khi upload hình ảnh:', error);
-      toast.error(t('uploadError'));
+      console.error(tUtils('uploadError'), error);
+      toast.error(tUtils('uploadError'));
     } finally {
       setUploading(false);
     }
@@ -72,8 +73,8 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
       const herbalImages = await getHerbalImages(herbalId);
       setImages(herbalImages);
     } catch (error) {
-      console.error('Lỗi khi tải hình ảnh:', error);
-      toast.error('Không thể tải danh sách hình ảnh');
+      console.error(tUtils('errorLoadingImages'), error);
+      toast.error(tUtils('errorLoadingImages'));
     } finally {
       setLoading(false);
     }
@@ -83,10 +84,10 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
     try {
       await deleteHerbalImage(imageId);
       setImages(prev => prev.filter(img => img.id?.toString() !== imageId));
-      toast.success('Đã xóa hình ảnh thành công');
+      toast.success(tUtils('deleteSuccess'));
     } catch (error) {
-      console.error('Lỗi khi xóa hình ảnh:', error);
-      toast.error('Có lỗi xảy ra khi xóa hình ảnh');
+      console.error(tUtils('errorDeletingImage'), error);
+      toast.error(tUtils('errorDeletingImage'));
     }
   };
 
@@ -103,10 +104,10 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
       
       // Reload images to get updated data
       await loadImages();
-      toast.success('Đã đặt làm hình ảnh chính');
+      toast.success(tUtils('setMainImageSuccess'));
     } catch (error) {
-      console.error('Lỗi khi đặt hình ảnh chính:', error);
-      toast.error('Có lỗi xảy ra khi đặt hình ảnh chính');
+      console.error(tUtils('errorSettingMainImage'), error);
+      toast.error(tUtils('errorSettingMainImage'));
     }
   };
 
@@ -149,15 +150,15 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
 
               {/* Text Content */}
               <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                {isDragActive ? t('dropFileHere') : t('dragAndDropFileHere')}
+                {isDragActive ? tUtils('dropFileHere') : tUtils('dragAndDropFile')}
               </h4>
 
               <span className="text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-                {t('dragAndDropFileHere')}
+                {tUtils('dragAndDropFile')}
               </span>
 
               <span className="font-medium underline text-theme-sm text-brand-500">
-                {t('selectImage')}
+                {tUtils('selectImage')}
               </span>
             </div>
           </div>
@@ -165,7 +166,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
 
         {uploading && (
           <div className="text-center text-blue-600">
-            {t('uploading')}
+            {tUtils('uploading')}
           </div>
         )}
       </div>
@@ -175,7 +176,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5 text-gray-600" />
-            <h3 className="text-lg font-semibold">{t('uploadedImages', { count: images.length })}</h3>
+            <h3 className="text-lg font-semibold">{tUtils('uploadedImages', { count: images.length })}</h3>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -245,7 +246,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
 
       {images.length === 0 && !loading && (
         <div className="text-center text-gray-500 py-8">
-          {t('noImage')}
+          {tUtils('noImage')}
         </div>
       )}
     </div>
