@@ -45,7 +45,9 @@
     "status": "Trạng thái",
     "actions": "Thao tác",
     "noImage": "Không có ảnh",
-    "category": "Danh mục"
+    "category": "Danh mục",
+    "inactive": "Ngưng hoạt động",
+    "active": "Kích hoạt"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -723,7 +725,11 @@
     "isActive": "Hoạt động",
     "isInactive": "Ngừng hoạt động",
     "updateHerbal": "Cập nhật thảo dược",
-    "uploadHerbalsImage": "Tải lên hình ảnh thảo dược"
+    "uploadHerbalsImage": "Tải lên hình ảnh thảo dược",
+    "deleteHerbal":"Xóa thảo dược",
+    "success":"Thành công",
+    "error":"Lỗi",
+    "confirmDeleteHerbal":"Bạn có chắc chắn muốn xóa thảo dược này không?"
 
   }
 }

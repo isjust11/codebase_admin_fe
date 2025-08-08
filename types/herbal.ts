@@ -1,7 +1,7 @@
 import { Category } from "./category";
 
 export interface Herbal {
-    id: number;
+    id: string;
     title: string;
     slug: string;
     summary?: string;

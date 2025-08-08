@@ -1,11 +1,10 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ArrowDown, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/DataTable'
-import { deleteAuthor, getAllAuthors } from '@/services/author-api'
-import { Author } from '@/services/author-api'
+import { deleteAuthor, getAllAuthors, updateAuthor } from '@/services/author-api'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
@@ -16,6 +15,8 @@ import { Action } from '@/types/actions'
 import { Checkbox } from '@/components/ui/checkbox'
 import { mergeImageUrl } from '@/lib/utils'
 import Image from 'next/image'
+import { Author } from '@/types/author'
+import { AlertDialogUtils } from '@/components/AlertDialogUtils'
 
 const AuthorsPage = () => {
   const router = useRouter()
@@ -175,16 +176,7 @@ const AuthorsPage = () => {
       header: 'Thao tác',
       cell: ({ row }) => {
         const author = row.original
-        const handleDelete = async (id: number) => {
-          try {
-            await deleteAuthor(id);
-            toast.success('Tác giả đã được xóa thành công');
-            // Refresh data
-            fetchAuthors();
-          } catch (_error) {
-            toast.error('Có lỗi xảy ra khi xóa tác giả');
-          }
-        }
+
         return (
           <div className="p-2 ">
             <DropdownMenu>
@@ -200,13 +192,21 @@ const AuthorsPage = () => {
                   <BadgeInfo className="mr-2 h-4 w-4" />
                   Xem chi tiết
                 </DropdownMenuItem>
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
+                  onClick={() => {
+                    handleChangeStatus(author)
+                  }}
+                >
+                  <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
+                  {author.isActive ? 'Không hoạt động' : 'Hoạt động'}
+                </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
                   onClick={() => router.push(`/manager/authors/update/${author.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
                   Chỉnh sửa
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(author.id)}>
+                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(author)}>
                   <Trash className="mr-2 h-4 w-4" />
                   Xóa
                 </DropdownMenuItem>
@@ -222,7 +222,14 @@ const AuthorsPage = () => {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
- 
+  const [openDialog, setOpenDialog] = useState(false)
+  const [selectedAuthor, setSelectedAuthor] = useState<Author | null>(null)
+  const [dialogContent, setDialogContent] = useState('')
+  const handleDelete = async (author: Author) => {
+    setOpenDialog(true);
+    setDialogContent('Bạn có chắc chắn muốn xóa tác giả này không?');
+    setSelectedAuthor(author);
+  }
   const fetchAuthors = async () => {
     try {
       const response = await getAllAuthors({ page: pageIndex + 1, size: pageSize, search });
@@ -235,7 +242,7 @@ const AuthorsPage = () => {
       toast.error('Có lỗi xảy ra khi tải danh sách tác giả');
     }
   }
-  
+
   useEffect(() => {
     fetchAuthors();
   }, [pageIndex, pageSize, search])
@@ -259,22 +266,48 @@ const AuthorsPage = () => {
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
   ]
+  const confirmDelete = async () => {
+    try {
+      await deleteAuthor(selectedAuthor?.id!);
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi xóa tác giả');
+    }
+    fetchAuthors();
+    setOpenDialog(false)
+    toast.success('Tác giả đã được xóa thành công');
+  }
+  const handleChangeStatus = async (author: Author) => {
+    await updateAuthor(author.id, { ...author, isActive: !author.isActive });
+    fetchAuthors();
+    toast.success('Tác giả đã được đổi trạng thái thành công');
+  }
   return (
     <div>
       <PageBreadcrumb pageTitle="Danh sách tác giả" items={[]} />
       <div className="space-y-6">
         <ComponentCard title="Danh sách tác giả" listAction={lstActions}>
           <div className="container mx-auto">
-          <DataTable
-            columns={columns}
-            data={authors}
-            pageCount={pageCount}
-            onPaginationChange={handlePaginationChange}
-            onSearchChange={handleSearch}
-            manualPagination={true}
-          />
+            <DataTable
+              columns={columns}
+              data={authors}
+              pageCount={pageCount}
+              onPaginationChange={handlePaginationChange}
+              onSearchChange={handleSearch}
+              manualPagination={true}
+            />
           </div>
         </ComponentCard>
+        <AlertDialogUtils
+          type='warning'
+          isOpen={openDialog}
+          onOpenChange={setOpenDialog}
+          onConfirm={confirmDelete}
+          title="Xóa tác giả"
+          content={dialogContent}
+          confirmText="Xác nhận"
+          cancelText="Hủy"
+          onCancel={() => setOpenDialog(false)}
+        />
       </div>
 
     </div>

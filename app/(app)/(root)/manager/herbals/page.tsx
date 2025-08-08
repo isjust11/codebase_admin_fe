@@ -1,10 +1,10 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { ArrowDown, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-react'
+import { ArrowDown, ArrowLeftRight, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/DataTable'
-import { deleteHerbal, getAllHerbals } from '@/services/herbal-api'
+import { deleteHerbal, getAllHerbals, updateHerbal } from '@/services/herbal-api'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
@@ -18,9 +18,11 @@ import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils'
 import Image from 'next/image'
 import { Herbal } from '@/types/herbal'
 import { useTranslations } from 'next-intl'
+import { AlertDialogUtils } from '@/components/AlertDialogUtils'
 const HerbalsPage = () => {
   const router = useRouter()
   const t = useTranslations('Herbals')
+  const tUtils = useTranslations('Utils')
   const columns: ColumnDef<Herbal>[] = [
     {
       id: "select",
@@ -189,16 +191,7 @@ const HerbalsPage = () => {
       header: t('actions'),
       cell: ({ row }) => {
         const herbal = row.original
-        const handleDelete = async (id: string) => {
-          try {
-            await deleteHerbal(id);
-            toast.success(t('herbalDeletedSuccess'));
-            // Refresh data
-            fetchHerbals();
-          } catch (_error) {
-            toast.error(t('errorDeletingHerbal'));
-          }
-        }
+        
         return (
           <div className="p-2 ">
             <DropdownMenu>
@@ -211,16 +204,24 @@ const HerbalsPage = () => {
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                   onClick={() => router.push(`/manager/herbals/${herbal.id}`)}>
-                  <BadgeInfo className="mr-2 h-4 w-4" />
+                  <BadgeInfo className="mr-2 h-4 w-4 text-gray-500" />
                   {t('viewDetail')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-violet-500 dark:text-white'
+                  onClick={() => {
+                    handleChangeStatus(herbal)
+                  }}
+                >
+                  <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
+                    {herbal.isActive ? tUtils('inactive') : tUtils('active')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-300/20 text-blue-500'
                   onClick={() => router.push(`/manager/herbals/update/${herbal.id}`)}
                 >
-                  <Pencil className="mr-2 h-4 w-4" />
+                  <Pencil className="mr-2 h-4 w-4 text-blue-500" />
                   {t('edit')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(herbal.id!.toString())}>
+                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(herbal)}>
                   <Trash className="mr-2 h-4 w-4" />
                     {t('delete')}
                 </DropdownMenuItem>
@@ -237,7 +238,9 @@ const HerbalsPage = () => {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [imageError, setImageError] = useState(false)
- 
+  const [openDialog, setOpenDialog] = useState(false)
+  const [selectedHerbal, setSelectedHerbal] = useState<Herbal | null>(null)
+  const [dialogContent, setDialogContent] = useState('')
   const fetchHerbals = async () => {
     try {
       const response = await getAllHerbals({ page: pageIndex + 1, size: pageSize, search });
@@ -274,6 +277,29 @@ const HerbalsPage = () => {
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
   ]
+
+  const handleDelete = async (herbal: Herbal) => {
+    setOpenDialog(true);
+    setDialogContent(t('confirmDeleteHerbal'));
+    setSelectedHerbal(herbal);
+  } 
+  
+  const confirmDelete = async () => {
+    try {
+      await deleteHerbal(selectedHerbal?.id!.toString()!);
+    } catch (error) {
+      toast.error(t('errorDeletingHerbal'))
+    }
+    fetchHerbals();
+    setOpenDialog(false)
+    toast.success(t('herbalDeletedSuccess'))
+  }
+
+  const handleChangeStatus = async (herbal: Herbal) => {
+    await updateHerbal(herbal.id, { ...herbal, isActive: !herbal.isActive });
+    fetchHerbals();
+    toast.success(t('success'))
+  }
   return (
     <div>
       <PageBreadcrumb pageTitle={t('herbals')} items={[]} />
@@ -290,6 +316,17 @@ const HerbalsPage = () => {
           />
           </div>
         </ComponentCard>
+        <AlertDialogUtils
+          type='warning'
+          isOpen={openDialog}
+          onOpenChange={setOpenDialog}
+          onConfirm={confirmDelete}
+          title={t('deleteHerbal')}
+          content={dialogContent}
+          confirmText={tUtils('confirm')}
+          cancelText={tUtils('cancel')}
+          onCancel={() => setOpenDialog(false)}
+        />
       </div>
 
     </div>

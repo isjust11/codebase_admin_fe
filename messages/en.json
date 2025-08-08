@@ -45,7 +45,9 @@
     "edit": "Edit",
     "noImage": "No image",
     "category": "Category",
-    "updateHerbal": "Update herbal"
+    "updateHerbal": "Update herbal",
+    "inactive": "Inactive",
+    "active": "Active"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -726,6 +728,10 @@
     "dosage": "Dosage",
     "isActive": "Is active",
     "isInactive": "Is inactive",
-    "uploadHerbalsImage": "Upload herbal images"
+    "uploadHerbalsImage": "Upload herbal images",
+    "deleteHerbal":"Delete herbal",
+    "success":"Success",
+    "error":"Error",
+    "confirmDeleteHerbal":"Are you sure you want to delete this herbal?"
   }
 }

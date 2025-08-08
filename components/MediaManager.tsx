@@ -12,7 +12,7 @@ import {
   DialogTrigger 
 } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 import { 
   Upload, 
   Image, 
@@ -46,7 +46,6 @@ export function MediaManager({ multiple = false, onSelect, selectedUrls = [] }: 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [selectedFiles, setSelectedFiles] = useState<string[]>(selectedUrls);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { toast } = useToast();
 
   // Fetch media files
   const fetchMediaFiles = async () => {
@@ -81,11 +80,7 @@ export function MediaManager({ multiple = false, onSelect, selectedUrls = [] }: 
       ];
       setMediaFiles(mockFiles);
     } catch (error) {
-      toast({
-        title: 'Lỗi',
-        description: 'Không thể tải danh sách media',
-        variant: 'destructive',
-      });
+      toast.error('Không thể tải danh sách media');
     } finally {
       setLoading(false);
     }
@@ -108,16 +103,9 @@ export function MediaManager({ multiple = false, onSelect, selectedUrls = [] }: 
 
       setMediaFiles(prev => [...newFiles, ...prev]);
       
-      toast({
-        title: 'Thành công',
-        description: `Đã upload ${files.length} file`,
-      });
+      toast.success(`Đã upload ${files.length} file`);
     } catch (error) {
-      toast({
-        title: 'Lỗi',
-        description: 'Không thể upload file',
-        variant: 'destructive',
-      });
+      toast.error('Không thể upload file');
     } finally {
       setLoading(false);
     }
