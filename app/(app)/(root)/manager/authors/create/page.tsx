@@ -11,8 +11,12 @@ import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import ComponentCard from '@/components/common/ComponentCard'
 import { ArrowLeft, Save } from 'lucide-react'
+import { useTranslations } from 'next-intl';
+import ImageUpload from '@/components/ui/ImageUpload';
+import MultipleImageUpload from '@/components/ui/MultipleImageUpload';
 
 const CreateAuthorPage = () => {
+  const t = useTranslations('Common');
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
@@ -35,6 +39,9 @@ const CreateAuthorPage = () => {
     teacher: '',
     students: '',
     portrait: '',
+    avatar: '',
+    coverImage: '',
+    galleryImages: [],
     quotes: '',
     anecdotes: '',
     honors: '',
@@ -43,7 +50,7 @@ const CreateAuthorPage = () => {
     isActive: true
   })
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -204,12 +211,42 @@ const CreateAuthorPage = () => {
 
               {/* Hình ảnh */}
               <div className="space-y-2">
-                <Label htmlFor="portrait">URL hình ảnh</Label>
-                <Input
-                  id="portrait"
+                <Label htmlFor="portrait">Chân dung chính</Label>
+                <ImageUpload
                   value={formData.portrait}
-                  onChange={(e) => handleInputChange('portrait', e.target.value)}
-                  placeholder="Nhập URL hình ảnh"
+                  onChange={(value) => handleInputChange('portrait', value)}
+                  placeholder="Upload ảnh chân dung chính"
+                />
+              </div>
+
+              {/* Hình đại diện */}
+              <div className="space-y-2">
+                <Label htmlFor="avatar">Hình đại diện</Label>
+                <ImageUpload
+                  value={formData.avatar}
+                  onChange={(value) => handleInputChange('avatar', value)}
+                  placeholder="Upload ảnh đại diện"
+                />
+              </div>
+
+              {/* Hình bìa */}
+              <div className="space-y-2">
+                <Label htmlFor="coverImage">Hình bìa</Label>
+                <ImageUpload
+                  value={formData.coverImage}
+                  onChange={(value) => handleInputChange('coverImage', value)}
+                  placeholder="Upload ảnh bìa"
+                />
+              </div>
+
+              {/* Bộ sưu tập hình ảnh */}
+              <div className="space-y-2">
+                <Label htmlFor="galleryImages">Bộ sưu tập hình ảnh</Label>
+                <MultipleImageUpload
+                  value={formData.galleryImages}
+                  onChange={(value) => handleInputChange('galleryImages', value)}
+                  placeholder="Upload thư viện ảnh"
+                  maxImages={10}
                 />
               </div>
 

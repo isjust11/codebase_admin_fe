@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, Eye, Leaf, Loader2 } from 'lucide-react';
-import { deleteFolkMedicine, getFolkMedicines } from '@/services/folk-medicine-api';
+import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, Eye, Leaf, Loader2, ArrowLeftRight } from 'lucide-react';
+import { deleteFolkMedicine, getFolkMedicines, updateFolkMedicine } from '@/services/folk-medicine-api';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -18,6 +18,7 @@ import { Action } from '@/types/actions';
 import { FolkMedicine } from '@/types/folk-medicine'; 
 import { useTranslations } from 'next-intl';
 import Badge from '@/components/ui/badge/Badge';
+import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 
 export default function FolkMedicinesManagement() {
   const t = useTranslations('FolkMedicinesPage');
@@ -29,7 +30,8 @@ export default function FolkMedicinesManagement() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedFolkMedicine, setSelectedFolkMedicine] = useState<FolkMedicine | null>(null);
   const router = useRouter();
 
   const fetchFolkMedicines = async (page: number, size: number, search: string) => {
@@ -60,16 +62,28 @@ export default function FolkMedicinesManagement() {
     setSearch(searchValue);
   }
 
-  const handleDelete = async (folkMedicineId: number) => {
+  const handleDelete = (folkMedicine: FolkMedicine) => {
+    setSelectedFolkMedicine(folkMedicine);
+    setIsOpen(true);
+  }
+
+  const confirmDelete = async () => {
+    if (!selectedFolkMedicine) return;
     try {
-      await deleteFolkMedicine(folkMedicineId.toString());
-      setFolkMedicines(folkMedicines.filter(medicine => medicine.id !== folkMedicineId));
+      await deleteFolkMedicine(selectedFolkMedicine.id);
+      setFolkMedicines(folkMedicines.filter(medicine => medicine.id !== selectedFolkMedicine.id));
       fetchFolkMedicines(pageIndex, pageSize, search);
       toast.success(t('messages.deleteSuccess'));
     } catch (_error) {
       toast.error(t('messages.deleteError'));
     }
   };
+
+  const handleChangeStatus = (folkMedicine: FolkMedicine) => {
+    updateFolkMedicine(folkMedicine.id.toString(), { isActive: !folkMedicine.isActive });
+    fetchFolkMedicines(pageIndex, pageSize, search);
+    toast.success(t('messages.changeStatusSuccess'));
+  }
 
   const columns: ColumnDef<FolkMedicine>[] = [
     {
@@ -204,7 +218,7 @@ export default function FolkMedicinesManagement() {
     },
     {
       id: "actions",
-      header: t('actions'),
+      header: tUtils('actions'),
       cell: ({ row }) => {
         const folkMedicine = row.original
         return (
@@ -212,28 +226,33 @@ export default function FolkMedicinesManagement() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">{t('openMenu')}</span>
+                    <span className="sr-only">{tUtils('openMenu')}</span>
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                     onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.id}`)}>
-                    <BadgeInfo className="mr-2 h-4 w-4" />
+                    <BadgeInfo className="mr-2 h-4 w-4 text-gray-500" />
                     {t('viewDetail')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
+                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-fuchsia-500/20"
+                    onClick={() => handleChangeStatus(folkMedicine)}>
+                    <ArrowLeftRight className="mr-2 h-4 w-4 text-fuchsia-500" />
+                    {folkMedicine.isActive ? tUtils('inactive') : tUtils('active')}
+                  </DropdownMenuItem>
+                  {/* <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
                     onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}>
                     <Eye className="mr-2 h-4 w-4 color-yellow-300" />
                     {t('viewFolkMedicine')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                  </DropdownMenuItem> */}
+                  <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-500/20 text-blue-500'
                     onClick={() => router.push(`/manager/folk-medicines/update/${folkMedicine.id}`)}
                   >
-                    <Pencil className="mr-2 h-4 w-4" />
+                    <Pencil className="mr-2 h-4 w-4 text-blue-500" />
                     {t('edit')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(folkMedicine.id)}>
+                  <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-red-500/50" onClick={() => handleDelete(folkMedicine)}>
                     <Trash className="mr-2 h-4 w-4" />
                     {t('delete')}
                   </DropdownMenuItem>
@@ -270,7 +289,7 @@ export default function FolkMedicinesManagement() {
         <ComponentCard title={t('title')} listAction={lstActions}>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <span className="text-gray-500 ">{t('loading')}</span>
+              <span className="text-gray-500 ">{tUtils('loading')}</span>
             </div>
           ) : (
             <DataTable 
@@ -284,6 +303,13 @@ export default function FolkMedicinesManagement() {
             />
           )}
         </ComponentCard>
+        <AlertDialogUtils
+              type='warning'
+              title={tUtils('delete')}
+              content={t('confirmDelete')}
+              onConfirm={() => confirmDelete()}
+              isOpen={isOpen}
+              />
       </div>
     </div>
   );

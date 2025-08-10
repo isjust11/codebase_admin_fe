@@ -1,5 +1,5 @@
 export interface FolkMedicine {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   summary?: string;

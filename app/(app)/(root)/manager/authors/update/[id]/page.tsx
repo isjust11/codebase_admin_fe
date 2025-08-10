@@ -11,15 +11,51 @@ import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import ComponentCard from '@/components/common/ComponentCard'
 import { ArrowLeft, Save } from 'lucide-react'
+import { useTranslations } from 'next-intl'
+import ImageUpload from '@/components/ui/ImageUpload';
+import MultipleImageUpload from '@/components/ui/MultipleImageUpload';
+
+interface AuthorFormData {
+  name: string
+  alias: string
+  biography: string
+  career: string
+  achievements: string
+  contributions: string
+  works: string
+  philosophy: string
+  legacy: string
+  birthDate: Date
+  deathDate: Date
+  birthPlace: string
+  deathPlace: string
+  era: string
+  dynasty: string
+  specialty: string
+  teacher: string
+  students: string
+  portrait: string
+  avatar: string
+  coverImage: string
+  galleryImages: string[]
+  quotes: string
+  anecdotes: string
+  honors: string
+  memorials: string
+  references: string
+  isActive: boolean
+}
 
 const UpdateAuthorPage = () => {
+  const t = useTranslations('AuthorsPage')
+  const tUtils = useTranslations('Utils')
   const router = useRouter()
   const params = useParams()
   const authorId = params.id as string
   
   const [loading, setLoading] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<AuthorFormData>({
     name: '',
     alias: '',
     biography: '',
@@ -39,6 +75,9 @@ const UpdateAuthorPage = () => {
     teacher: '',
     students: '',
     portrait: '',
+    avatar: '',
+    coverImage: '',
+    galleryImages: [],
     quotes: '',
     anecdotes: '',
     honors: '',
@@ -73,6 +112,9 @@ const UpdateAuthorPage = () => {
             teacher: response.teacher || '',
             students: response.students || '',
             portrait: response.portrait || '',
+            avatar: (response as any).avatar || '',
+            coverImage: (response as any).coverImage || '',
+            galleryImages: (response as any).galleryImages || [],
             quotes: response.quotes || '',
             anecdotes: response.anecdotes || '',
             honors: response.honors || '',
@@ -82,8 +124,8 @@ const UpdateAuthorPage = () => {
           })
         }
       } catch (error) {
-        console.error('Lỗi khi tải thông tin tác giả:', error)
-        toast.error('Có lỗi xảy ra khi tải thông tin tác giả')
+        console.error(t('errorLoadAuthor'), error)
+        toast.error(t('messages.errorLoadAuthor'))
       } finally {
         setInitialLoading(false)
       }
@@ -94,7 +136,7 @@ const UpdateAuthorPage = () => {
     }
   }, [authorId])
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | string[]) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -111,11 +153,11 @@ const UpdateAuthorPage = () => {
         deathDate: formData.deathDate ? new Date(formData.deathDate) : new Date()
       }
       await updateAuthor(parseInt(authorId), updateData)
-      toast.success('Tác giả đã được cập nhật thành công')
+      toast.success(t('messages.updateSuccess'))
       router.push('/manager/authors')
     } catch (error) {
-      console.error('Lỗi khi cập nhật tác giả:', error)
-      toast.error('Có lỗi xảy ra khi cập nhật tác giả')
+      console.error(t('errorUpdateAuthor'), error)
+      toast.error(t('messages.errorUpdateAuthor'))
     } finally {
       setLoading(false)
     }
@@ -126,7 +168,7 @@ const UpdateAuthorPage = () => {
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <p className="mt-4">Đang tải thông tin tác giả...</p>
+          <p className="mt-4">{tUtils('loading')}</p>
         </div>
       </div>
     )
@@ -135,65 +177,65 @@ const UpdateAuthorPage = () => {
   return (
     <div>
       <PageBreadcrumb 
-        pageTitle="Cập nhật tác giả" 
+        pageTitle={t('update')} 
         items={[
-          { title: 'Tác giả', href: '/manager/authors' },
-          { title: 'Cập nhật', href: `/manager/authors/update/${authorId}` }
+          { title: t('title'), href: '/manager/authors' },
+          { title: t('update'), href: `/manager/authors/update/${authorId}` }
         ]} 
       />
       
       <div className="space-y-6">
-        <ComponentCard title="Thông tin tác giả">
+        <ComponentCard title={t('title')}>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Tên tác giả */}
               <div className="space-y-2">
-                <Label htmlFor="name">Tên tác giả *</Label>
+                <Label htmlFor="name">{t('name')} *</Label>
                 <Input
                   id="name"
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
-                  placeholder="Nhập tên tác giả"
+                  placeholder={t('placeholderName')}
                   required
                 />
               </div>
 
               {/* Bút danh */}
               <div className="space-y-2">
-                <Label htmlFor="alias">Bút danh</Label>
+                <Label htmlFor="alias">{t('alias')}</Label>
                 <Input
                   id="alias"
                   value={formData.alias}
                   onChange={(e) => handleInputChange('alias', e.target.value)}
-                  placeholder="Nhập bút danh"
+                  placeholder={t('placeholderAlias')}
                 />
               </div>
 
               {/* Nơi sinh */}
               <div className="space-y-2">
-                <Label htmlFor="birthPlace">Nơi sinh</Label>
+                <Label htmlFor="birthPlace">{t('birthPlace')}</Label>
                 <Input
                   id="birthPlace"
                   value={formData.birthPlace}
                   onChange={(e) => handleInputChange('birthPlace', e.target.value)}
-                  placeholder="Nhập nơi sinh"
+                  placeholder={t('placeholderBirthPlace')}
                 />
               </div>
 
               {/* Nơi mất */}
               <div className="space-y-2">
-                <Label htmlFor="deathPlace">Nơi mất</Label>
+                <Label htmlFor="deathPlace">{t('deathPlace')}</Label>
                 <Input
                   id="deathPlace"
                   value={formData.deathPlace}
                   onChange={(e) => handleInputChange('deathPlace', e.target.value)}
-                  placeholder="Nhập nơi mất"
+                  placeholder={t('placeholderDeathPlace')}
                 />
               </div>
 
               {/* Ngày sinh */}
               <div className="space-y-2">
-                <Label htmlFor="birthDate">Ngày sinh</Label>
+                <Label htmlFor="birthDate">{t('birthDate')}</Label>
                 <Input
                   id="birthDate"
                   type="date"
@@ -204,7 +246,7 @@ const UpdateAuthorPage = () => {
 
               {/* Ngày mất */}
               <div className="space-y-2">
-                <Label htmlFor="deathDate">Ngày mất</Label>
+                <Label htmlFor="deathDate">{t('deathDate')}</Label>
                 <Input
                   id="deathDate"
                   type="date"
@@ -215,224 +257,254 @@ const UpdateAuthorPage = () => {
 
               {/* Thời kỳ */}
               <div className="space-y-2">
-                <Label htmlFor="era">Thời kỳ</Label>
+                <Label htmlFor="era">{t('era')}</Label>
                 <Input
                   id="era"
                   value={formData.era}
                   onChange={(e) => handleInputChange('era', e.target.value)}
-                  placeholder="Nhập thời kỳ"
+                  placeholder={t('placeholderEra')}
                 />
               </div>
 
               {/* Triều đại */}
               <div className="space-y-2">
-                <Label htmlFor="dynasty">Triều đại</Label>
+                <Label htmlFor="dynasty">{t('dynasty')}</Label>
                 <Input
                   id="dynasty"
                   value={formData.dynasty}
                   onChange={(e) => handleInputChange('dynasty', e.target.value)}
-                  placeholder="Nhập triều đại"
+                  placeholder={t('placeholderDynasty')}
                 />
               </div>
 
               {/* Chuyên môn */}
               <div className="space-y-2">
-                <Label htmlFor="specialty">Chuyên môn</Label>
+                <Label htmlFor="specialty">{t('specialty')}</Label>
                 <Input
                   id="specialty"
                   value={formData.specialty}
                   onChange={(e) => handleInputChange('specialty', e.target.value)}
-                  placeholder="Nhập chuyên môn"
+                  placeholder={t('placeholderSpecialty')}
                 />
               </div>
 
               {/* Thầy dạy */}
               <div className="space-y-2">
-                <Label htmlFor="teacher">Thầy dạy</Label>
+                <Label htmlFor="teacher">{t('teacher')}</Label>
                 <Input
                   id="teacher"
                   value={formData.teacher}
                   onChange={(e) => handleInputChange('teacher', e.target.value)}
-                  placeholder="Nhập thầy dạy"
+                  placeholder={t('placeholderTeacher')}
                 />
               </div>
 
               {/* Học trò */}
               <div className="space-y-2">
-                <Label htmlFor="students">Học trò</Label>
+                <Label htmlFor="students">{t('students')}</Label>
                 <Input
                   id="students"
                   value={formData.students}
                   onChange={(e) => handleInputChange('students', e.target.value)}
-                  placeholder="Nhập học trò"
+                  placeholder={t('placeholderStudents')}
                 />
               </div>
 
               {/* Hình ảnh */}
               <div className="space-y-2">
-                <Label htmlFor="portrait">URL hình ảnh</Label>
-                <Input
-                  id="portrait"
+                <Label htmlFor="portrait">{t('portrait')}</Label>
+                <ImageUpload
                   value={formData.portrait}
-                  onChange={(e) => handleInputChange('portrait', e.target.value)}
-                  placeholder="Nhập URL hình ảnh"
+                  onChange={(value) => handleInputChange('portrait', value)}
+                  placeholder="Upload ảnh chân dung chính"
+                />
+              </div>
+
+              {/* Hình đại diện */}
+              <div className="space-y-2">
+                <Label htmlFor="avatar">Hình đại diện</Label>
+                <ImageUpload
+                  value={formData.avatar}
+                  onChange={(value) => handleInputChange('avatar', value)}
+                  placeholder="Upload ảnh đại diện"
+                />
+              </div>
+
+              {/* Hình bìa */}
+              <div className="space-y-2">
+                <Label htmlFor="coverImage">Hình bìa</Label>
+                <ImageUpload
+                  value={formData.coverImage}
+                  onChange={(value) => handleInputChange('coverImage', value)}
+                  placeholder="Upload ảnh bìa"
+                />
+              </div>
+
+              {/* Bộ sưu tập hình ảnh */}
+              <div className="space-y-2">
+                <Label htmlFor="galleryImages">Bộ sưu tập hình ảnh</Label>
+                <MultipleImageUpload
+                  value={formData.galleryImages}
+                  onChange={(value) => handleInputChange('galleryImages', value)}
+                  placeholder="Upload thư viện ảnh"
+                  maxImages={10}
                 />
               </div>
 
               {/* Trạng thái */}
               <div className="space-y-2">
-                <Label htmlFor="isActive">Trạng thái hoạt động</Label>
+                <Label htmlFor="isActive">{t('isActive')}</Label>
                 <div className="flex items-center space-x-2">
                   <Switch
                     id="isActive"
                     checked={formData.isActive}
                     onCheckedChange={(checked) => handleInputChange('isActive', checked)}
                   />
-                  <Label htmlFor="isActive">{formData.isActive ? 'Hoạt động' : 'Không hoạt động'}</Label>
+                  <Label htmlFor="isActive">{formData.isActive ? tUtils('active') : tUtils('inactive')}</Label>
                 </div>
               </div>
             </div>
 
             {/* Tiểu sử */}
             <div className="space-y-2">
-              <Label htmlFor="biography">Tiểu sử</Label>
+              <Label htmlFor="biography">{t('biography')}</Label>
               <Textarea
                 id="biography"
                 value={formData.biography}
                 onChange={(e) => handleInputChange('biography', e.target.value)}
-                placeholder="Nhập tiểu sử tác giả"
+                placeholder={t('placeholderBiography')}
                 rows={4}
               />
             </div>
 
             {/* Sự nghiệp */}
             <div className="space-y-2">
-              <Label htmlFor="career">Sự nghiệp</Label>
+              <Label htmlFor="career">{t('career')}</Label>
               <Textarea
                 id="career"
                 value={formData.career}
                 onChange={(e) => handleInputChange('career', e.target.value)}
-                placeholder="Nhập sự nghiệp"
+                placeholder={t('placeholderCareer')}
                 rows={4}
               />
             </div>
 
             {/* Thành tựu */}
             <div className="space-y-2">
-              <Label htmlFor="achievements">Thành tựu</Label>
+              <Label htmlFor="achievements">{t('achievements')}</Label>
               <Textarea
                 id="achievements"
                 value={formData.achievements}
                 onChange={(e) => handleInputChange('achievements', e.target.value)}
-                placeholder="Nhập thành tựu"
+                placeholder={t('placeholderAchievements')}
                 rows={4}
               />
             </div>
 
             {/* Đóng góp */}
             <div className="space-y-2">
-              <Label htmlFor="contributions">Đóng góp</Label>
+              <Label htmlFor="contributions">{t('contributions')}</Label>
               <Textarea
                 id="contributions"
                 value={formData.contributions}
                 onChange={(e) => handleInputChange('contributions', e.target.value)}
-                placeholder="Nhập đóng góp"
+                placeholder={t('placeholderContributions')}
                 rows={4}
               />
             </div>
 
             {/* Tác phẩm */}
             <div className="space-y-2">
-              <Label htmlFor="works">Tác phẩm</Label>
+              <Label htmlFor="works">{t('works')}</Label>
               <Textarea
                 id="works"
                 value={formData.works}
                 onChange={(e) => handleInputChange('works', e.target.value)}
-                placeholder="Nhập tác phẩm"
+                placeholder={t('placeholderWorks')}
                 rows={4}
               />
             </div>
 
             {/* Triết lý */}
             <div className="space-y-2">
-              <Label htmlFor="philosophy">Triết lý</Label>
+              <Label htmlFor="philosophy">{t('philosophy')}</Label>
               <Textarea
                 id="philosophy"
                 value={formData.philosophy}
                 onChange={(e) => handleInputChange('philosophy', e.target.value)}
-                placeholder="Nhập triết lý"
+                placeholder={t('placeholderPhilosophy')}
                 rows={4}
               />
             </div>
 
             {/* Di sản */}
             <div className="space-y-2">
-              <Label htmlFor="legacy">Di sản</Label>
+              <Label htmlFor="legacy">{t('legacy')}</Label>
               <Textarea
                 id="legacy"
                 value={formData.legacy}
                 onChange={(e) => handleInputChange('legacy', e.target.value)}
-                placeholder="Nhập di sản"
+                placeholder={t('placeholderLegacy')}
                 rows={4}
               />
             </div>
 
             {/* Trích dẫn */}
             <div className="space-y-2">
-              <Label htmlFor="quotes">Trích dẫn</Label>
+              <Label htmlFor="quotes">{t('quotes')}</Label>
               <Textarea
                 id="quotes"
                 value={formData.quotes}
                 onChange={(e) => handleInputChange('quotes', e.target.value)}
-                placeholder="Nhập trích dẫn"
+                placeholder={t('placeholderQuotes')}
                 rows={4}
               />
             </div>
 
             {/* Giai thoại */}
             <div className="space-y-2">
-              <Label htmlFor="anecdotes">Giai thoại</Label>
+              <Label htmlFor="anecdotes">{t('anecdotes')}</Label>
               <Textarea
                 id="anecdotes"
                 value={formData.anecdotes}
                 onChange={(e) => handleInputChange('anecdotes', e.target.value)}
-                placeholder="Nhập giai thoại"
+                placeholder={t('placeholderAnecdotes')}
                 rows={4}
               />
             </div>
 
             {/* Danh hiệu */}
             <div className="space-y-2">
-              <Label htmlFor="honors">Danh hiệu</Label>
+              <Label htmlFor="honors">{t('honors')}</Label>
               <Textarea
                 id="honors"
                 value={formData.honors}
                 onChange={(e) => handleInputChange('honors', e.target.value)}
-                placeholder="Nhập danh hiệu"
+                placeholder={t('placeholderHonors')}
                 rows={4}
               />
             </div>
 
             {/* Tưởng niệm */}
             <div className="space-y-2">
-              <Label htmlFor="memorials">Tưởng niệm</Label>
+              <Label htmlFor="memorials">{t('memorials')}</Label>
               <Textarea
                 id="memorials"
                 value={formData.memorials}
                 onChange={(e) => handleInputChange('memorials', e.target.value)}
-                placeholder="Nhập tưởng niệm"
+                placeholder={t('placeholderMemorials')}
                 rows={4}
               />
             </div>
 
             {/* Tài liệu tham khảo */}
             <div className="space-y-2">
-              <Label htmlFor="references">Tài liệu tham khảo</Label>
+              <Label htmlFor="references">{t('references')}</Label>
               <Textarea
                 id="references"
                 value={formData.references}
                 onChange={(e) => handleInputChange('references', e.target.value)}
-                placeholder="Nhập tài liệu tham khảo"
+                placeholder={t('placeholderReferences')}
                 rows={4}
               />
             </div>
@@ -446,7 +518,7 @@ const UpdateAuthorPage = () => {
                 className="flex items-center"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Quay lại
+                {tUtils('back')}
               </Button>
               <Button
                 type="submit"
@@ -454,7 +526,7 @@ const UpdateAuthorPage = () => {
                 className="flex items-center"
               >
                 <Save className="w-4 h-4 mr-2" />
-                {loading ? 'Đang cập nhật...' : 'Cập nhật tác giả'}
+                {loading ? tUtils('loading') : t('update')}
               </Button>
             </div>
           </form>

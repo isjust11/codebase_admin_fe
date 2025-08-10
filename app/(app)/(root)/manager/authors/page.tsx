@@ -17,9 +17,12 @@ import { mergeImageUrl } from '@/lib/utils'
 import Image from 'next/image'
 import { Author } from '@/types/author'
 import { AlertDialogUtils } from '@/components/AlertDialogUtils'
+import { useTranslations } from 'next-intl'
 
 const AuthorsPage = () => {
   const router = useRouter()
+  const t = useTranslations('AuthorsPage')
+  const tUtils = useTranslations('Utils')
   const columns: ColumnDef<Author>[] = [
     {
       id: "select",
@@ -31,14 +34,14 @@ const AuthorsPage = () => {
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={tUtils('selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Select row"
+          aria-label={tUtils('selectRow')}
         />
       ),
       enableSorting: false,
@@ -46,14 +49,16 @@ const AuthorsPage = () => {
     },
     {
       accessorKey: "portrait",
-      header: "Hình ảnh",
+      header: t('thumbnail'),
       cell: ({ row }) => {
-        const portrait = mergeImageUrl(row.getValue("portrait") as string)
+        const author = row.original as any
+        const imageUrl = author.avatar || author.portrait
+        const finalImageUrl = mergeImageUrl(imageUrl)
         return (
-          portrait ? <Image
+          finalImageUrl ? <Image
             width={164}
             height={124}
-            src={portrait}
+            src={finalImageUrl}
             alt="author-portrait"
             className="w-16 h-16 object-cover rounded-md"
           /> :
@@ -73,7 +78,7 @@ const AuthorsPage = () => {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tên tác giả
+            {t('name')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -89,7 +94,7 @@ const AuthorsPage = () => {
     },
     {
       accessorKey: "alias",
-      header: "Bút danh",
+      header: t('alias'),
       cell: ({ row }) => {
         const alias = row.getValue("alias") as string;
         return (
@@ -101,7 +106,7 @@ const AuthorsPage = () => {
     },
     {
       accessorKey: "era",
-      header: "Thời kỳ",
+      header: t('era'),
       cell: ({ row }) => {
         const era = row.getValue("era") as string;
         return (
@@ -113,7 +118,7 @@ const AuthorsPage = () => {
     },
     {
       accessorKey: "dynasty",
-      header: "Triều đại",
+      header: t('dynasty'),
       cell: ({ row }) => {
         const dynasty = row.getValue("dynasty") as string;
         return (
@@ -125,7 +130,7 @@ const AuthorsPage = () => {
     },
     {
       accessorKey: "specialty",
-      header: "Chuyên môn",
+      header: t('specialty'),
       cell: ({ row }) => {
         const specialty = row.getValue("specialty") as string;
         return (
@@ -137,7 +142,7 @@ const AuthorsPage = () => {
     },
     {
       accessorKey: "viewCount",
-      header: "Lượt xem",
+      header: t('viewCount'),
       cell: ({ row }) => {
         const viewCount = row.getValue("viewCount") as number;
         return (
@@ -149,7 +154,7 @@ const AuthorsPage = () => {
     },
     {
       accessorKey: "likeCount",
-      header: "Lượt thích",
+      header: t('likeCount'),
       cell: ({ row }) => {
         const likeCount = row.getValue("likeCount") as number;
         return (
@@ -161,19 +166,19 @@ const AuthorsPage = () => {
     },
     {
       accessorKey: "isActive",
-      header: "Trạng thái",
+      header: t('isActive'),
       cell: ({ row }) => {
         const status = row.getValue("isActive") as boolean
         return (
           <Badge className={status ? 'ring-green-400' : 'ring-red-400'} variant="light" color={status ? 'success' : 'error'} >
-            {status ? 'Hoạt động' : 'Không hoạt động'}
+            {status ? tUtils('active') : tUtils('inactive')}
           </Badge>
         )
       },
     },
     {
       id: "actions",
-      header: 'Thao tác',
+      header: tUtils('actions'),
       cell: ({ row }) => {
         const author = row.original
 
@@ -182,7 +187,7 @@ const AuthorsPage = () => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="h-8 w-8 p-0">
-                  <span className="sr-only">Mở menu</span>
+                  <span className="sr-only">{tUtils('openMenu')}</span>
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -190,7 +195,7 @@ const AuthorsPage = () => {
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                   onClick={() => router.push(`/manager/authors/${author.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
-                  Xem chi tiết
+                  {tUtils('viewDetail')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
                   onClick={() => {
@@ -198,17 +203,17 @@ const AuthorsPage = () => {
                   }}
                 >
                   <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
-                  {author.isActive ? 'Không hoạt động' : 'Hoạt động'}
+                  {author.isActive ? tUtils('inactive') : tUtils('active')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-500/20 text-blue-500'
                   onClick={() => router.push(`/manager/authors/update/${author.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
-                  Chỉnh sửa
+                  {tUtils('edit')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(author)}>
+                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-red-500/50" onClick={() => handleDelete(author)}>
                   <Trash className="mr-2 h-4 w-4" />
-                  Xóa
+                    {tUtils('delete')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -238,8 +243,8 @@ const AuthorsPage = () => {
         setPageCount(response.totalPages);
       }
     } catch (error) {
-      console.error('Lỗi khi tải danh sách tác giả:', error);
-      toast.error('Có lỗi xảy ra khi tải danh sách tác giả');
+      console.error(t('errorLoadAuthors'), error);
+      toast.error(t('messages.errorLoadAuthors'));
     }
   }
 
@@ -262,7 +267,7 @@ const AuthorsPage = () => {
       onClick: () => {
         router.push('/manager/authors/create')
       },
-      title: "Thêm tác giả mới",
+      title: t('addAuthor'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
   ]
@@ -270,22 +275,22 @@ const AuthorsPage = () => {
     try {
       await deleteAuthor(selectedAuthor?.id!);
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi xóa tác giả');
+      toast.error(t('messages.errorDeleteAuthor'));
     }
     fetchAuthors();
     setOpenDialog(false)
-    toast.success('Tác giả đã được xóa thành công');
+    toast.success(t('messages.deleteSuccess'));
   }
   const handleChangeStatus = async (author: Author) => {
     await updateAuthor(author.id, { ...author, isActive: !author.isActive });
     fetchAuthors();
-    toast.success('Tác giả đã được đổi trạng thái thành công');
+    toast.success(t('messages.changeStatusSuccess'));
   }
   return (
     <div>
-      <PageBreadcrumb pageTitle="Danh sách tác giả" items={[]} />
+      <PageBreadcrumb pageTitle={t('title')} items={[]} />
       <div className="space-y-6">
-        <ComponentCard title="Danh sách tác giả" listAction={lstActions}>
+        <ComponentCard title={t('title')} listAction={lstActions}>
           <div className="container mx-auto">
             <DataTable
               columns={columns}
@@ -302,10 +307,10 @@ const AuthorsPage = () => {
           isOpen={openDialog}
           onOpenChange={setOpenDialog}
           onConfirm={confirmDelete}
-          title="Xóa tác giả"
+          title={tUtils('delete')}
           content={dialogContent}
-          confirmText="Xác nhận"
-          cancelText="Hủy"
+          confirmText={tUtils('confirm')}
+          cancelText={tUtils('cancel')}
           onCancel={() => setOpenDialog(false)}
         />
       </div>
