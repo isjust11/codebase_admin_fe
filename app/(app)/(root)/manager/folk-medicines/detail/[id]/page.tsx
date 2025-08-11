@@ -13,12 +13,14 @@ import { FolkMedicine } from '@/types/folk-medicine';
 import { ArrowLeft, Edit, Eye, Calendar, User, Tag, ThumbsUp, Eye as EyeIcon } from 'lucide-react';
 import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 export default function FolkMedicineDetail() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
-  
+  const t = useTranslations('FolkMedicinesPage');
+  const tUtils = useTranslations('Utils');
   const [loading, setLoading] = useState(true);
   const [folkMedicine, setFolkMedicine] = useState<FolkMedicine | null>(null);
 
@@ -28,7 +30,7 @@ export default function FolkMedicineDetail() {
         const data = await getFolkMedicine(id);
         setFolkMedicine(data);
       } catch (error) {
-        toast.error('Có lỗi xảy ra khi tải thông tin bài thuốc');
+        toast.error(tUtils('loadError'));
         router.push('/manager/folk-medicines');
       } finally {
         setLoading(false);
@@ -51,16 +53,16 @@ export default function FolkMedicineDetail() {
   if (!folkMedicine) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <p>Không tìm thấy bài thuốc</p>
+        <p>{tUtils('notFound')}</p>
       </div>
     );
   }
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Chi tiết bài thuốc dân gian" />
+      <PageBreadcrumb pageTitle={t('title')} />
       <div className="space-y-6">
-        <ComponentCard title="Chi tiết bài thuốc dân gian">
+        <ComponentCard title={t('title')}>
           <div className="space-y-6">
             {/* Header với actions */}
             <div className="flex justify-between items-start">
@@ -74,14 +76,14 @@ export default function FolkMedicineDetail() {
                   onClick={() => router.push(`/manager/folk-medicines/update/${folkMedicine.id}`)}
                 >
                   <Edit className="w-4 h-4 mr-2" />
-                  Chỉnh sửa
+                  {t('edit')}
                 </Button>
                 <Button
                   variant="outline"
                   onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}
                 >
                   <Eye className="w-4 h-4 mr-2" />
-                  Xem bài thuốc
+                  {t('viewDetail')}
                 </Button>
               </div>
             </div>
@@ -93,7 +95,7 @@ export default function FolkMedicineDetail() {
                 {folkMedicine.thumbnail && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Hình ảnh</CardTitle>
+                      <CardTitle>{t('thumbnail')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="relative w-full h-64">
@@ -111,14 +113,10 @@ export default function FolkMedicineDetail() {
                 {/* Nội dung chính */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Nội dung chính</CardTitle>
+                    <CardTitle>{t('content')}</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="prose max-w-none">
-                      <div className="whitespace-pre-wrap text-gray-700">
-                        {folkMedicine.content}
-                      </div>
-                    </div>
+                    <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: folkMedicine.content }} />
                   </CardContent>
                 </Card>
 
@@ -126,7 +124,7 @@ export default function FolkMedicineDetail() {
                 {folkMedicine.ingredients && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Thành phần</CardTitle>
+                      <CardTitle>{t('ingredients')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="whitespace-pre-wrap text-gray-700">
@@ -140,7 +138,7 @@ export default function FolkMedicineDetail() {
                 {folkMedicine.preparation && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Cách chế biến</CardTitle>
+                      <CardTitle>{t('preparation')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="whitespace-pre-wrap text-gray-700">
@@ -154,7 +152,7 @@ export default function FolkMedicineDetail() {
                 {folkMedicine.usage && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Cách sử dụng</CardTitle>
+                      <CardTitle>{t('usage')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="whitespace-pre-wrap text-gray-700">
@@ -168,7 +166,7 @@ export default function FolkMedicineDetail() {
                 {folkMedicine.notes && (
                   <Card>
                     <CardHeader>
-                      <CardTitle>Ghi chú</CardTitle>
+                      <CardTitle>{t('notes')}</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="whitespace-pre-wrap text-gray-700">
@@ -184,28 +182,28 @@ export default function FolkMedicineDetail() {
                 {/* Thông tin cơ bản */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Thông tin cơ bản</CardTitle>
+                    <CardTitle>{t('basicInfo')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center space-x-2">
                       <Tag className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Danh mục:</span>
+                      <span className="text-sm text-gray-600">{t('category')}:</span>
                       <Badge variant="secondary">
-                        {folkMedicine.category?.name || 'Chưa phân loại'}
+                        {folkMedicine.category?.name || tUtils('unknown')}
                       </Badge>
                     </div>
 
                     <div className="flex items-center space-x-2">
                       <User className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Tác giả:</span>
+                      <span className="text-sm text-gray-600">{t('author')}:</span>
                       <span className="text-sm font-medium">
-                        {folkMedicine.author || 'Không xác định'}
+                        {folkMedicine.author || tUtils('unknown')}
                       </span>
                     </div>
 
                     <div className="flex items-center space-x-2">
                       <Calendar className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Ngày tạo:</span>
+                      <span className="text-sm text-gray-600">{t('createdAt')}:</span>
                       <span className="text-sm font-medium">
                         {new Date(folkMedicine.createdAt).toLocaleDateString('vi-VN')}
                       </span>
@@ -213,7 +211,7 @@ export default function FolkMedicineDetail() {
 
                     <div className="flex items-center space-x-2">
                       <Calendar className="w-4 h-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Cập nhật:</span>
+                      <span className="text-sm text-gray-600">{t('updatedAt')}:</span>
                       <span className="text-sm font-medium">
                         {new Date(folkMedicine.updatedAt).toLocaleDateString('vi-VN')}
                       </span>
@@ -221,7 +219,7 @@ export default function FolkMedicineDetail() {
 
                     <div className="flex items-center space-x-2">
                       <Badge variant={folkMedicine.isActive ? "default" : "destructive"}>
-                        {folkMedicine.isActive ? 'Hoạt động' : 'Không hoạt động'}
+                        {folkMedicine.isActive ? tUtils('active') : tUtils('inactive')}
                       </Badge>
                     </div>
                   </CardContent>
@@ -230,13 +228,13 @@ export default function FolkMedicineDetail() {
                 {/* Thống kê */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Thống kê</CardTitle>
+                    <CardTitle>{t('statistics')}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <EyeIcon className="w-4 h-4 text-blue-500" />
-                        <span className="text-sm text-gray-600">Lượt xem:</span>
+                        <span className="text-sm text-gray-600">{t('viewCount')}:</span>
                       </div>
                       <span className="text-sm font-medium text-blue-600">
                         {folkMedicine.viewCount.toLocaleString()}
@@ -246,7 +244,7 @@ export default function FolkMedicineDetail() {
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-2">
                         <ThumbsUp className="w-4 h-4 text-red-500" />
-                        <span className="text-sm text-gray-600">Lượt thích:</span>
+                        <span className="text-sm text-gray-600">{t('likeCount')}:</span>
                       </div>
                       <span className="text-sm font-medium text-red-600">
                         {folkMedicine.likeCount.toLocaleString()}
@@ -258,11 +256,11 @@ export default function FolkMedicineDetail() {
                 {/* Slug */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Thông tin URL</CardTitle>
+                    <CardTitle>{t('urlInfo')}</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="text-sm text-gray-600 break-all">
-                      <strong>Slug:</strong> {folkMedicine.slug}
+                      <strong>{t('slug')}:</strong> {folkMedicine.slug}
                     </div>
                   </CardContent>
                 </Card>
@@ -276,7 +274,7 @@ export default function FolkMedicineDetail() {
                 onClick={() => router.back()}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
-                Quay lại
+                {tUtils('back')}
               </Button>
             </div>
           </div>

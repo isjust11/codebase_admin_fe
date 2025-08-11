@@ -1,7 +1,7 @@
 import { Herbal } from "./herbal";
 
 export interface Author {
-    id: number;
+    id: string;
     name: string;
     slug: string;
     alias?: string;
@@ -22,6 +22,9 @@ export interface Author {
     teacher?: string;
     students?: string;
     portrait?: string;
+    avatar?: string;
+    coverImage?: string;
+    galleryImages?: string[];
     quotes?: string;
     anecdotes?: string;
     honors?: string;

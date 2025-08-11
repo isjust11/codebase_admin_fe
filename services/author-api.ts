@@ -8,7 +8,7 @@ export const getAllAuthors = async (params: { page: number; size: number; search
   return response.data;
 };
 
-export const getAuthorById = async (id: number): Promise<Author> => {
+export const getAuthorById = async (id: string): Promise<Author> => {
   const response = await axiosInstance.get(`/authors/${id}`);
   return response.data;
 };
@@ -18,12 +18,12 @@ export const createAuthor = async (data: AuthorDto): Promise<Author> => {
   return response.data;
 };
 
-export const updateAuthor = async (id: number, data: AuthorDto): Promise<Author> => {
+export const updateAuthor = async (id: string, data: AuthorDto): Promise<Author> => {
   const response = await axiosInstance.patch(`/authors/${id}`, data);
   return response.data;
 };
 
-export const deleteAuthor = async (id: number): Promise<void> => {
+export const deleteAuthor = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/authors/${id}`);
 };
 
@@ -57,10 +57,10 @@ export const getAuthorBySlug = async (slug: string): Promise<Author> => {
   return response.data;
 };
 
-export const incrementViewCount = async (id: number): Promise<void> => {
+export const incrementViewCount = async (id: string): Promise<void> => {
   await axiosInstance.post(`/authors/${id}/view`);
 };
 
-export const incrementLikeCount = async (id: number): Promise<void> => {
+export const incrementLikeCount = async (id: string): Promise<void> => {
   await axiosInstance.post(`/authors/${id}/like`);
 }; 

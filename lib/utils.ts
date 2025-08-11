@@ -51,6 +51,10 @@ export const mergeImageUrl = (relativeUrl: string): string => {
   return `${apiUrl}${relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`}`;
 };
 
+export const isImgFormat = (url: string): boolean => {
+  return url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.gif') || url.endsWith('.bmp') || url.endsWith('.webp');
+}
+
 export function base64encrypt(text: string | number): string {
   return Buffer.from(text.toString()).toString('base64');
 }

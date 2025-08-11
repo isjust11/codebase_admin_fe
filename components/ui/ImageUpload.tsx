@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useDropzone } from "react-dropzone";
 import { X } from 'lucide-react';
+import { Button } from './button';
+import { mergeImageUrl } from '@/lib/utils';
 
 interface ImageUploadProps {
   value?: string;
-  onChange: (value: string) => void;
+  onChange: (value: File | null) => void;
   label?: string;
   placeholder?: string;
   className?: string;
@@ -19,6 +21,7 @@ const ImageUpload = ({
 }: ImageUploadProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [displayImage, setDisplayImage] = useState<string | null>(mergeImageUrl(value || '') || previewUrl || null);
 
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
@@ -26,8 +29,9 @@ const ImageUpload = ({
       setSelectedFile(file);
       const fileUrl = URL.createObjectURL(file);
       setPreviewUrl(fileUrl);
+      setDisplayImage(fileUrl);
       // Tạm thời set URL preview, sau này sẽ upload và set URL thật
-      onChange(fileUrl);
+      onChange(file);
     }
   };
 
@@ -44,10 +48,9 @@ const ImageUpload = ({
   const handleRemoveImage = () => {
     setSelectedFile(null);
     setPreviewUrl(null);
-    onChange('');
+    onChange(null);
+    setDisplayImage(null);
   };
-
-  const displayImage = previewUrl || value;
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -65,19 +68,19 @@ const ImageUpload = ({
               alt="Preview"
               className="w-full h-64 object-cover rounded-xl"
             />
-            <button
+            <Button 
               type="button"
               title="Xóa hình ảnh"
               onClick={handleRemoveImage}
               className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
             >
               <X className="h-4 w-4" />
-            </button>
+            </Button>
           </div>
         ) : (
-          <form
+          <div
             {...getRootProps()}
-            className={`dropzone rounded-xl border-dashed border-gray-300 p-7 lg:p-10
+            className={`dropzone rounded-xl border-dashed border-gray-300 p-7 lg:p-10 cursor-pointer
                 ${isDragActive
                 ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
                 : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
@@ -121,7 +124,7 @@ const ImageUpload = ({
                 Chọn ảnh
               </span>
             </div>
-          </form>
+          </div>
         )}
       </div>
     </div>

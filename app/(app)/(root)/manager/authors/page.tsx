@@ -13,7 +13,7 @@ import { toast } from 'sonner'
 import Badge from '@/components/ui/badge/Badge'
 import { Action } from '@/types/actions'
 import { Checkbox } from '@/components/ui/checkbox'
-import { mergeImageUrl } from '@/lib/utils'
+import { isImgFormat, mergeImageUrl } from '@/lib/utils'
 import Image from 'next/image'
 import { Author } from '@/types/author'
 import { AlertDialogUtils } from '@/components/AlertDialogUtils'
@@ -23,6 +23,7 @@ const AuthorsPage = () => {
   const router = useRouter()
   const t = useTranslations('AuthorsPage')
   const tUtils = useTranslations('Utils')
+  const [errorImage, setErrorImage] = useState(false)
   const columns: ColumnDef<Author>[] = [
     {
       id: "select",
@@ -54,6 +55,15 @@ const AuthorsPage = () => {
         const author = row.original as any
         const imageUrl = author.avatar || author.portrait
         const finalImageUrl = mergeImageUrl(imageUrl)
+        if (errorImage || !isImgFormat(finalImageUrl)) {
+          return (
+            <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
+              <span className="text-gray-500">
+                <ImageOff className="w-8 h-8" />
+              </span>
+            </div>
+          )
+        }
         return (
           finalImageUrl ? <Image
             width={164}
@@ -61,6 +71,7 @@ const AuthorsPage = () => {
             src={finalImageUrl}
             alt="author-portrait"
             className="w-16 h-16 object-cover rounded-md"
+            onError={() => setErrorImage(true)}
           /> :
             <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
               <span className="text-gray-500">

@@ -232,7 +232,7 @@ export default function FolkMedicinesManagement() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                    onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.id}`)}>
+                    onClick={() => router.push(`/manager/folk-medicines/detail/${folkMedicine.id}`)}>
                     <BadgeInfo className="mr-2 h-4 w-4 text-gray-500" />
                     {t('viewDetail')}
                   </DropdownMenuItem>
@@ -241,11 +241,11 @@ export default function FolkMedicinesManagement() {
                     <ArrowLeftRight className="mr-2 h-4 w-4 text-fuchsia-500" />
                     {folkMedicine.isActive ? tUtils('inactive') : tUtils('active')}
                   </DropdownMenuItem>
-                  {/* <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
+                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
                     onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}>
                     <Eye className="mr-2 h-4 w-4 color-yellow-300" />
                     {t('viewFolkMedicine')}
-                  </DropdownMenuItem> */}
+                  </DropdownMenuItem>
                   <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-500/20 text-blue-500'
                     onClick={() => router.push(`/manager/folk-medicines/update/${folkMedicine.id}`)}
                   >

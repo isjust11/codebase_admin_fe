@@ -5,6 +5,7 @@ import { X, Plus } from 'lucide-react';
 interface MultipleImageUploadProps {
   value?: string[];
   onChange: (value: string[]) => void;
+  onFileChange?: (files: File[]) => void;
   label?: string;
   placeholder?: string;
   className?: string;
@@ -14,6 +15,7 @@ interface MultipleImageUploadProps {
 const MultipleImageUpload = ({ 
   value = [], 
   onChange, 
+  onFileChange,
   label, 
   placeholder = "Kéo & và thả file vào đây",
   className = "",
@@ -33,6 +35,11 @@ const MultipleImageUpload = ({
       // Cập nhật giá trị với các URL preview mới
       const newUrls = [...value, ...newPreviewUrls];
       onChange(newUrls);
+      
+      // Gọi callback cho file nếu có
+      if (onFileChange) {
+        onFileChange([...selectedFiles, ...newFiles]);
+      }
     }
   };
 
@@ -54,6 +61,11 @@ const MultipleImageUpload = ({
     setSelectedFiles(newFiles);
     setPreviewUrls(newPreviewUrls);
     onChange(newUrls);
+    
+    // Gọi callback cho file nếu có
+    if (onFileChange) {
+      onFileChange(newFiles);
+    }
   };
 
   const canAddMore = value.length < maxImages;
@@ -92,7 +104,7 @@ const MultipleImageUpload = ({
       {/* Khu vực upload mới */}
       {canAddMore && (
         <div className="transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl hover:border-brand-500">
-          <form
+          <div
             {...getRootProps()}
             className={`dropzone rounded-xl border-dashed border-gray-300 p-7 lg:p-10
                 ${isDragActive
@@ -126,7 +138,7 @@ const MultipleImageUpload = ({
                 Chọn ảnh
               </span>
             </div>
-          </form>
+          </div>
         </div>
       )}
 

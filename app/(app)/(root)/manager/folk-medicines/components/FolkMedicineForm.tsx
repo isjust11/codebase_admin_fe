@@ -9,7 +9,6 @@ import { uploadFile } from '@/services/media-api';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
-import { Switch } from '@/components/ui/switch';
 import { Action } from '@/types/actions';
 import { Loader2, Plus, Save, X } from 'lucide-react';
 import { useDropzone } from "react-dropzone";
@@ -21,6 +20,7 @@ import { FolkMedicine, CreateFolkMedicineDto } from '@/types/folk-medicine';
 import { useTranslations } from 'next-intl';
 import { getCategoryByCode } from '@/services/manager-api';
 import { AppCategoryCode } from '@/constants';
+import Switch from '@/components/form/switch/Switch';
 
 const FolkMedicineForm = () => {
   const t = useTranslations('FolkMedicinesPage');
@@ -363,13 +363,9 @@ const FolkMedicineForm = () => {
                     <Label htmlFor="isActive">{t('isActive')}</Label>
                     <div className="flex items-center space-x-2">
                       <Switch
-                        id="isActive"
-                        checked={formData.isActive}
-                        onCheckedChange={(checked) => handleSelectChange('isActive', checked)}
+                        onChange={(checked: boolean) => handleSelectChange('isActive', checked)}
+                        label={formData.isActive ? t('active') : t('inactive')}
                       />
-                      <span className="text-sm text-gray-600">
-                        {formData.isActive ? t('active') : t('inactive')}
-                      </span>
                     </div>
                   </div>
                 </div>
