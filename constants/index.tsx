@@ -9,6 +9,16 @@ export const AppConstants = {
   Feature: 'feature',
   Permissions: 'permissions',
 }
+export const AppRoutes = {
+  Auth: {
+    Login: '/login',
+    Register: '/register',
+    ForgotPassword: '/forgot-password',
+    ResetPassword: '/reset-password',
+    VerifyEmail: '/verify-email',
+    RefreshToken: '/auth/refresh-token',
+  },
+}
 export const AppCategoryCode = {
   FeatureType: 'Menu chức năng',
   FoodCategory: 'Danh mục món ăn',

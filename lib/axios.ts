@@ -1,3 +1,4 @@
+import { AppConstants, AppRoutes } from '@/constants';
 import axios from 'axios';
 
 export const axiosInstance = axios.create({
@@ -6,11 +7,13 @@ export const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
-
-// Add a request interceptor
+let retry = false;
+let retryCount = 0;
+const maxRetryCount = 3;
+  // Add a request interceptor
 axiosInstance.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem(AppConstants.AccessToken);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -25,22 +28,23 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401 && !error.config._retry) {
-      error.config._retry = true;
+    if (error.response?.status === 401 && !retry && retryCount < maxRetryCount) {
+      retryCount++;
+      retry = true;
       const originalRequest = error.config;
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = localStorage.getItem(AppConstants.RefreshToken);
       if (refreshToken) {
         try {
-          const response = await axiosInstance.post('/auth/refresh-token', {
+          const response = await axiosInstance.post(AppRoutes.Auth.RefreshToken, {
             refreshToken,
           });
-          localStorage.setItem('token', response.data.accessToken);
-          localStorage.setItem('refreshToken', response.data.refreshToken);
+          localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);
+          localStorage.setItem(AppConstants.RefreshToken, response.data.refreshToken);
           return axiosInstance(originalRequest);
         } catch (error) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('refreshToken');
-          window.location.href = '/login';
+          localStorage.removeItem(AppConstants.RefreshToken);
+          localStorage.removeItem(AppConstants.AccessToken);
+          window.location.href = AppRoutes.Auth.Login;
         }
       }
       return Promise.reject(error);
