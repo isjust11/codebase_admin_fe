@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ArrowDown, ArrowLeftRight, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useLoading } from '@/contexts/LoadingContext'
 import { DataTable } from '@/components/DataTable'
 import { deleteAuthor, getAllAuthors, updateAuthor } from '@/services/author-api'
 import ComponentCard from '@/components/common/ComponentCard'
@@ -21,6 +22,7 @@ import { useTranslations } from 'next-intl'
 
 const AuthorsPage = () => {
   const router = useRouter()
+  const { navigateTo } = useLoading()
   const t = useTranslations('AuthorsPage')
   const tUtils = useTranslations('Utils')
   const [errorImage, setErrorImage] = useState(false)
@@ -204,7 +206,7 @@ const AuthorsPage = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                  onClick={() => router.push(`/manager/authors/${author.id}`)}>
+                  onClick={() => navigateTo(`/manager/authors/${author.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
                   {tUtils('viewDetail')}
                 </DropdownMenuItem>
@@ -217,7 +219,7 @@ const AuthorsPage = () => {
                   {author.isActive ? tUtils('inactive') : tUtils('active')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-500/20 text-blue-500'
-                  onClick={() => router.push(`/manager/authors/update/${author.id}`)}
+                  onClick={() => navigateTo(`/manager/authors/update/${author.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
                   {tUtils('edit')}
@@ -276,7 +278,7 @@ const AuthorsPage = () => {
     {
       icon: <Plus className="w-4 h-4 mr-2" />,
       onClick: () => {
-        router.push('/manager/authors/create')
+        navigateTo('/manager/authors/create')
       },
       title: t('addAuthor'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
@@ -284,7 +286,11 @@ const AuthorsPage = () => {
   ]
   const confirmDelete = async () => {
     try {
-      await deleteAuthor(selectedAuthor?.id!);
+      if (!selectedAuthor?.id) {
+        toast.error(t('messages.errorDeleteAuthor'))
+        return
+      }
+      await deleteAuthor(String(selectedAuthor.id));
     } catch (error) {
       toast.error(t('messages.errorDeleteAuthor'));
     }

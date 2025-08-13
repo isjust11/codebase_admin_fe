@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, QrCode } from 'lucide-react';
 import { deleteTable, getTables } from '@/services/table-api';
 import { Table, Table as TableType } from '@/types/table';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -18,12 +18,10 @@ import Image from 'next/image'
 import { Category } from '@/types/category';
 import { Action } from '@/types/actions';
 import { useTranslations } from 'next-intl';
-import { useAuth } from '@/contexts/AuthContext';
 
 export default function TablesManagement() {
   const t = useTranslations("TablesPage");
-
-  // const { hasPermission, hasResourcePermission } = useAuth();
+  const { navigateTo } = useLoading();  
   
   const [tables, setTables] = useState<TableType[]>([]);
   const [pageCount, setPageCount] = useState(0);
@@ -31,11 +29,9 @@ export default function TablesManagement() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
 
-  const router = useRouter();
-
   // useEffect(() => {
   //   if (!hasResourcePermission('table')) {
-  //     router.push('/');
+  //     navigateTo('/');
   //   }
   // }, [hasResourcePermission, router]);
 
@@ -65,6 +61,10 @@ export default function TablesManagement() {
   const handleSizeChange = (size: number) => {
     setPageSize(size);
   };
+
+  const handleNavigateTo = (path: string) => {
+    navigateTo(path);
+  }
 
   const handleDelete = async (tableId: number) => {
     try {
@@ -180,12 +180,12 @@ export default function TablesManagement() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                    onClick={() => router.push(`/manager/tables/${table.id}`)}>
+                    onClick={() => handleNavigateTo(`/manager/tables/${table.id}`)}>
                     <BadgeInfo className="mr-2 h-4 w-4" />
                     {t('viewDetails')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
-                    onClick={() => router.push(`/manager/tables/update/${table.id}`)}
+                    onClick={() => handleNavigateTo(`/manager/tables/update/${table.id}`)}
                   >
                     <Pencil className="mr-2 h-4 w-4" />
                     {t('edit')}
@@ -205,7 +205,7 @@ export default function TablesManagement() {
       {
         icon: <Plus className="w-4 h-4 mr-2" />,
         onClick: () => {
-          router.push('/manager/tables/create')
+          handleNavigateTo('/manager/tables/create')
         },
         title: t('addNewTable'),
         className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
@@ -213,7 +213,7 @@ export default function TablesManagement() {
       {
         icon: <QrCode className="w-4 h-4 mr-2" />,
         onClick: () => {
-          router.push('/manager/tables/qrcodes')
+          handleNavigateTo('/manager/tables/qrcodes')
         },
         title: t('qrCodes'),
         className: "bg-yellow-400 hover:bg-yellow-500 dark:hover:bg-red-800 rounded-md transition-colors text-red-500",

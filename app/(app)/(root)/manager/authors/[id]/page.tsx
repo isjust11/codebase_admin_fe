@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { useRouter, useParams } from 'next/navigation'
+import { useLoading } from '@/contexts/LoadingContext'
 import { getAuthorById } from '@/services/author-api'
 import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -18,6 +19,7 @@ const AuthorDetailPage = () => {
   const t = useTranslations('AuthorsPage')
   const tUtils = useTranslations('Utils')
   const router = useRouter()
+  const { navigateTo } = useLoading()
   const params = useParams()
   const authorId = params.id as string
   
@@ -30,12 +32,12 @@ const AuthorDetailPage = () => {
     {
       title: tUtils('back'),
       icon: <ArrowLeft className="w-4 h-4" />,
-      onClick: () => router.push('/manager/authors')
+      onClick: () => navigateTo('/manager/authors')
     },
     {
       title: tUtils('edit'),
       icon: <Edit className="w-4 h-4" />,
-      onClick: () => router.push(`/manager/authors/update/${authorId}`)
+      onClick: () => navigateTo(`/manager/authors/update/${authorId}`)
     }
   ]
   useEffect(() => {
@@ -73,7 +75,7 @@ const AuthorDetailPage = () => {
         <div className="text-center">
           <p className="text-lg text-gray-600">{t('notFound')}</p>
           <Button 
-            onClick={() => router.push('/manager/authors')}
+            onClick={() => navigateTo('/manager/authors')}
             className="mt-4"
           >
             {tUtils('back')}

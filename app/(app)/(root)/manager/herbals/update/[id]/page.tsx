@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { getHerbalById, updateHerbal } from '@/services/herbal-api'
 import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -13,8 +13,9 @@ import { Action } from '@/types/actions'
 import HerbalForm from '../../components/HerbalForm'
 import HerbalImageUpload from '../../components/HerbalImageUpload'
 import { useTranslations } from 'next-intl'
+import { useLoading } from '@/contexts/LoadingContext';
 const UpdateHerbalPage = () => {
-  const router = useRouter()
+  const { navigateTo, back } = useLoading();
   const params = useParams()
   const [loading, setLoading] = useState(false)
   const [herbal, setHerbal] = useState<Herbal | null>(null)
@@ -32,7 +33,7 @@ const UpdateHerbalPage = () => {
       } catch (error) {
         console.error(t('errorLoadingHerbal'), error)
         toast.error(t('errorLoadingHerbal'))
-        router.push('/manager/herbals')
+        navigateTo('/manager/herbals')
       } finally {
         setInitialLoading(false)
       }
@@ -41,7 +42,7 @@ const UpdateHerbalPage = () => {
     if (herbalId) {
       fetchHerbal()
     }
-  }, [herbalId, router])
+  }, [herbalId, back])
 
   const handleSubmit = async (formData: Herbal) => {
     setLoading(true)
@@ -49,7 +50,7 @@ const UpdateHerbalPage = () => {
     try {
       await updateHerbal(herbalId, formData)
       toast.success(t('herbalUpdatedSuccess'))
-      router.push('/manager/herbals')
+      navigateTo('/manager/herbals')
     } catch (error) {
       console.error(t('errorUpdatingHerbal'), error)
       toast.error(t('errorUpdatingHerbal'))
@@ -69,7 +70,7 @@ const UpdateHerbalPage = () => {
     {
       icon: <X className="h-4 w-4" />,
       onClick: () => {
-        router.back();
+        back();
       },
       title: t('cancel'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",

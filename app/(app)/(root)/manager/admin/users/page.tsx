@@ -1,13 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { userApi, User } from '@/services/user-api';
+import { userApi } from '@/services/user-api';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Pencil, ArrowDown, ArrowUp, BadgeInfo, Trash, Lock, Unlock, CircleSlash2 } from 'lucide-react';
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { ColumnDef } from '@tanstack/react-table';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { Action } from '@/types/actions';
 import { DataTable } from '@/components/DataTable';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -17,10 +17,11 @@ import { MoreDotIcon } from '@/public/icons';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
+import { User } from '@/types/user';
 
 export default function UsersPage() {
   const t = useTranslations('UsersPage');
-  const router = useRouter();
+  const { navigateTo } = useLoading();
   const { hasPermission, hasResourcePermission } = useAuth();
   const hasPermissionToManageUsers = hasResourcePermission('user');
   const [users, setUsers] = useState<User[]>([]);
@@ -41,7 +42,7 @@ export default function UsersPage() {
 
   useEffect(() => {
     if (!hasPermissionToManageUsers) {
-      router.push('/');
+      navigateTo('/');
     }
   }, [hasPermissionToManageUsers]);
 
@@ -216,14 +217,14 @@ export default function UsersPage() {
                 <DropdownMenuContent align="end" className='shadow-sm rounded-sm bg-white dark:bg-gray-600 dark:text-gray-200 dark:border-gray-700'>
                   {hasPermission('USER_READ') && (
                     <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700"
-                      onClick={() => router.push(`/manager/admin/users/${user.id}`)}>
+                      onClick={() => navigateTo(`/manager/admin/users/${user.id}`)}>
                       <BadgeInfo className="mr-2 h-4 w-4 text-gray-600" />
                       {t('viewDetail')}
                     </DropdownMenuItem>
                   )}
                   {hasPermission('USER_UPDATE') && (
                     <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-blue-500 hover:text-blue-600'
-                      onClick={() => router.push(`/manager/admin/users/update/${user.id}`)}
+                      onClick={() => navigateTo(`/manager/admin/users/update/${user.id}`)}
                     >
                       <Pencil className="mr-2 h-4 w-4 text-blue-500 hover:text-blue-600" />
                       {t('edit')}
@@ -270,7 +271,7 @@ export default function UsersPage() {
     // {
     //   icon: <Plus className="w-4 h-4 mr-2" />,
     //   onClick: () => {
-    //     router.push('/manager/admin/users/create')
+    //     navigateTo('/manager/admin/users/create')
     //   },
     //   title: "Thêm người dùng",
     //   className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",

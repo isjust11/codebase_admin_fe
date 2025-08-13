@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import Badge from '@/components/ui/badge/Badge';
@@ -32,6 +32,7 @@ import { useTranslations } from 'next-intl';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
 import { AsyncWrapper } from '@/components/common/AsyncWrapper';
+import { useLoading } from '@/contexts/LoadingContext';
 
 interface PermissionGroup {
   resource: string;
@@ -41,7 +42,7 @@ interface PermissionGroup {
 export default function RolePermissionManagementPage() {
   const t = useTranslations('RolesPage');
   const params = useParams();
-  const router = useRouter();
+  const { navigateTo, back } = useLoading();
   const roleId = params.id as string;
   
   const [role, setRole] = useState<Role | null>(null);
@@ -136,7 +137,7 @@ export default function RolePermissionManagementPage() {
     try {
       await assignRolePermissions(roleId, assignedPermissions);
       toast.success(t('permissionUpdateSuccess'));
-      router.push(`/manager/admin/roles/${roleId}`);
+      navigateTo(`/manager/admin/roles/${roleId}`);
     } catch (error: any) {
       toast.error(t('permissionUpdateError') + error.message);
     } finally {
@@ -219,7 +220,7 @@ export default function RolePermissionManagementPage() {
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => router.back()}>
+              <Button variant="outline" onClick={() => back()}>
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {t('back')}
               </Button>

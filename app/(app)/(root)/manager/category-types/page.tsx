@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, RefreshCcw } from 'lucide-react';
 import { CategoryType } from '@/types/category-type';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';

@@ -79,7 +79,7 @@ const CreateAuthorPage = () => {
       }
       await createAuthor(formData)
       toast.success(tUtils('createSuccess'))
-      router.push('/manager/authors')
+      navigateTo('/manager/authors')
     } catch (error) {
       console.error(tUtils('createError'), error)
       toast.error(tUtils('createError'))
@@ -104,7 +104,7 @@ const CreateAuthorPage = () => {
             formData={formData}
             onInputChange={handleInputChange}
             onSubmit={handleSubmit}
-            onCancel={() => router.push('/manager/authors')}
+            onCancel={() => navigateTo('/manager/authors')}
             loading={loading}
             isEdit={false}
           />

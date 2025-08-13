@@ -4,7 +4,7 @@ import { useState, useEffect, use } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash, ImageOff, ArrowDown, ArrowUp, BadgeInfo, MoreHorizontal, ChartColumn } from 'lucide-react';
 import { deleteTable, getTables } from '@/services/table-api';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { toast } from 'sonner';
 import { deleteFoodItem, getAllFoods, getOrders } from '@/services/manager-api';
 import { Order } from '@/types/order';
@@ -22,7 +22,7 @@ import { User } from '@/types/user';
 
 export default function OrdersManagement() {
   const [orders, setOrders] = useState<Order[]>([]);
-  const router = useRouter();
+  const { navigateTo } = useLoading();
   // const { subscribeToEvent, unsubscribeFromEvent, joinRoom, leaveRoom } = useSocket();
   const [pageCount, setPageCount] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
@@ -246,12 +246,12 @@ export default function OrdersManagement() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                  onClick={() => router.push(`/manager/food-items/${foodItem.id}`)}>
+                  onClick={() => navigateTo(`/manager/food-items/${foodItem.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
                   Xem chi tiết
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
-                  onClick={() => router.push(`/manager/food-items/update/${foodItem.id}`)}
+                  onClick={() => navigateTo(`/manager/food-items/update/${foodItem.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
                   Chỉnh sửa
@@ -281,12 +281,12 @@ export default function OrdersManagement() {
     {
       icon: <ChartColumn size={16} />,
       title: 'Xem báo cáo',
-      onClick: () => router.push('/manager/orders/chart'),
+      onClick: () => navigateTo('/manager/orders/chart'),
     },
     {
       icon: <Pencil size={16} />,
       title: 'Chỉnh sửa',
-      onClick: () => router.push('/manager/orders/edit'),
+      onClick: () => navigateTo('/manager/orders/edit'),
     },
   ];
   return (

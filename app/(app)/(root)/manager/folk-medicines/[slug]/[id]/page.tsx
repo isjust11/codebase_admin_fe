@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,9 +14,9 @@ import { ArrowLeft, Edit, Calendar, User, Tag, ThumbsUp, Eye as EyeIcon, BookOpe
 import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
-
+import { useLoading } from '@/contexts/LoadingContext';
 export default function FolkMedicineDetailView() {
-  const router = useRouter();
+  const { navigateTo, back } = useLoading();
   const params = useParams();
   const id = params.id as string;
   const slug = params.slug as string;
@@ -32,7 +32,7 @@ export default function FolkMedicineDetailView() {
         setFolkMedicine(data);
       } catch (error) {
         toast.error(tUtils('loadError'));
-        router.push('/manager/folk-medicines');
+        navigateTo('/manager/folk-medicines');
       } finally {
         setLoading(false);
       }
@@ -41,7 +41,7 @@ export default function FolkMedicineDetailView() {
     if (id) {
       fetchFolkMedicine();
     }
-  }, [id, router, tUtils]);
+  }, [id, back, tUtils]);
 
   if (loading) {
     return (
@@ -85,14 +85,14 @@ export default function FolkMedicineDetailView() {
               <div className="flex space-x-3">
                 <Button
                   variant="outline"
-                  onClick={() => router.push(`/manager/folk-medicines/update/${folkMedicine.id}`)}
+                  onClick={() => navigateTo(`/manager/folk-medicines/update/${folkMedicine.id}`)}
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   {t('edit')}
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => router.push(`/manager/folk-medicines/detail/${folkMedicine.id}`)}
+                  onClick={() => navigateTo(`/manager/folk-medicines/detail/${folkMedicine.id}`)}
                 >
                   <BookOpen className="w-4 h-4 mr-2" />
                   {t('backToEdit')}
@@ -332,7 +332,7 @@ export default function FolkMedicineDetailView() {
             <div className="flex justify-start pt-6 border-t">
               <Button
                 variant="outline"
-                onClick={() => router.back()}
+                onClick={() => back()}
                 className="px-6 py-2"
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />

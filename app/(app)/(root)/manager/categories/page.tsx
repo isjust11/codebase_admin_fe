@@ -224,7 +224,7 @@ export default function CategoriesManagement() {
 
   useEffect(() => {
     if (!hasResourcePermissionStatus) {
-      router.push('/');
+      navigateTo('/');
     }
   }, [hasResourcePermissionStatus]);
 

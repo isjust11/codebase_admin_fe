@@ -16,7 +16,6 @@ export default function OrderDetailPage() {
   const params = useParams()
   const [order, setOrder] = useState<Order | null>(null)
   const [table, setTable] = useState<Table>({} as Table);
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -31,17 +30,11 @@ export default function OrderDetailPage() {
       } catch (error) {
         console.error('Error fetching order:', error)
         toast.error('Không thể tải thông tin đơn hàng')
-      } finally {
-        setLoading(false)
       }
     }
 
     fetchOrder()
   }, [params.id])
-
-  if (loading) {
-    return <div>Đang tải...</div>
-  }
 
   if (!order) {
     return <div>Không tìm thấy đơn hàng</div>

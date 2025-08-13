@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, Eye } from 'lucide-react';
 import { deleteArticle, getArticles } from '@/services/article-api';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -26,7 +26,7 @@ export default function ArticlesManagement() {
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
 
-  const router = useRouter();
+  const { navigateTo } = useLoading();
 
   const fetchArticles = async (page: number, size: number, search: string) => {
     setLoading(true);
@@ -183,17 +183,17 @@ export default function ArticlesManagement() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                    onClick={() => router.push(`/manager/articles/${article.id}`)}>
+                    onClick={() => navigateTo(`/manager/articles/details/${article.id}`)}>
                     <BadgeInfo className="mr-2 h-4 w-4" />
                     Xem chi tiết
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
-                    onClick={() => router.push(`/manager/articles/${article.slug}/${article.id}`)}>
+                    onClick={() => navigateTo(`/manager/articles/${article.slug}/${article.id}`)}>
                     <Eye className="mr-2 h-4 w-4 color-yellow-300" />
                     Xem bài đăng
                   </DropdownMenuItem>
                   <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
-                    onClick={() => router.push(`/manager/articles/update/${article.id}`)}
+                    onClick={() => navigateTo(`/manager/articles/update/${article.id}`)}
                   >
                     <Pencil className="mr-2 h-4 w-4" />
                     Chỉnh sửa
@@ -214,7 +214,7 @@ export default function ArticlesManagement() {
     {
       icon: <Plus className="w-4 h-4 mr-2" />,
       onClick: () => {
-        router.push('/manager/articles/create')
+        navigateTo('/manager/articles/create')
       },
       title: "Thêm tin tức mới",
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",

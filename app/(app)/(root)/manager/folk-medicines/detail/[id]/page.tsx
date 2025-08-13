@@ -16,7 +16,7 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 export default function FolkMedicineDetail() {
-  const router = useRouter();
+  const { navigateTo } = useLoading();
   const params = useParams();
   const id = params.id as string;
   const t = useTranslations('FolkMedicinesPage');
@@ -31,7 +31,7 @@ export default function FolkMedicineDetail() {
         setFolkMedicine(data);
       } catch (error) {
         toast.error(tUtils('loadError'));
-        router.push('/manager/folk-medicines');
+        navigateTo('/manager/folk-medicines');
       } finally {
         setLoading(false);
       }
@@ -73,14 +73,14 @@ export default function FolkMedicineDetail() {
               <div className="flex space-x-2">
                 <Button
                   variant="outline"
-                  onClick={() => router.push(`/manager/folk-medicines/update/${folkMedicine.id}`)}
+                  onClick={() => navigateTo(`/manager/folk-medicines/update/${folkMedicine.id}`)}
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   {t('edit')}
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}
+                  onClick={() => navigateTo(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   {t('viewDetail')}

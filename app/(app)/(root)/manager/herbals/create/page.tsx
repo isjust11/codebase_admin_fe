@@ -1,6 +1,5 @@
 'use client'
 import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createHerbal } from '@/services/herbal-api'
 import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -12,8 +11,9 @@ import { Action } from '@/types/actions'
 import HerbalForm from '../components/HerbalForm'
 import HerbalImageUpload from '../components/HerbalImageUpload'
 import { useTranslations } from 'next-intl'
+import { useLoading } from '@/contexts/LoadingContext';
 const CreateHerbalPage = () => {
-  const router = useRouter()
+  const { navigateTo, back } = useLoading();
   const t = useTranslations('Herbals')
   const tUtils = useTranslations('Utils')
   const [loading, setLoading] = useState(false)
@@ -45,7 +45,7 @@ const CreateHerbalPage = () => {
     {
       icon: <X className="h-4 w-4" />,
       onClick: () => {
-        router.back();
+        back();
       },
       title: t('cancel'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",
@@ -100,14 +100,14 @@ const CreateHerbalPage = () => {
                   </p>
                   <div className="flex justify-end space-x-4">
                     <button
-                      onClick={() => router.push('/manager/herbals')}
+                      onClick={() => navigateTo('/manager/herbals')}
                       className="flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                     >
                       <ArrowLeft className="w-4 h-4 mr-2" />
                       {t('backToList')}
                     </button>
                     <button
-                      onClick={() => router.push(`/manager/herbals/update/${createdHerbalId}`)}
+                      onClick={() => navigateTo(`/manager/herbals/update/${createdHerbalId}`)}
                       className="flex items-center px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700"
                     >
                       <Save className="w-4 h-4 mr-2" />

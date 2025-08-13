@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useRouter, useSearchParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -16,9 +16,10 @@ import { useDropzone } from "react-dropzone";
 import { Category } from '@/types/category';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { unicodeToEmoji, mergeImageUrl } from '@/lib/utils';
+import { useLoading } from '@/contexts/LoadingContext';
 
 const FoodItemForm = () => {
-  const router = useRouter();
+  const { navigateTo, back } = useLoading();
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -112,7 +113,7 @@ const FoodItemForm = () => {
       });
     } catch (_error) {
       toast.error('Không thể tải thông tin món ăn');
-      router.push('/manager/food-items');
+      navigateTo('/manager/food-items');
     }
   };
 
@@ -155,7 +156,7 @@ const FoodItemForm = () => {
         await createFoodItem(submitData);
         toast.success('Món ăn đã được thêm thành công');
       }
-      router.push('/manager/food-items');
+      navigateTo('/manager/food-items');
     } catch (_error) {
       toast.error(isEditing ? 'Có lỗi xảy ra khi cập nhật món ăn' : 'Có lỗi xảy ra khi thêm món ăn');
     } finally {
@@ -225,7 +226,7 @@ const FoodItemForm = () => {
     {
       icon: <X className="h-4 w-4" />,
       onClick: () => {
-        router.back();
+        back();
       },
       title: "Hủy",
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",

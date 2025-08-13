@@ -21,13 +21,14 @@ import { useTranslations } from 'next-intl';
 import { getCategoryByCode } from '@/services/manager-api';
 import { AppCategoryCode } from '@/constants';
 import Switch from '@/components/form/switch/Switch';
+import { useLoading } from '@/contexts/LoadingContext';
 
 const FolkMedicineForm = () => {
   const t = useTranslations('FolkMedicinesPage');
   const [isPending, startTransition] = useTransition();
   const tUtils = useTranslations('Utils');
   const { user } = useAuth();
-  const router = useRouter();
+  const { navigateTo, back } = useLoading();
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -110,7 +111,7 @@ const FolkMedicineForm = () => {
       });
     } catch (_error) {
       toast.error(t('messages.error'));
-      router.push('/manager/folk-medicines');
+      navigateTo('/manager/folk-medicines');
     }
   };
 
@@ -139,7 +140,7 @@ const FolkMedicineForm = () => {
         await createFolkMedicine(submitData);
         toast.success(t('messages.createSuccess'));
       }
-      router.push('/manager/folk-medicines');
+      navigateTo('/manager/folk-medicines');
     } catch (_error) {
       toast.error(isEditing ? t('messages.updateError') : t('messages.createError'));
     } finally {
@@ -188,7 +189,7 @@ const FolkMedicineForm = () => {
     {
       icon: <X className="h-4 w-4" />,
       onClick: () => {
-        router.back();
+        back();
       },
       title: "Hủy",
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",
@@ -205,7 +206,7 @@ const FolkMedicineForm = () => {
 
   const handleCreateCategory = () => {
     startTransition(() => {
-      router.push('/manager/categories?onCreate=true');
+      navigateTo('/manager/categories?onCreate=true');
     });
   }
 

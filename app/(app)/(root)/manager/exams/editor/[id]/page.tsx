@@ -27,7 +27,7 @@ interface ValidationErrors {
 }
 
 const QuestionEditor = () => {
-    const router = useRouter();
+    const { navigateTo } = useLoading();
     const params = useParams();
     const examId = params.id as string;
 

@@ -19,7 +19,7 @@ import { useTranslations } from 'next-intl';
 export default function TableDetail() {
     const t = useTranslations("TablesPage");
     const params = useParams();
-    const router = useRouter();
+    const { navigateTo } = useLoading();
     const [table, setTable] = useState<Table | null>(null);
     const [loading, setLoading] = useState(true);
     const id = params.id as string;
@@ -44,7 +44,7 @@ export default function TableDetail() {
         try {
             await deleteTable(table.id);
             toast.success(t('messages.deleteSuccess'));
-            router.push('/manager/tables');
+            navigateTo('/manager/tables');
         } catch (error) {
             toast.error(t('messages.deleteError'));
         }
@@ -61,14 +61,14 @@ export default function TableDetail() {
     const lstAction: Action[] = [
         {
             icon: <Pencil className="mr-2 h-4 w-4" />,
-            onClick: () => router.push(`/manager/tables/update/${table.id}`),
+            onClick: () => navigateTo(`/manager/tables/update/${table.id}`),
             title: t('edit'),
             variant: 'primary',
             className: 'bg-primary-400 hover:bg-primary-500 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'
         },
         {
             icon: <QrCodeIcon className="mr-2 h-4 w-4" />,
-            onClick: () => router.push(`/manager/tables/qrcodes/${table.id}`),
+            onClick: () => navigateTo(`/manager/tables/qrcodes/${table.id}`),
             title: t('qrCodes'),
             variant: 'outline',
             className: 'hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'

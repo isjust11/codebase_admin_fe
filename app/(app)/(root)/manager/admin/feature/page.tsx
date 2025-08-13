@@ -26,6 +26,8 @@ import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
 import router from 'next/router';
+import { useLoading } from '@/contexts/LoadingContext';
+import { AppConstants, AppRoutes } from '@/constants';
 
 export default function FeaturePage() {
   const [features, setFeatures] = useState<Feature[]>([]);
@@ -39,6 +41,7 @@ export default function FeaturePage() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const t = useTranslations('FeaturePage');
+  const { navigateTo } = useLoading();  
   
   const { hasPermission,hasResourcePermission } = useAuth();
   const hasResourcePermissionStatus = hasResourcePermission('feature');
@@ -52,7 +55,7 @@ export default function FeaturePage() {
 
   useEffect(() => {
     if (!hasResourcePermissionStatus) {
-      router.push('/');
+      navigateTo(AppRoutes.Home);
     }
   }, [hasResourcePermissionStatus]);
 

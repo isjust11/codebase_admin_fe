@@ -29,7 +29,6 @@ const PermissionManager: React.FC = () => {
   const [templates, setTemplates] = useState<{ [key: string]: PermissionTemplate }>({});
   const [selectedResource, setSelectedResource] = useState<string>('');
   const [selectedActions, setSelectedActions] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchConstants();
@@ -37,8 +36,6 @@ const PermissionManager: React.FC = () => {
 
   const fetchConstants = async () => {
     try {
-      setLoading(true);
-      
       // Fetch resources
       const resourcesResponse = await fetch('/api/permissions/constants/resources');
       const resourcesData = await resourcesResponse.json();
@@ -56,8 +53,6 @@ const PermissionManager: React.FC = () => {
 
     } catch (error) {
       console.error('Error fetching constants:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -92,7 +87,6 @@ const PermissionManager: React.FC = () => {
     }
 
     try {
-      setLoading(true);
       const response = await fetch('/api/permissions/create-from-template', {
         method: 'POST',
         headers: {
@@ -114,8 +108,6 @@ const PermissionManager: React.FC = () => {
     } catch (error) {
       console.error('Error creating permissions:', error);
       alert('Có lỗi xảy ra khi tạo permission');
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -160,10 +152,6 @@ const PermissionManager: React.FC = () => {
     };
     return actionNames[actionKey] || actionKey;
   };
-
-  if (loading) {
-    return <div className="flex items-center justify-center p-8">Đang tải...</div>;
-  }
 
   return (
     <div className="space-y-6 p-6">
@@ -280,10 +268,9 @@ const PermissionManager: React.FC = () => {
             <div className="mt-4">
               <Button 
                 onClick={handleCreatePermissions}
-                disabled={loading}
                 className="w-full"
               >
-                {loading ? 'Đang tạo...' : `Tạo ${selectedActions.length} quyền`}
+                `Tạo ${selectedActions.length} quyền`
               </Button>
             </div>
           </CardContent>

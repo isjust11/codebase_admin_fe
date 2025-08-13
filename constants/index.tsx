@@ -18,6 +18,14 @@ export const AppRoutes = {
     VerifyEmail: '/verify-email',
     RefreshToken: '/auth/refresh-token',
   },
+  Home: '/',
+  Manager: {
+    Tables: '/manager/tables',
+    TablesCreate: '/manager/tables/create',
+    TablesUpdate: '/manager/tables/update',
+    TablesDetail: '/manager/tables',
+    TablesQrCodes: '/manager/tables/qrcodes',
+  }
 }
 export const AppCategoryCode = {
   FeatureType: 'Menu chức năng',

@@ -393,4 +393,6 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
   );
 });
 
+PermissionFormInput.displayName = 'PermissionFormInput';
+
 export default PermissionFormInput; 

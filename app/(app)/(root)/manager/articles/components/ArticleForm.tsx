@@ -19,7 +19,7 @@ import { useAuth } from '@/contexts/AuthContext';
 
 const ArticleForm = () => {
   const {user} = useAuth();
-  const router = useRouter();
+  const { navigateTo } = useLoading();
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -76,7 +76,7 @@ const ArticleForm = () => {
       });
     } catch (_error) {
       toast.error('Không thể tải thông tin tin tức');
-      router.push('/manager/articles');
+      navigateTo('/manager/articles');
     }
   };
 
@@ -105,7 +105,7 @@ const ArticleForm = () => {
         await createArticle(submitData);
         toast.success('Tin tức đã được thêm thành công');
       }
-      router.push('/manager/articles');
+      navigateTo('/manager/articles');
     } catch (_error) {
       toast.error(isEditing ? 'Có lỗi xảy ra khi cập nhật tin tức' : 'Có lỗi xảy ra khi thêm tin tức');
     } finally {

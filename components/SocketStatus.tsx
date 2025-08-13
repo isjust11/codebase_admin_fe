@@ -31,7 +31,7 @@ const SocketStatus = () => {
 
       {currentRetry && (
         <p className="text-xs text-yellow-500 mt-1">
-          Đang thử lại sự kiện "{currentRetry.event}" (Lần {currentRetry.count})
+          Đang thử lại sự kiện &quot;{currentRetry.event}&quot; (Lần {currentRetry.count})
         </p>
       )}
     </div>

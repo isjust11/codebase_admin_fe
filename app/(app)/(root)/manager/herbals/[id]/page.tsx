@@ -1,7 +1,7 @@
 'use client'
 import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { getHerbalById } from '@/services/herbal-api'
 import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -17,12 +17,13 @@ import HerbalImageGallery from '../components/HerbalImageGallery'
 import { useTransition } from 'react'
 import { Action } from '@/types/actions'
 import { useTranslations } from 'next-intl'
+import { useLoading } from '@/contexts/LoadingContext'; 
 
 const HerbalDetailPage = () => {
   const [isPending, startTransition] = useTransition()
   const t = useTranslations('Herbals')
   const tUtils = useTranslations('Utils')
-  const router = useRouter()
+  const { navigateTo } = useLoading();
   const params = useParams()
   const herbalId = params.id as string
   const [imageDisplay, setImageDisplay] = useState<string>('')
@@ -74,7 +75,7 @@ const HerbalDetailPage = () => {
         <div className="text-center">
           <p className="text-lg text-gray-600">{t('notFound')}</p>
           <Button 
-            onClick={() => router.push('/manager/herbals')}
+            onClick={() => navigateTo('/manager/herbals')}
             className="mt-4"
           >
             {t('backToList')}
@@ -88,7 +89,7 @@ const HerbalDetailPage = () => {
       icon: <ArrowLeft className="w-4 h-4" />,
       onClick: () => {
         startTransition(() => {
-          router.push('/manager/herbals')
+          navigateTo('/manager/herbals')
         })
       },
       title: t('back'),
@@ -99,7 +100,7 @@ const HerbalDetailPage = () => {
       icon: <Edit className="w-4 h-4" />,
       onClick: () =>{
         startTransition(() => {
-          router.push(`/manager/herbals/update/${herbalId}`)
+          navigateTo(`/manager/herbals/update/${herbalId}`)
         })
       },
       title: t('edit'),

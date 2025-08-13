@@ -1,5 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
+import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
@@ -26,7 +27,9 @@ const Calendar: React.FC = () => {
   const [eventLevel, setEventLevel] = useState("");
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const calendarRef = useRef<FullCalendar>(null);
-  const { isOpen, openModal, closeModal } = useModal();
+  const [isOpen, setIsOpen] = useState(false);
+  const openModal = () => setIsOpen(true);
+  const closeModal = () => setIsOpen(false);
 
   const calendarsEvents = {
     Danger: "danger",
@@ -278,7 +281,5 @@ const renderEventContent = (eventInfo: EventContentArg) => {
 };
 
 export default Calendar;
-function useModal(): { isOpen: any; openModal: any; closeModal: any; } {
-  throw new Error("Function not implemented.");
-}
+import { Modal } from "@/components/ui/modal";
 

@@ -6,7 +6,6 @@ import '../globals.css';
 import { SidebarProvider } from '@/contexts/SidebarContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { Toaster } from 'sonner';
-import Loading from '@/components/ui/loading';
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +28,6 @@ export default function RootLayout({
               className: 'toast',
             }}
           />
-          <Loading />
         </ThemeProvider>
       </Provider>
     </div>

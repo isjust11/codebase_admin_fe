@@ -12,6 +12,7 @@ import { RoleFormInput } from './RoleFormInput';
 import AssignHandleForm from './AssignHandleForm';
 import RolePermissionSummary from './RolePermissionSummary';
 import { useTranslations } from 'next-intl';
+import { useLoading } from '@/contexts/LoadingContext';
 
 interface RoleFormProps {
   isView?: boolean;
@@ -20,8 +21,9 @@ interface RoleFormProps {
 const RoleForm = ({ isView = false }: RoleFormProps) => {
   const t = useTranslations('RolesPage');
   const tUtils = useTranslations('Utils');
-  const router = useRouter();
+  const { navigateTo } = useLoading();
   const params = useParams();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [role, setRole] = useState<Role>();
@@ -45,7 +47,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
       setAssignFeatures(roleData.features?.map(item => item.id)??[]);
     } catch (_error) {
       toast.error(t('cannotLoadRoleInformation'));
-      router.push('/manager/admin/roles');
+      navigateTo('/manager/admin/roles');
     }
   };
 
@@ -68,7 +70,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
         await createRole(submitData);
         toast.success(t('addSuccess'));
       }
-      router.push('/manager/admin/roles');
+      navigateTo('/manager/admin/roles');
     } catch (_error) {
       toast.error(isEditing ? t('updateError') : t('addError'));
     } finally {
@@ -151,7 +153,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
               <div className="w-full">
                 <RolePermissionSummary
                   role={role}
-                  onManagePermissions={() => router.push(`/manager/admin/roles/${role.id}/permissions`)}
+                  onManagePermissions={() => navigateTo(`/manager/admin/roles/${role.id}/permissions`)}
                 />
               </div>
             )}

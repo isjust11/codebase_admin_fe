@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ArrowDown, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { DataTable } from '@/components/DataTable'
 import { deleteFoodItem, getAllFoods } from '@/services/manager-api'
 import { FoodItem } from '@/types/food-item'
@@ -17,10 +16,11 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Category } from '@/types/category'
 import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils'
 import Image from 'next/image'
+import { useLoading } from '@/contexts/LoadingContext';
 
 
 const FoodItemsPage = () => {
-  const router = useRouter()
+  const { navigateTo } = useLoading();
   const columns: ColumnDef<FoodItem>[] = [
     {
       id: "select",
@@ -163,12 +163,12 @@ const FoodItemsPage = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                  onClick={() => router.push(`/manager/food-items/${foodItem.id}`)}>
+                  onClick={() => navigateTo(`/manager/food-items/${foodItem.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
                   Xem chi tiết
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
-                  onClick={() => router.push(`/manager/food-items/update/${foodItem.id}`)}
+                  onClick={() => navigateTo(`/manager/food-items/update/${foodItem.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
                   Chỉnh sửa
@@ -220,7 +220,7 @@ const FoodItemsPage = () => {
     {
       icon: <Plus className="w-4 h-4 mr-2" />,
       onClick: () => {
-        router.push('/manager/food-items/create')
+        navigateTo('/manager/food-items/create')
       },
       title: "Thêm món mới",
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",

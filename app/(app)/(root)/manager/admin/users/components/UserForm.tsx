@@ -1,21 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { Action } from '@/types/actions';
 import { Plus, Save, X } from 'lucide-react';
-import { User } from '@/services/user-api';
+import { User } from '@/types/user';
 import { userApi } from '@/services/user-api';
 import { UserFormInput } from './UserFormInput';
 import { useTranslations } from 'next-intl';
+import { useLoading } from '@/contexts/LoadingContext';
 
 interface UserFormProps {
   isView?: boolean;
 }
 
 const UserForm = ({ isView = false }: UserFormProps) => {
-  const router = useRouter();
+  const { navigateTo, back } = useLoading();
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -42,7 +43,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
       setUser(userData);
     } catch (_error) {
       toast.error(t('fetchError'));
-      router.push('/manager/admin/users');
+      navigateTo('/manager/admin/users');
     } finally {
       setIsLoadingUser(false);
     }
@@ -67,7 +68,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
         await userApi.create(submitData);
         toast.success(t('addSuccess'));
       }
-      router.push('/manager/admin/users');
+      navigateTo('/manager/admin/users');
     } catch (_error) {
         toast.error(isEditing ? t('updateError') : t('addError'));
     } finally {
@@ -79,7 +80,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
     {
       icon: <X className="h-4 w-4" />,
       onClick: () => {
-        router.back();
+        back();
       },
       title: tUtils('back'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",
@@ -89,7 +90,7 @@ const UserForm = ({ isView = false }: UserFormProps) => {
     {
       icon: <X className="h-4 w-4" />,
       onClick: () => {
-        router.back();
+        back();
       },
       title: tUtils('cancel'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",

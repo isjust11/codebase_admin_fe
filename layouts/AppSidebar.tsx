@@ -14,12 +14,11 @@ import { Feature } from "@/types/feature";
 import { Icon } from "@/components/ui/icon";
 import { Category } from "@/types/category";
 import { getCategoryByCode } from "@/services/manager-api";
-import { AppCategoryCode } from "@/constants";
+import { AppCategoryCode, AppRoutes } from "@/constants";
 import { buildFeature } from "@/lib/utils";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
-import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
-import { useNavigationLoading } from "@/hooks/useNavigationLoading";
+import { useLoading } from "@/contexts/LoadingContext";
 type NavItem = {
   name: string;
   icon: React.ReactNode;
@@ -30,8 +29,7 @@ type NavItem = {
 
 const AppSidebar: React.FC = () => {
   const { user, feature } = useAuth();
-  const router = useRouter();
-  const { navigateTo, isLoading, clearLoading } = useNavigationLoading();
+  const { isLoading,navigateTo } = useLoading();
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
   const [menuTypes, setMenuTypes] = useState<Category[]>();
@@ -50,10 +48,6 @@ const AppSidebar: React.FC = () => {
   // const isActive = (path: string) => path === pathname;
   const isActive = useCallback((path: string) => path === pathname, [pathname]);
 
-  // Xóa loading state khi pathname thay đổi (navigation hoàn thành)
-  useEffect(() => {
-    clearLoading();
-  }, [pathname, clearLoading]);
 
   useAsyncEffect(async () => {
     if (typeof window === "undefined") {
@@ -216,7 +210,7 @@ const AppSidebar: React.FC = () => {
                     navigateTo(nav.path as string);
                   }
                 }}
-                className={`menu-item group ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
+                className={`menu-item group cursor-default ${isActive(nav.path) ? "menu-item-active" : "menu-item-inactive"
                   }`}
               >
                 <span
@@ -328,7 +322,7 @@ const AppSidebar: React.FC = () => {
         className={`p-4 flex  ${!isExpanded && !isHovered ? "lg:justify-center" : "justify-start"
           }`}
       >
-        <Link href="/">
+        <Link href={AppRoutes.Home}>
           {isExpanded || isHovered || isMobileOpen ? (
             <>
               <Image

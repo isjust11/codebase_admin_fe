@@ -1,15 +1,14 @@
-import {Inter} from 'next/font/google';
-import {NextIntlClientProvider} from 'next-intl';
-import {getLocale} from 'next-intl/server';
-import {ReactNode, Suspense} from 'react';
+import { Inter } from 'next/font/google';
+import { NextIntlClientProvider } from 'next-intl';
+import { getLocale } from 'next-intl/server';
+import { ReactNode, Suspense } from 'react';
 import { Metadata } from 'next';
 import { SITE } from '../config/config';
 import { locales } from '@/i18n/config';
-import Loading from '@/components/ui/loading';
 
 const inter = Inter({
   subsets: ['latin', 'vietnamese'],
-  weight: ['400', '500','600', '700'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-inter',
 });
 
@@ -28,7 +27,7 @@ export const metadata: Metadata = {
 
 async function LocaleProvider({ children }: { children: ReactNode }) {
   let locale: string;
-  
+
   try {
     locale = await getLocale();
     if (!locales.includes(locale as any)) {
@@ -46,21 +45,19 @@ async function LocaleProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export default function LocaleLayout({children}: Props) {
+export default function LocaleLayout({ children }: Props) {
   return (
     <html lang="vi" suppressHydrationWarning>
       <head>
         <title>{SITE.title}</title>
       </head>
-      <body 
+      <body
         className={`${inter.variable} font-sans dark:bg-gray-900`}
         suppressHydrationWarning
       >
-          <Suspense fallback={<Loading />}>
-            <LocaleProvider>
-              {children}
-            </LocaleProvider>
-          </Suspense>
+        <LocaleProvider>
+          {children}
+        </LocaleProvider>
       </body>
     </html>
   );

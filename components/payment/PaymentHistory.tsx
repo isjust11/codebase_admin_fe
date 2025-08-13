@@ -87,7 +87,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ userId }) => {
         </CardHeader>
         <CardContent>
           <div className="text-center py-8 text-gray-500">
-            You haven't made any payments yet.
+            You haven&apos;t made any payments yet.
           </div>
         </CardContent>
       </Card>

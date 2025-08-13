@@ -5,7 +5,7 @@ import AppHeader from "@/layouts/AppHeader";
 import AppSidebar from "@/layouts/AppSidebar";
 import Backdrop from "@/layouts/Backdrop";
 import { LoadingProvider } from "@/contexts/LoadingContext";
-import LoadingIndicator from "@/components/LoadingIndicator";
+
 
 import React from "react";
 import SocketManager from "@/store/socketManager";
@@ -17,7 +17,6 @@ export default function RootLayout({
 }) {
   const { isExpanded, isHovered, isMobileOpen } = useSidebar();
 
-  // Dynamic class for main content margin based on sidebar state
   const mainContentMargin = isMobileOpen
     ? "ml-0"
     : isExpanded || isHovered
@@ -26,7 +25,13 @@ export default function RootLayout({
 
   return (
     <AuthProvider>
-      <LoadingProvider>
+      <LoadingProvider 
+        options={{
+          variant: 'default',
+          size: 'small',
+          showProgress: false
+        }}
+      >
         <div className="min-h-screen xl:flex">
           {/* Sidebar and Backdrop */}
           <AppSidebar />
@@ -42,7 +47,6 @@ export default function RootLayout({
             <SocketManager />
           </div>
         </div>
-        <LoadingIndicator />
       </LoadingProvider>
     </AuthProvider>
   );

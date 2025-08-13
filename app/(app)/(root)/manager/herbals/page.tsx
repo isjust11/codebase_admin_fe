@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ArrowDown, ArrowLeftRight, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal, Pencil, Plus, Trash } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useLoading } from '@/contexts/LoadingContext'
 import { DataTable } from '@/components/DataTable'
 import { deleteHerbal, getAllHerbals, updateHerbal } from '@/services/herbal-api'
 import ComponentCard from '@/components/common/ComponentCard'
@@ -18,9 +19,9 @@ import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils'
 import Image from 'next/image'
 import { Herbal } from '@/types/herbal'
 import { useTranslations } from 'next-intl'
-import { AlertDialogUtils } from '@/components/AlertDialogUtils'
+import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 const HerbalsPage = () => {
-  const router = useRouter()
+  const { navigateTo } = useLoading();
   const t = useTranslations('Herbals')
   const tUtils = useTranslations('Utils')
   const columns: ColumnDef<Herbal>[] = [
@@ -203,7 +204,7 @@ const HerbalsPage = () => {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                 <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                  onClick={() => router.push(`/manager/herbals/${herbal.id}`)}>
+                  onClick={() => navigateTo(`/manager/herbals/${herbal.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4 text-gray-500" />
                   {t('viewDetail')}
                 </DropdownMenuItem>
@@ -216,7 +217,7 @@ const HerbalsPage = () => {
                     {herbal.isActive ? tUtils('inactive') : tUtils('active')}
                 </DropdownMenuItem>
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-300/20 text-blue-500'
-                  onClick={() => router.push(`/manager/herbals/update/${herbal.id}`)}
+                  onClick={() => navigateTo(`/manager/herbals/update/${herbal.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4 text-blue-500" />
                   {t('edit')}
@@ -271,7 +272,7 @@ const HerbalsPage = () => {
     {
       icon: <Plus className="w-4 h-4 mr-2" />,
       onClick: () => {
-        router.push('/manager/herbals/create')
+        navigateTo('/manager/herbals/create')
       },
       title: t('addHerbal'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
@@ -286,7 +287,11 @@ const HerbalsPage = () => {
   
   const confirmDelete = async () => {
     try {
-      await deleteHerbal(selectedHerbal?.id!.toString()!);
+      if (!selectedHerbal?.id) {
+        toast.error(t('errorDeletingHerbal'))
+        return
+      }
+      await deleteHerbal(String(selectedHerbal.id));
     } catch (error) {
       toast.error(t('errorDeletingHerbal'))
     }

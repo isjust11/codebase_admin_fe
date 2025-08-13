@@ -31,6 +31,7 @@ import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import ComponentCard from '@/components/common/ComponentCard';
 import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import { Action } from '@/types/actions';
+import { useLoading } from '@/contexts/LoadingContext';
 
 interface PermissionGroup {
   resource: string;
@@ -42,6 +43,7 @@ export default function RolePermissionsPage() {
   const tUtils = useTranslations('Utils');
   const params = useParams();
   const router = useRouter();
+  const { navigateTo } = useLoading();
   const roleId = params.id as string;
   
   const [role, setRole] = useState<Role | null>(null);
@@ -136,7 +138,7 @@ export default function RolePermissionsPage() {
     try {
       await assignRolePermissions(roleId, assignedPermissions);
       toast.success(t('permissionUpdateSuccess'));
-      router.push(`/manager/admin/roles/${roleId}`);
+      navigateTo(`/manager/admin/roles/${roleId}`);
     } catch (error: any) {
       toast.error(t('permissionUpdateError') + error.message);
     } finally {

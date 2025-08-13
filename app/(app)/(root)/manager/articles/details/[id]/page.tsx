@@ -1,30 +1,31 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { notFound } from 'next/navigation';
 import { getArticle } from '@/services/article-api';
 import Image from 'next/image';
 import { Article } from '@/types/article';
 
-export default function ArticleDetailPage({ params }: { params: { id: string } }) {
+export default function ArticleDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const [article, setArticle] = useState<Article | null>(null);
 
   useEffect(() => {
     const fetchArticle = async () => {
-      const data = await getArticle(params.id);
+      const data = await getArticle(id);
       if (!data) return notFound();
       setArticle(data);
     };
     fetchArticle();
-  }, [params.id]);
+  }, [id]);
 
   if (!article) return null;
 
   return (
     <div>
-          {article.thumbnail && (
-            <Image src={article.thumbnail} alt={article.title} width={720} height={480} className="w-full max-w-xl mb-4 rounded" />
-          )}
+      {article.thumbnail && (
+        <Image src={article.thumbnail} alt={article.title} width={720} height={480} className="w-full max-w-xl mb-4 rounded" />
+      )}
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow p-6">
           <h1 className="text-2xl font-bold mb-2">{article.title}</h1>
@@ -42,4 +43,4 @@ export default function ArticleDetailPage({ params }: { params: { id: string } }
       </div>
     </div>
   );
-} 
+}

@@ -16,11 +16,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { unicodeToEmoji, mergeImageUrl, base64decrypt } from '@/lib/utils';
 import { Table } from '@/types/table';
 import { useTranslations } from 'next-intl';
+import { useLoading } from '@/contexts/LoadingContext';
 
 const TableForm = () => {
   const t = useTranslations("TablesPage");
   const tUtils = useTranslations("Utils");
-  const router = useRouter();
+  const { navigateTo, back } = useLoading();
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -107,7 +108,7 @@ const TableForm = () => {
       console.log(formData)
     } catch (_error) {
       toast.error(t('messages.loadError'));
-      router.push('/manager/tables');
+      navigateTo('/manager/tables');
     }
   };
 
@@ -150,7 +151,7 @@ const TableForm = () => {
         await createTable(submitData);
         toast.success(t('messages.createSuccess'));
       }
-      router.push('/manager/tables');
+      navigateTo('/manager/tables');
     } catch (_error) {
       toast.error(isEditing ? t('messages.updateError') : t('messages.createError'));
     } finally {
@@ -216,7 +217,7 @@ const TableForm = () => {
     {
       icon: <X className="h-4 w-4" />,
       onClick: () => {
-        router.back();
+        back();
       },
       title: tUtils('cancel'),
       className: "hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300",

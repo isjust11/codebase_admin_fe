@@ -330,4 +330,6 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
   );
 });
 
+PermissionManager.displayName = 'PermissionManager';
+
 export default PermissionManager; 

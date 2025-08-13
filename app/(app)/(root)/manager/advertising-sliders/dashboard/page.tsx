@@ -100,7 +100,7 @@ export default function AdvertisingSliderDashboard() {
           <div className="space-y-4">
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
               <div>
-                <p className="font-medium">Slider "Khuyến mãi mùa hè" được tạo</p>
+                <p className="font-medium">Slider &quot;Khuyến mãi mùa hè&quot; được tạo</p>
                 <p className="text-sm text-muted-foreground">2 giờ trước</p>
               </div>
               <div className="text-right">
@@ -111,7 +111,7 @@ export default function AdvertisingSliderDashboard() {
 
             <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
               <div>
-                <p className="font-medium">Slider "Sản phẩm mới" được cập nhật</p>
+                <p className="font-medium">Slider &quot;Sản phẩm mới&quot; được cập nhật</p>
                 <p className="text-sm text-muted-foreground">5 giờ trước</p>
               </div>
               <div className="text-right">
@@ -122,7 +122,7 @@ export default function AdvertisingSliderDashboard() {
 
             <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
               <div>
-                <p className="font-medium">Slider "Sự kiện đặc biệt" được ẩn</p>
+                <p className="font-medium">Slider &quot;Sự kiện đặc biệt&quot; được ẩn</p>
                 <p className="text-sm text-muted-foreground">1 ngày trước</p>
               </div>
               <div className="text-right">

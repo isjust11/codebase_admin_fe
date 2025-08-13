@@ -8,7 +8,7 @@ import { deletePermission, getPermissions, updatePermission } from '@/services/a
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { Action } from '@/types/actions';
 import { DataTable } from '@/components/DataTable';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -28,7 +28,7 @@ import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 export default function PermissionsPage() {
   const t = useTranslations('PermissionsPage');
   const tUtils = useTranslations('Utils');
-  const router = useRouter();
+  const { navigateTo } = useLoading();  
   const { hasPermission,hasResourcePermission } = useAuth();
   const hasResourcePermissionStatus = hasResourcePermission('permission');
   const [permissions, setPermissions] = useState<Permission[]>([]);
@@ -53,7 +53,7 @@ export default function PermissionsPage() {
 
   useEffect(() => {
     if (!hasResourcePermissionStatus) {
-      router.push('/manager/admin/permissions/template');
+      navigateTo('/manager/admin/permissions/template');
     }
   }, [hasResourcePermissionStatus]);
 
@@ -270,13 +270,13 @@ export default function PermissionsPage() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs'>
                 {hasPermission('PERMISSION_READ') && <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                  onClick={() => router.push(`/manager/admin/permissions/${permission.id}`)}>
+                  onClick={() => navigateTo(`/manager/admin/permissions/${permission.id}`)}>
                   <BadgeInfo className="mr-2 h-4 w-4" />
                   {t('viewDetail')}
                 </DropdownMenuItem>}
                 {hasPermission('PERMISSION_UPDATE') && 
                 <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-blue-500 dark:text-blue-400'
-                  onClick={() => router.push(`/manager/admin/permissions/update/${permission.id}`)}
+                  onClick={() => navigateTo(`/manager/admin/permissions/update/${permission.id}`)}
                 >
                   <Pencil className="mr-2 h-4 w-4 text-blue-500 dark:text-blue-400" />
                   {t('edit')}
@@ -306,7 +306,7 @@ export default function PermissionsPage() {
     {
       icon: <Plus className="w-4 h-4 mr-2" />,
       onClick: () => {
-        router.push('/manager/admin/permissions/create');
+        navigateTo('/manager/admin/permissions/create');
       },
       title: t('addPermission'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",

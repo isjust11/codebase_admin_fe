@@ -9,12 +9,12 @@ import Link from 'next/link';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { Action } from '@/types/actions';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { List, Printer } from 'lucide-react';
 import React from "react";
 import { useReactToPrint } from 'react-to-print';
 export default function TableQRCodesPage() {
-  const router = useRouter();
+  const { navigateTo } = useLoading();
   const [tables, setTables] = useState<Table[]>([]);
   const [loading, setLoading] = useState(true);
   const [pageCount, setPageCount] = useState(0);
@@ -74,7 +74,7 @@ export default function TableQRCodesPage() {
     { title: 'In tất cả mã QR', onClick: handlePrintAll, icon: <Printer className="w-4 h-4" /> },
     {
       title: 'Quản lý bàn', onClick: () => {
-        router.push('/manager/tables')
+        navigateTo('/manager/tables')
       }, icon: <List className="w-4 h-4" />
     },
   ];

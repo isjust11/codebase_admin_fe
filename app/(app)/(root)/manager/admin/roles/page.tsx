@@ -8,7 +8,7 @@ import { getRoles, deleteRole, createRole, updateRole, findbyCode } from '@/serv
 import { Checkbox } from '@radix-ui/react-checkbox';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { Action } from '@/types/actions';
 import { DataTable } from '@/components/DataTable';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -22,13 +22,14 @@ import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import RolePermissionManager from './components/RolePermissionManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
+import { AppRoutes } from '@/constants';
 
 export default function RolesPage() {
   const t = useTranslations('RolesPage');
   const tUtils = useTranslations('Utils');
   const { hasResourcePermission, hasPermission } = useAuth();
   const hasPermissionToManageRoles = hasResourcePermission('role');
-  const router = useRouter()
+  const { navigateTo } = useLoading();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
@@ -42,7 +43,7 @@ export default function RolesPage() {
 
   useEffect(() => {
     if (!hasPermissionToManageRoles) {
-      router.push('/');
+      navigateTo(AppRoutes.Home);
     }
   }, [hasPermissionToManageRoles]);
 
@@ -186,14 +187,14 @@ export default function RolesPage() {
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                 {hasPermission('ROLE_READ') && (
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                    onClick={() => router.push(`/manager/admin/roles/${role.id}`)}>
+                    onClick={() => navigateTo(`/manager/admin/roles/${role.id}`)}>
                     <BadgeInfo className="mr-2 h-4 w-4" />
                     {t('viewDetail')}
                   </DropdownMenuItem>
                 )}
                 {hasPermission('ROLE_ASSIGN_PERMISSION') && (
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-slate-500 dark:text-slate-400"
-                    onClick={() => router.push(`/manager/admin/roles/rolepermission/${role.id}`)}>
+                    onClick={() => navigateTo(`/manager/admin/roles/rolepermission/${role.id}`)}>
                     <Shield className="mr-2 h-4 w-4 text-slate-500 dark:text-slate-500" />
                     {t('managePermissions')}
                   </DropdownMenuItem>
@@ -208,7 +209,7 @@ export default function RolesPage() {
                 </DropdownMenuItem>}
                 {hasPermission('ROLE_UPDATE') && (
                   <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-blue-500 dark:text-blue-400'
-                    onClick={() => router.push(`/manager/admin/roles/update/${role.id}`)}
+                    onClick={() => navigateTo(`/manager/admin/roles/update/${role.id}`)}
                   >
                     <Pencil className="mr-2 h-4 w-4 text-blue-500 dark:text-blue-400" />
                     {t('edit')}
@@ -233,7 +234,7 @@ export default function RolesPage() {
       icon: <Plus className="w-4 h-4 mr-2" />,
       onClick: () => {
         if (hasPermission('ROLE_CREATE')) {
-          router.push('/manager/admin/roles/create')
+          navigateTo('/manager/admin/roles/create')
         } else {
           toast.error(t('noPermission'));
         }

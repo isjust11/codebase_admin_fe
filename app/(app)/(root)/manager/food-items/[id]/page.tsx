@@ -1,7 +1,6 @@
 'use client'
 import React, { useEffect, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useParams } from 'next/navigation'
 import { ArrowLeft, Edit, Trash } from 'lucide-react'
 import { FoodItem } from '@/types/food-item'
 import ComponentCard from '@/components/common/ComponentCard'
@@ -11,12 +10,12 @@ import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils'
 import { deleteFoodItem, getFoodItem } from '@/services/manager-api'
 import Badge  from '@/components/ui/badge/Badge'
 import Image from 'next/image'
+import { useLoading } from '@/contexts/LoadingContext';
 
 const FoodItemDetailPage = () => {
-  const router = useRouter()
+  const { navigateTo } = useLoading();  
   const params = useParams()
   const [foodItem, setFoodItem] = useState<FoodItem | null>(null)
-  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchFoodItem = async () => {
@@ -26,9 +25,7 @@ const FoodItemDetailPage = () => {
         setFoodItem(data)
       } catch (error) {
         toast.error('Không thể tải thông tin món ăn')
-      } finally {
-        setLoading(false)
-      }
+      } 
     }
 
     fetchFoodItem()
@@ -38,7 +35,7 @@ const FoodItemDetailPage = () => {
     try {
       await deleteFoodItem(Number(params.id))
       toast.success('Món ăn đã được xóa thành công')
-      router.push('/manager/food-items')
+      navigateTo('/manager/food-items')
     } catch (error) {
       toast.error('Có lỗi xảy ra khi xóa món ăn')
     }
@@ -47,13 +44,13 @@ const FoodItemDetailPage = () => {
   const lstAction = [
     {
       icon: <ArrowLeft className="w-4 h-4 mr-2" />,
-      onClick: () => router.push('/manager/food-items'),
+      onClick: () => navigateTo('/manager/food-items'),
       title: 'Quay lại',
       className: 'hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500',
     },
     {
       icon: <Edit className="w-4 h-4 mr-2" />,
-      onClick: () => router.push(`/manager/food-items/update/${foodItem?.id}`),
+      onClick: () => navigateTo(`/manager/food-items/update/${foodItem?.id}`),
       title: 'Chỉnh sửa',
       className: 'hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500',
     },
@@ -64,10 +61,6 @@ const FoodItemDetailPage = () => {
       className: 'bg-red-500 hover:bg-red-600 dark:hover:bg-red-800 rounded-md transition-colors text-red-500',
     },
   ]
-
-  if (loading) {
-    return <div>Đang tải...</div>
-  }
 
   if (!foodItem) {
     return <div>Không tìm thấy món ăn</div>

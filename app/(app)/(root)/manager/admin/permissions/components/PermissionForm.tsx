@@ -9,6 +9,7 @@ import { Permission } from '@/types/permission';
 import { createPermission, getPermission, updatePermission } from '@/services/auth-api';
 import { useTranslations } from 'next-intl';
 import PermissionFormInput from './PermissionFormInput';
+import { useLoading } from '@/contexts/LoadingContext';
 
 interface PermissionFormProps {
   isView?: boolean;
@@ -16,6 +17,7 @@ interface PermissionFormProps {
 
 const PermissionForm = ({ isView = false }: PermissionFormProps) => {
   const t = useTranslations('PermissionsPage');
+  const { navigateTo } = useLoading();
   const router = useRouter();
   const params = useParams();
   const [loading, setLoading] = useState(false);
@@ -39,7 +41,7 @@ const PermissionForm = ({ isView = false }: PermissionFormProps) => {
       setPermission(permissionData);
     } catch (_error) {
       toast.error(t('loadError'));
-      router.push('/manager/admin/permissions');
+      navigateTo('/manager/admin/permissions');
     }
   };
 
@@ -62,7 +64,7 @@ const PermissionForm = ({ isView = false }: PermissionFormProps) => {
         await createPermission(submitData);
         toast.success(t('createSuccess'));
       }
-      router.push('/manager/admin/permissions');
+      navigateTo('/manager/admin/permissions');
     } catch (_error) {
       toast.error(isEditing ? t('updateError') : t('createError'));
     } finally {

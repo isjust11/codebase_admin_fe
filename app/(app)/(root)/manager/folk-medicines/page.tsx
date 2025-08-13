@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, Eye, Leaf, Loader2, ArrowLeftRight } from 'lucide-react';
 import { deleteFolkMedicine, getFolkMedicines, updateFolkMedicine } from '@/services/folk-medicine-api';
-import { useRouter } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -32,7 +32,7 @@ export default function FolkMedicinesManagement() {
   const [loading, setLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [selectedFolkMedicine, setSelectedFolkMedicine] = useState<FolkMedicine | null>(null);
-  const router = useRouter();
+  const { navigateTo } = useLoading();
 
   const fetchFolkMedicines = async (page: number, size: number, search: string) => {
     setLoading(true);
@@ -232,7 +232,7 @@ export default function FolkMedicinesManagement() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                    onClick={() => router.push(`/manager/folk-medicines/detail/${folkMedicine.id}`)}>
+                    onClick={() => navigateTo(`/manager/folk-medicines/detail/${folkMedicine.id}`)}>
                     <BadgeInfo className="mr-2 h-4 w-4 text-gray-500" />
                     {t('viewDetail')}
                   </DropdownMenuItem>
@@ -242,12 +242,12 @@ export default function FolkMedicinesManagement() {
                     {folkMedicine.isActive ? tUtils('inactive') : tUtils('active')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
-                    onClick={() => router.push(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}>
+                    onClick={() => navigateTo(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}>
                     <Eye className="mr-2 h-4 w-4 color-yellow-300" />
                     {t('viewFolkMedicine')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-500/20 text-blue-500'
-                    onClick={() => router.push(`/manager/folk-medicines/update/${folkMedicine.id}`)}
+                    onClick={() => navigateTo(`/manager/folk-medicines/update/${folkMedicine.id}`)}
                   >
                     <Pencil className="mr-2 h-4 w-4 text-blue-500" />
                     {t('edit')}
@@ -270,7 +270,7 @@ export default function FolkMedicinesManagement() {
       disabled: isPending,
       onClick: () => {
         startTransition(() => {
-          router.push('/manager/folk-medicines/create')
+          navigateTo('/manager/folk-medicines/create')
         });
       },
       title: t('add-folk-medicine'),
