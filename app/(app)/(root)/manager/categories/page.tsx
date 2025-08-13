@@ -25,13 +25,14 @@ import { IconType } from '@/enums/icon-type.enum';
 import { useAsyncEffect } from '@/hooks/useAsyncEffect';
 import { useTranslations } from 'next-intl';
 import { useAuth } from '@/contexts/AuthContext';
-import router from 'next/router';
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 import { useSearchParams } from 'next/navigation';
+import { useLoading } from '@/contexts/LoadingContext';
 
 export default function CategoriesManagement() {
   const t = useTranslations("CategoriesPage");
   const tUtils = useTranslations("Utils");
+  const { navigateTo } = useLoading();
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoryTypes, setCategoryTypes] = useState<CategoryType[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);

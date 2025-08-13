@@ -19,6 +19,7 @@ import { buildFeature } from "@/lib/utils";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { Loader2 } from "lucide-react";
 import { useLoading } from "@/contexts/LoadingContext";
+import { SITE } from '@/config/config'
 type NavItem = {
   name: string;
   icon: React.ReactNode;
@@ -327,14 +328,14 @@ const AppSidebar: React.FC = () => {
             <>
               <Image
                 className="dark:hidden"
-                src="/images/logo/base.svg"
+                src={SITE.logo}
                 alt="Logo"
                 width={120}
                 height={30}
               />
               <Image
                 className="hidden dark:block"
-                src="/images/logo/base.svg"
+                src={SITE.logo}
                 alt="Logo"
                 width={120}
                 height={30}
@@ -342,7 +343,7 @@ const AppSidebar: React.FC = () => {
             </>
           ) : (
             <Image
-              src="/images/logo/icon.svg"
+              src={SITE.icon}
               alt="Logo"
               width={32}
               height={32}

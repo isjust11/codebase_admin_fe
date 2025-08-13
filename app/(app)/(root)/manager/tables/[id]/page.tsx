@@ -15,6 +15,7 @@ import Badge from '@/components/ui/badge/Badge';
 import ComponentCard from '@/components/common/ComponentCard';
 import { Action } from '@/types/actions';
 import { useTranslations } from 'next-intl';
+import { useLoading } from '@/contexts/LoadingContext';
 
 export default function TableDetail() {
     const t = useTranslations("TablesPage");

@@ -86,6 +86,11 @@
     "or": "Or",
     "noAccount": "Don't have an account?",
     "register": "Sign up",
+    "processingLogin": "Processing login...",
+    "processingLoginDescription": "Please wait while we process your login information...",
+    "loginSuccess": "Login successful",
+    "loginSuccessDescription": "You are being redirected to the home page...",
+    "loginError": "Login failed",
     "validation": {
       "usernameMin": "Username must be at least 3 characters",
       "passwordMin": "Password must be at least 6 characters"
@@ -94,7 +99,21 @@
       "loginSuccess": "Login successful",
       "emailSent": "Email sent successfully",
       "emailError": "Error sending email",
-      "requiredUserOrEmail": "Required email/username"
+      "requiredUserOrEmail": "Required email/username",
+      "loginError": "Login failed",
+      "processingLogin": "Processing login...",
+      "processingLoginDescription": "Please wait while we process your login information...",
+      "loginSuccessDescription": "You are being redirected to the home page..."
+    }
+  },
+  "VerifyEmail": {
+    "title": "Verify Email",
+    "description": "Please click the button below to verify your email",
+    "verifyEmailSuccess": "Email verified successfully",
+    "verifyEmailButton": "Verify Email",
+    "messages": {
+      "verifyEmailError": "Error verifying email: ",
+      "verifyEmailSuccess": "Email verified successfully"
     }
   },
   "RegisterPage": {
@@ -933,6 +952,50 @@
       "errorCreateAuthor": "Error creating author",
       "updateSuccess": "Author updated successfully",
       "createSuccess": "Author created successfully"
+    }
+  },
+  "ArticlePage": {
+    "title": "Article List",
+    "addArticle": "Add article",
+    "loading": "Loading...",
+    "thumbnail": "Thumbnail",
+    "content": "Content",
+    "viewArticle": "View article",
+    "deleteTitle": "Delete article",
+    "deleteDescription": "Are you sure you want to delete this article?",
+    "deleteSuccess": "Article deleted successfully",
+    "deleteError": "Error deleting article",
+    "loadError": "Error loading article list",
+    "createdAt": "Created at",
+    "status": "Status",
+    "actions": "Actions",
+    "openMenu": "Open menu",
+    "viewDetails": "View details",
+    "edit": "Edit",
+    "delete": "Delete",
+    "description": "Description",
+    "updateArticle": "Update article",
+    "contentPlaceholder": "Enter article content",
+    "descriptionPlaceholder": "Enter short description (maximum 500 characters)",
+    "draft": "Draft",
+    "published": "Published",
+    "titlePlaceholder": "Enter article title",
+    "statusPlaceholder": "Select status",
+    "messages": {
+      "deleteTitle": "Delete article",
+      "deleteDescription": "Are you sure you want to delete this article?",
+      "deleteSuccess": "Article deleted successfully",
+      "deleteError": "Error deleting article",
+      "loadError": "Error loading article list",
+      "updateSuccess": "Article updated successfully",
+      "createSuccess": "Article created successfully",
+      "updateError": "Error updating article",
+      "createError": "Error creating article",
+      "descriptionLengthError": "Description cannot be more than 500 characters",
+      "titlePlaceholder": "Enter article title",
+      "statusPlaceholder": "Select status",
+      "draft": "Draft",
+      "published": "Published"
     }
   }
 }

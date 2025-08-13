@@ -2,13 +2,13 @@ import { Exam } from "./exam";
 import { ExamQuestion } from "./exam-question";
 import { Question } from "./question";
 import { User } from "./user";
-import { UserExams } from "./user-exams";
+import { UserExam } from "./user-exam";
 
 
 export interface UserAnswer {
   id: number;
 
-  userExam: UserExams;
+  userExam: UserExam;
 
   userExamId: number;
 

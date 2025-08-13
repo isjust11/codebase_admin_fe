@@ -86,6 +86,11 @@
     "or": "Hoặc",
     "noAccount": "Bạn chưa có tài khoản?",
     "register": "Đăng ký",
+    "processingLogin": "Đang xử lý đăng nhập...",
+    "processingLoginDescription": "Vui lòng đợi trong giây lát...",
+    "loginSuccess": "Đăng nhập thành công",
+    "loginSuccessDescription": "Bạn đang được chuyển hướng đến trang chủ...",
+    "loginError": "Đăng nhập thất bại",
     "validation": {
       "usernameMin": "Tên đăng nhập phải có ít nhất 3 ký tự",
       "passwordMin": "Mật khẩu phải có ít nhất 6 ký tự"
@@ -94,7 +99,22 @@
       "loginSuccess": "Đăng nhập thành công",
       "emailSent": "Email đã được gửi thành công",
       "emailError": "Lỗi khi gửi email",
-      "requiredUserOrEmail": "Yêu cầu nhập tên tài khoản hoặc email"
+      "requiredUserOrEmail": "Yêu cầu nhập tên tài khoản hoặc email",
+      "loginError": "Đăng nhập thất bại",
+      "processingLogin": "Đang xử lý đăng nhập...",
+      "processingLoginDescription": "Vui lòng đợi trong giây lát...",
+      "loginSuccessDescription": "Bạn đang được chuyển hướng đến trang chủ..."
+    }
+  },
+  "VerifyEmail": {
+    "title": "Xác thực Email",
+    "description": "Vui lòng nhấn nút bên dưới để xác thực email của bạn",
+    "verifyEmailSuccess": "Email đã được xác thực thành công",
+    "verifyEmailError": "Lỗi khi xác thực email: ",
+    "verifyEmailButton": "Xác thực Email",
+    "messages": {
+      "verifyEmailError": "Lỗi khi xác thực email: ",
+      "verifyEmailSuccess": "Email đã được xác thực thành công"
     }
   },
   "RegisterPage": {
@@ -949,6 +969,50 @@
       "noImage": "Không có hình ảnh",
       "views": "lượt xem",
       "likes": "lượt thích"
+    }
+  },
+  "ArticlePage": {
+    "title": "Danh sách bài viết",
+    "addArticle": "Thêm bài viết",
+    "loading": "Đang tải dữ liệu...",
+    "thumbnail": "Hình ảnh",
+    "content": "Nội dung",
+    "viewArticle": "Xem bài viết",
+    "deleteTitle": "Xóa bài viết",
+    "deleteDescription": "Bạn có chắc chắn muốn xóa bài viết này không?",
+    "deleteSuccess": "Bài viết đã được xóa thành công",
+    "deleteError": "Lỗi khi xóa bài viết",
+    "loadError": "Lỗi khi tải danh sách bài viết",
+    "createdAt": "Ngày tạo",
+    "status": "Trạng thái",
+    "actions": "Thao tác",
+    "openMenu": "Mở menu",
+    "viewDetails": "Xem chi tiết",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "description": "Mô tả",
+    "updateArticle": "Cập nhật bài viết",
+    "contentPlaceholder": "Nhập nội dung bài viết",
+    "descriptionPlaceholder": "Nhập mô tả ngắn (tối đa 500 ký tự)",
+    "draft": "Bản nháp",
+    "published": "Đã xuất bản",
+    "titlePlaceholder": "Nhập tiêu đề bài viết",
+    "statusPlaceholder": "Chọn trạng thái",
+    "messages": {
+      "deleteTitle": "Xóa bài viết",
+      "deleteDescription": "Bạn có chắc chắn muốn xóa bài viết này không?",
+      "deleteSuccess": "Bài viết đã được xóa thành công",
+      "deleteError": "Lỗi khi xóa bài viết",
+      "loadError": "Lỗi khi tải danh sách bài viết",
+      "updateSuccess": "Bài viết đã được cập nhật thành công",
+      "createSuccess": "Bài viết đã được tạo thành công",
+      "updateError": "Lỗi khi cập nhật bài viết",
+      "createError": "Lỗi khi tạo bài viết",
+      "descriptionLengthError": "Mô tả không được quá 500 ký tự",
+      "titlePlaceholder": "Nhập tiêu đề bài viết",
+      "statusPlaceholder": "Chọn trạng thái",
+      "draft": "Bản nháp",
+      "published": "Đã xuất bản"
     }
   }
 }

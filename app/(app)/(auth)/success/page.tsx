@@ -3,11 +3,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
-import { AppConstants } from '@/constants';
+import { AppConstants, AppRoutes } from '@/constants';
 import { Suspense } from 'react';
 import { getFeaturesByRole, getTokenInfo } from '@/services/auth-api';
+import { useTranslations } from 'next-intl';
 
 function AuthSuccessPage() {
+  const t = useTranslations('LoginPage');
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isProcessing, setIsProcessing] = useState(true);
@@ -39,14 +41,14 @@ function AuthSuccessPage() {
           if (!isMounted) return;
 
           localStorage.setItem(AppConstants.Feature, JSON.stringify(feature));
-          toast.success('Đăng nhập thành công');
-          router.push('/');
+          toast.success(t('messages.loginSuccess'));
+          router.push(AppRoutes.Home);
         } catch (error) {
           if (!isMounted) return;
 
           console.error('Error fetching token info:', error);
-          toast.error('Có lỗi xảy ra khi xử lý đăng nhập');
-          router.push('/login');
+          toast.error(t('messages.loginError'));
+          router.push(AppRoutes.Auth.Login);
         } finally {
           if (isMounted) {
             setIsProcessing(false);
@@ -55,8 +57,8 @@ function AuthSuccessPage() {
       } else {
         if (!isMounted) return;
 
-        toast.error('Không tìm thấy token đăng nhập');
-        router.push('/login');
+        toast.error(t('messages.loginError'));
+        router.push(AppRoutes.Auth.Login);
         setIsProcessing(false);
       }
     };
@@ -75,14 +77,14 @@ function AuthSuccessPage() {
         {
           isProcessing ? (
             <>
-              <h1 className="text-2xl font-bold text-blue-700 mb-4">Đang xử lý đăng nhập</h1>
-              <p className="text-gray-600 mb-4">Đang xử lý thông tin đăng nhập...</p>
+              <h1 className="text-2xl font-bold text-blue-700 mb-4">{t('messages.processingLogin')}</h1>
+              <p className="text-gray-600 mb-4">{t('messages.processingLoginDescription')}</p>
             </>
 
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-fuchsia-700 mb-4">Đăng nhập thành công!</h1>
-              <p className="text-gray-600 mb-4">Đang điều hướng tới trang chủ...</p>
+              <h1 className="text-2xl font-bold text-fuchsia-700 mb-4">{t('messages.loginSuccess')}</h1>
+              <p className="text-gray-600 mb-4">{t('messages.loginSuccessDescription')}</p>
             </>
           )
         }

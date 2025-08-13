@@ -1,13 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Order } from '../types/order';
 import { orderService } from '../services/orderService';
-import { useSocket } from './useSocket';
 
 export const useOrders = () => {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { socket, subscribeToEvent } = useSocket();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -25,23 +23,7 @@ export const useOrders = () => {
     fetchOrders();
   }, []);
 
-  useEffect(() => {
-    if (socket) {
-      subscribeToEvent('orderUpdate', (updatedOrder: Order) => {
-        setOrders(prevOrders =>
-          prevOrders.map(order =>
-            order.id === updatedOrder.id ? updatedOrder : order
-          )
-        );
-      });
-
-      subscribeToEvent('newOrder', (newOrder: Order) => {
-        setOrders(prevOrders => [...prevOrders, newOrder]);
-      });
-    }
-  }, [socket, subscribeToEvent]);
-
-  const updateOrderStatus = async (orderId: string, status: Order['status']) => {
+  const updateOrderStatus = async (orderId: string, status: Order['orderStatus']) => {
     try {
       const updatedOrder = await orderService.updateOrderStatus(orderId, status);
       setOrders(prevOrders =>

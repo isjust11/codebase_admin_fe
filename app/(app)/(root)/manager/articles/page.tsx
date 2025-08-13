@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, Eye } from 'lucide-react';
+import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, ImageOff, BadgeInfo, Eye, Badge } from 'lucide-react';
 import { deleteArticle, getArticles } from '@/services/article-api';
 import { useLoading } from '@/contexts/LoadingContext';
 import { toast } from 'sonner';
@@ -16,6 +16,8 @@ import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image'
 import { Action } from '@/types/actions';
 import { Article } from '@/types/article';
+import { useTranslations } from 'next-intl';
+import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 
 export default function ArticlesManagement() {
   
@@ -25,9 +27,11 @@ export default function ArticlesManagement() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(true);
-
+  const t = useTranslations('ArticlePage');
+  const tUtils = useTranslations('Utils');
   const { navigateTo } = useLoading();
-
+  const [isOpen, setIsOpen] = useState(false);
+  const [article, setArticle] = useState<Article | null>(null);
   const fetchArticles = async (page: number, size: number, search: string) => {
     setLoading(true);
     try {
@@ -35,7 +39,7 @@ export default function ArticlesManagement() {
       setArticles(response.data || []);
       setPageCount(response.totalPages || 0);
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi tải danh sách tin tức');
+      toast.error(t('messages.loadError'));
       setArticles([]);
       setPageCount(0);
     } finally {
@@ -56,14 +60,20 @@ export default function ArticlesManagement() {
     setSearch(searchValue);
   }
 
-  const handleDelete = async (articleId: string) => {
+  const handleOpenDeleteDialog = (article: Article) => {
+    setArticle(article);
+    setIsOpen(true);
+  }
+
+  const handleDelete = async (articleId: string | undefined) => {
+    if (!articleId) return;
     try {
       await deleteArticle(articleId);
       setArticles(articles.filter(article => article.id !== articleId));
       fetchArticles(pageIndex, pageSize, search);
-      toast.success('Tin tức đã được xóa thành công');
+      toast.success(t('messages.deleteSuccess'));
     } catch (_error) {
-      toast.error('Có lỗi xảy ra khi xóa tin tức');
+      toast.error(t('messages.deleteError'));
     }
   };
 
@@ -78,14 +88,14 @@ export default function ArticlesManagement() {
             (table.getIsSomePageRowsSelected() && "indeterminate")
           }
           onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={tUtils('selectAll')}
         />
       ),
       cell: ({ row }) => (
         <Checkbox
           checked={row.getIsSelected()}
           onCheckedChange={(value) => row.toggleSelected(!!value)}
-          aria-label="Chọn tất cả"
+          aria-label={tUtils('selectAll')}
         />
       ),
       enableSorting: false,
@@ -93,7 +103,7 @@ export default function ArticlesManagement() {
     },
     {
       accessorKey: "thumbnail",
-      header: "Hình ảnh",
+      header: t('thumbnail'),
       cell: ({ row }) => {
         const thumbnail = mergeImageUrl(row.getValue("thumbnail") as string)
         // console.log(thumbnail)
@@ -121,7 +131,7 @@ export default function ArticlesManagement() {
             variant="ghost"
             onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
           >
-            Tiêu đề
+            {t('title')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
           </Button>
         )
@@ -129,7 +139,7 @@ export default function ArticlesManagement() {
     },
     {
       accessorKey: "description",
-      header: "Mô tả",
+      header: t('description'),
       cell: ({ row }) => {
         const description = row.getValue("description") as string
         return (
@@ -141,23 +151,23 @@ export default function ArticlesManagement() {
     },
     {
       accessorKey: "status",
-      header: "Trạng thái",
+      header: t('status'),
       cell: ({ row }) => {
         const status = row.getValue("status") as string
         return (
-          <div className={`capitalize px-2 py-1 rounded-full text-xs ${
+          <Badge className={`capitalize px-2 py-1 rounded-full text-xs ${
             status === 'published' ? 'bg-green-100 text-green-800' : 
             status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 
             'bg-gray-100 text-gray-800'
           }`}>
-            {status || 'Chưa xác định'}
-          </div>
+            {status || tUtils('unknown')}
+          </Badge>
         )
       },
     },
     {
       accessorKey: "createdAt",
-      header: "Ngày tạo",
+      header: t('createdAt'),
       cell: ({ row }) => {
         const createdAt = row.getValue("createdAt") as string
         return (
@@ -169,7 +179,7 @@ export default function ArticlesManagement() {
     },
     {
       id: "actions",
-      header: 'Thao tác',
+      header: t('actions'),
       cell: ({ row }) => {
         const article = row.original
         return (
@@ -177,7 +187,7 @@ export default function ArticlesManagement() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">Mở menu</span>
+                    <span className="sr-only">{tUtils('openMenu')}</span>
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -185,22 +195,22 @@ export default function ArticlesManagement() {
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
                     onClick={() => navigateTo(`/manager/articles/details/${article.id}`)}>
                     <BadgeInfo className="mr-2 h-4 w-4" />
-                    Xem chi tiết
+                    {t('viewDetails')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
                     onClick={() => navigateTo(`/manager/articles/${article.slug}/${article.id}`)}>
                     <Eye className="mr-2 h-4 w-4 color-yellow-300" />
-                    Xem bài đăng
+                    {t('viewArticle')}
                   </DropdownMenuItem>
                   <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
                     onClick={() => navigateTo(`/manager/articles/update/${article.id}`)}
                   >
                     <Pencil className="mr-2 h-4 w-4" />
-                    Chỉnh sửa
+                    {tUtils('edit')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(article.id)}>
+                  <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleOpenDeleteDialog(article)}>
                     <Trash className="mr-2 h-4 w-4" />
-                    Xóa
+                    {tUtils('delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -216,19 +226,19 @@ export default function ArticlesManagement() {
       onClick: () => {
         navigateTo('/manager/articles/create')
       },
-      title: "Thêm tin tức mới",
+      title: t('addArticle'),
       className: "hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md transition-colors text-blue-500",
     },
   ]
 
   return (
     <div>
-      <PageBreadcrumb pageTitle="Danh sách tin tức" />
+      <PageBreadcrumb pageTitle={t('title')} />
       <div className="space-y-6">
-        <ComponentCard title="Danh sách tin tức" listAction={lstActions}>
+        <ComponentCard title={t('title')} listAction={lstActions}>
           {loading ? (
             <div className="flex items-center justify-center py-8">
-              <span className="text-gray-500 ">Đang tải dữ liệu...</span>
+              <span className="text-gray-500 ">{tUtils('loading')}</span>
             </div>
           ) : (
             <DataTable 
@@ -241,6 +251,15 @@ export default function ArticlesManagement() {
             />
           )}
         </ComponentCard>
+        <AlertDialogUtils 
+          title={t('messages.deleteTitle')}
+          content={t('messages.deleteDescription')}
+          confirmText={tUtils('confirm')}
+          cancelText={tUtils('cancel')}
+          onConfirm={() => handleDelete(article?.id)}
+          isOpen={isOpen}
+          onCancel={() => setIsOpen(false)}
+        />
       </div>
     </div>
   );

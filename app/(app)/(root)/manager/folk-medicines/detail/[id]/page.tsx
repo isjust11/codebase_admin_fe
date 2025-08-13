@@ -14,9 +14,10 @@ import { ArrowLeft, Edit, Eye, Calendar, User, Tag, ThumbsUp, Eye as EyeIcon } f
 import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl';
+import { useLoading } from '@/contexts/LoadingContext';
 
 export default function FolkMedicineDetail() {
-  const { navigateTo } = useLoading();
+  const { navigateTo, back } = useLoading();
   const params = useParams();
   const id = params.id as string;
   const t = useTranslations('FolkMedicinesPage');
@@ -40,7 +41,7 @@ export default function FolkMedicineDetail() {
     if (id) {
       fetchFolkMedicine();
     }
-  }, [id, router]);
+  }, [id, back]);
 
   if (loading) {
     return (
@@ -271,7 +272,7 @@ export default function FolkMedicineDetail() {
             <div className="flex justify-start">
               <Button
                 variant="outline"
-                onClick={() => router.back()}
+                onClick={() => back()}
               >
                 <ArrowLeft className="w-4 h-4 mr-2" />
                 {tUtils('back')}

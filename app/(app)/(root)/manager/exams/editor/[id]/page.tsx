@@ -15,7 +15,7 @@ import { createBulkQuestion, getExamQuestions } from '@/services/exam-api';
 import { Question } from '@/types/question';
 import { SkillType } from '@/enums/skill-type.enum';
 import { toast } from 'sonner';
-
+import { useLoading } from '@/contexts/LoadingContext';
 // Interface cho validation errors
 interface ValidationErrors {
     content?: string;
@@ -27,7 +27,7 @@ interface ValidationErrors {
 }
 
 const QuestionEditor = () => {
-    const { navigateTo } = useLoading();
+    const { navigateTo, back } = useLoading();
     const params = useParams();
     const examId = params.id as string;
 
@@ -329,7 +329,7 @@ const QuestionEditor = () => {
             <div className="flex justify-between items-center">
                 <h1 className="text-3xl font-bold">Soạn thảo câu hỏi</h1>
                 <div className="flex gap-2">
-                     <Button onClick={()=>router.back()} className="flex items-center gap-2 bg-gray-400 ">
+                     <Button onClick={()=>back()} className="flex items-center gap-2 bg-gray-400 ">
                         <ArrowLeft className="w-4 h-4 " />
                         Quay lại
                     </Button>

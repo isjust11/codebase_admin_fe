@@ -5,10 +5,13 @@ import { Dropdown } from "../ui/dropdown/Dropdown";
 import { DropdownItem } from "../ui/dropdown/DropdownItem";
 import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "../ui/avatar";
+import { AppRoutes } from "@/constants";
+import { useLoading } from "@/contexts/LoadingContext";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout  } = useAuth();
+  const { navigateTo } = useLoading();
   const [open, setOpen] = useState(false);
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     e.stopPropagation();
@@ -28,6 +31,7 @@ export default function UserDropdown() {
   };
 
   const handleLogout = () => {
+    navigateTo(AppRoutes.Auth.Login);
     logout();
     setOpen(false);
   };

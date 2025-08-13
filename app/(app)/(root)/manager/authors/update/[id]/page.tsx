@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { getAuthorById, updateAuthor } from '@/services/author-api'
 import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
@@ -8,11 +8,12 @@ import ComponentCard from '@/components/common/ComponentCard'
 import { useTranslations } from 'next-intl'
 import AuthorForm, { AuthorFormData } from '@/app/(app)/(root)/manager/authors/components/AuthorForm'
 import { uploadFile } from '@/services/media-api'
+import { useLoading } from '@/contexts/LoadingContext';
 
 const UpdateAuthorPage = () => {
   const t = useTranslations('AuthorsPage')
   const tUtils = useTranslations('Utils')
-  const router = useRouter()
+  const { navigateTo } = useLoading();
   const params = useParams()
   const authorId = params.id as string
   

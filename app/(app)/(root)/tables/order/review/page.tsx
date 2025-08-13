@@ -15,6 +15,8 @@ import { useAppSelector } from "@/hooks/useAppSelector";
 import { useAppDispatch } from "@/hooks/useAppDispatch";
 import { setOrderNote, clearOrder, setOrderItems } from "@/store/orderSlice";
 import { RootState } from "@/store";
+import { Guest } from "@/types/guest";
+import { User } from "@/types/user";
 
 export default function OrderReviewPage() {
   const router = useRouter();
@@ -59,14 +61,14 @@ export default function OrderReviewPage() {
           id: 0,
           price: item.foodItem.price,
         })),
-        userId: user.id,
-        guestId: user.id,
+        userId: user?.id || "",
+        guestId: user?.id || "",
         totalAmount: calculateTotal(),
         status: "PENDING",
         createdAt: new Date(),
         updatedAt: new Date(),
-        user: user,
-        guest: user
+        user: user as User,
+        guest: user as Guest
       };
 
       const order = await createOrder(tableDetail?.id, orderData);

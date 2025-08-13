@@ -74,7 +74,7 @@ export default function LoginPage() {
         const response = await forgotPassword(form.getValues('username'));
         toast.success(response.message);
       }else{
-        toast.error('messages.requiredUserOrEmail')
+        toast.error(t('messages.requiredUserOrEmail'))  
       }
     } catch (_error) {
       toast.error(t('messages.emailError'));
@@ -131,11 +131,10 @@ export default function LoginPage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-5">
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               className="inline-flex items-center justify-center gap-3 py-5 text-sm font-normal
                text-gray-700 transition-colors bg-gray-100 rounded-lg px-7 hover:bg-yellow-200 hover:text-gray-800
-                dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10
-               ring-1 ring-amber-50"
+                dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10 dark:ring-0"
               onClick={handleGoogleLogin}
             >
               <FcGoogle className="mr-2 h-4 w-4" />
@@ -144,15 +143,15 @@ export default function LoginPage() {
 
             <Button
               type="button"
-              variant="outline"
+              variant="default"
               className="inline-flex items-center justify-center 
               gap-3 py-5 text-sm font-normal text-gray-700 transition-colors
                bg-gray-100 rounded-lg px-7 hover:bg-blue-200 hover:text-gray-800
-                dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10  ring-1 ring-amber-50
-                dark:ring-gray-25"
+                dark:bg-white/5 dark:text-white/90 dark:hover:bg-white/10
+                dark:ring-0"
               onClick={handleFacebookLogin}
             >
-              <FaFacebook className="mr-2 h-4 w-4 text-blue-600" />
+              <FaFacebook className="mr-2 h-6 w-6 text-blue-600" />
               {t('loginWithFacebook')}
             </Button>
           </div>
@@ -173,7 +172,7 @@ export default function LoginPage() {
                 name="username"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('username')}<span className="text-error-500">*</span></FormLabel>
+                    <FormLabel className='text-gray-700 dark:text-gray-400'>{t('username')}<span className="text-error-500 dark:text-gray-400">*</span></FormLabel>
                     <FormControl>
                       <Input className='input-focus' placeholder={t('usernamePlaceholder')} {...field} />
                     </FormControl>
@@ -187,7 +186,7 @@ export default function LoginPage() {
                 name="password"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t('password')}<span className="text-error-500">*</span></FormLabel>
+                    <FormLabel className='text-gray-700 dark:text-gray-400'>{t('password')}<span className="text-error-500 dark:text-gray-400">*</span></FormLabel>
                     <FormControl>
                       <Input
                         className='input-focus'

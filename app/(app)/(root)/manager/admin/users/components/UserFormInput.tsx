@@ -12,12 +12,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { User } from '@/services/user-api';
 import { getRoles } from '@/services/auth-api';
 import { Role } from '@/types/role';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useState } from 'react';
 import AssignRoleList from './AssignRoleList';
+import { User } from '@/types/user';
 
 const formSchema = (t: (key: string) => string) => z.object({
   username: z.string().min(1, t('usernameRequired')),

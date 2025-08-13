@@ -12,6 +12,7 @@ import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { mergeImageUrl } from '@/lib/utils';
 import Switch from "@/components/form/switch/Switch";
+import { useLoading } from '@/contexts/LoadingContext';
 
 interface HerbalFormProps {
   initialData?: Partial<Herbal>;
@@ -28,6 +29,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
   onCancel,
   loading = false
 }) => {
+  const { navigateTo, back } = useLoading();
   const [categories, setCategories] = useState<Category[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -50,7 +52,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
     thumbnail: '',
     categoryId: '',
     isActive: true,
-    id: 0,
+    id: '',
     slug: '',
     viewCount: 0,
     likeCount: 0,
