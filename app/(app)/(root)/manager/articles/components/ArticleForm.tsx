@@ -8,10 +8,8 @@ import { uploadFile } from '@/services/media-api';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
-import { Switch } from '@/components/ui/switch';
 import { Action } from '@/types/actions';
 import { Plus, Save, X } from 'lucide-react';
-import { useDropzone } from "react-dropzone";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mergeImageUrl } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,6 +17,7 @@ import { ArticleDto } from '@/types/dto/ArticleDto';
 import { useLoading } from '@/contexts/LoadingContext';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
+import { AppCategoryCode } from '@/constants';
 
 const ArticleForm = () => {
   const t = useTranslations('ArticlePage');
@@ -29,7 +28,6 @@ const ArticleForm = () => {
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [article, setArticle] = useState<ArticleDto>();
   const [formData, setFormData] = useState<ArticleDto>({
     title: '',
@@ -39,25 +37,6 @@ const ArticleForm = () => {
     status: 'draft',
   });
   const id = params.id?.toString();
-
-  const onDrop = (acceptedFiles: File[]) => {
-    if (acceptedFiles && acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setSelectedFile(file);
-      const fileUrl = URL.createObjectURL(file);
-      setPreviewUrl(fileUrl);
-    }
-  };
-
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      "image/png": [],
-      "image/jpeg": [],
-      "image/webp": [],
-      "image/svg+xml": [],
-    },
-  });
 
   const title = id ? t('updateArticle') : t('addArticle');
 
@@ -142,19 +121,6 @@ const ArticleForm = () => {
     }));
   };
 
-  const changeDescription = (description: string) => {
-    // Kiểm tra độ dài description
-    if (description.length > 500) {
-      toast.error(t('messages.descriptionLengthError'));
-      return;
-    }
-
-    setFormData(prev => ({
-      ...prev,
-      description: description,
-    }));
-  };
-
   const handleImageChange = (field: string, value: File | null) => {
     setFormData(prev => ({
       ...prev,
@@ -193,35 +159,11 @@ const ArticleForm = () => {
             {/* Phần upload hình ảnh - chiếm 3/10 */}
             <div className="w-3/10">
               <div className="space-y-2">
-                <div className="transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl hover:border-brand-500">
-                  {previewUrl || formData.thumbnail ? (
-                    <div className="relative">
-                      <img
-                        src={previewUrl || formData.thumbnail || ''}
-                        alt="Preview"
-                        className="w-full h-64 object-cover rounded-xl"
-                      />
-                      <button
-                        type="button"
-                        title={tUtils('deleteImage')}
-                        onClick={() => {
-                          setSelectedFile(null);
-                          setPreviewUrl(null);
-                          setFormData(prev => ({ ...prev, thumbnail: '' }));
-                        }}
-                        className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ) : (
-                    <ImageUpload
-                      value={formData.thumbnail}
-                      onChange={(value) => handleImageChange('thumbnail', value)}
-                      placeholder={t('messages.thumbnailPlaceholder')}
-                    />
-                  )}
-                </div>
+                <Label htmlFor="thumbnail" className="text-sm font-medium">{t('thumbnail')}</Label>
+                <ImageUpload
+                  value={formData.thumbnail ? mergeImageUrl(formData.thumbnail) : undefined}
+                  onChange={(value) => handleImageChange('thumbnail', value)}
+                />
               </div>
             </div>
 
@@ -249,12 +191,12 @@ const ArticleForm = () => {
                         <SelectValue placeholder={t('messages.statusPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white">
-                        <SelectItem value="draft">
+                        <SelectItem value="draft" className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
                           <div className="flex items-center">
                             <span className="text-sm text-gray-500">{t('draft')}</span>
                           </div>
                         </SelectItem>
-                        <SelectItem value="published">
+                        <SelectItem value={AppCategoryCode.ArticleStatus} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
                           <div className="flex items-center">
                             <span className="text-sm text-gray-500">{t('published')}</span>
                           </div>

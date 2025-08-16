@@ -38,4 +38,5 @@ export const AppCategoryCode = {
   TableArea: 'Khu vực bàn',
   FolkMedicine: 'FolkMedicine',
   FEATURE_MENU: 'FEATURE_MENU',
+  ArticleStatus: 'Trạng thái bài viết',
 }
