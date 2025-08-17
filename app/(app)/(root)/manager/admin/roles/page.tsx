@@ -26,7 +26,7 @@ import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 export default function RolesPage() {
   const t = useTranslations('RolesPage');
   const tUtils = useTranslations('Utils');
-  const { hasResourcePermission, hasPermission } = useAuth();
+  const { hasPermission } = useAuth();
   const { navigateTo } = useLoading();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -184,7 +184,7 @@ export default function RolesPage() {
                     {t('viewDetail')}
                   </DropdownMenuItem>
                 )}
-                {hasPermission('ROLE_ASSIGN_PERMISSION') && (
+                { hasPermission('ROLE_ASSIGN_PERMISSION') && (
                   <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-slate-500 dark:text-slate-400"
                     onClick={() => navigateTo(`/manager/admin/roles/rolepermission/${role.id}`)}>
                     <Shield className="mr-2 h-4 w-4 text-slate-500 dark:text-slate-500" />

@@ -165,7 +165,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
   }
 };
 
-export const getPermissionsStorage = (): Permission[] | [] => {
+export const getPermissionsStorage = (): string[] | [] => {
   const user = localStorage.getItem(AppConstants.User);
   const userData = user ? JSON.parse(user) : [];
   return userData ? userData.permissions : [];
@@ -205,6 +205,7 @@ export const getRoles = async (params?: PaginationParams): Promise<PaginatedResp
     return { data: [], total: 0, page: 0, size: 10, totalPages: 0 };
   }
 };
+
 
 export const getRole = async (id: string): Promise<Role> => {
   const response = await axiosApi.get(`/roles/${id}`);
@@ -396,5 +397,10 @@ export const removeRolePermissions = async (roleId: string, permissionIds: strin
 export const getRolePermissionStats = async (roleId: string): Promise<any> => {
   const response = await axiosApi.get(`/roles/${roleId}/permissions/stats`);
   return response.data;
+};
+
+export const hasPermissionByCode = async (permission: string): Promise<boolean> => {
+  const response = await axiosApi.get(`/permissions/has-permission?permission=${permission}`);
+  return response.status === 200;
 };
 
