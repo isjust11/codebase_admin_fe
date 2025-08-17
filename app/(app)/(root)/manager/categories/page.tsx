@@ -223,12 +223,6 @@ export default function CategoriesManagement() {
     }
   };
 
-  useEffect(() => {
-    if (!hasResourcePermissionStatus) {
-      navigateTo('/');
-    }
-  }, [hasResourcePermissionStatus]);
-
   useAsyncEffect(async () => {
     await fetchData();
   }, [pageIndex, pageSize, search]);

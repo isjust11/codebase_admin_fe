@@ -42,22 +42,13 @@ export default function FeaturePage() {
   const [search, setSearch] = useState('');
   const t = useTranslations('FeaturePage');
   const { navigateTo } = useLoading();  
-  
-  const { hasPermission,hasResourcePermission } = useAuth();
-  const hasResourcePermissionStatus = hasResourcePermission('feature');
-
+  const { hasPermission } = useAuth();
   const fetchFeatures = async () => {
     const response = await getAllFeatures(search);
     const featureTree = buildFeature(response);
     setFeatures(featureTree);
     // setPageCount(response.totalPages);
   };
-
-  useEffect(() => {
-    if (!hasResourcePermissionStatus) {
-      navigateTo(AppRoutes.Home);
-    }
-  }, [hasResourcePermissionStatus]);
 
   useEffect(() => {
     fetchFeatures();

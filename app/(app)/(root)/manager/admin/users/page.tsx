@@ -40,11 +40,6 @@ export default function UsersPage() {
     }
   };
 
-  useEffect(() => {
-    if (!hasPermissionToManageUsers) {
-      navigateTo('/');
-    }
-  }, [hasPermissionToManageUsers]);
 
   useEffect(() => {
     fetchUsers(pageIndex, pageSize, search);

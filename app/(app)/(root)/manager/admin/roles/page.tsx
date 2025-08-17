@@ -22,13 +22,11 @@ import { AsyncWrapper } from '@/components/common/AsyncWrapper';
 import RolePermissionManager from './components/RolePermissionManager';
 import { useAuth } from '@/contexts/AuthContext';
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
-import { AppRoutes } from '@/constants';
 
 export default function RolesPage() {
   const t = useTranslations('RolesPage');
   const tUtils = useTranslations('Utils');
   const { hasResourcePermission, hasPermission } = useAuth();
-  const hasPermissionToManageRoles = hasResourcePermission('role');
   const { navigateTo } = useLoading();
   const [roles, setRoles] = useState<Role[]>([]);
   const [selectedRole, setSelectedRole] = useState<Role | null>(null);
@@ -40,12 +38,6 @@ export default function RolesPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [dialogContent, setDialogContent] = useState('');
 
-
-  useEffect(() => {
-    if (!hasPermissionToManageRoles) {
-      navigateTo(AppRoutes.Home);
-    }
-  }, [hasPermissionToManageRoles]);
 
   const fetchRoles = async () => {
     try {

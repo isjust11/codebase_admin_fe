@@ -30,7 +30,6 @@ export default function PermissionsPage() {
   const tUtils = useTranslations('Utils');
   const { navigateTo } = useLoading();  
   const { hasPermission,hasResourcePermission } = useAuth();
-  const hasResourcePermissionStatus = hasResourcePermission('permission');
   const [permissions, setPermissions] = useState<Permission[]>([]);
   const [selectedPermission, setSelectedPermission] = useState<Permission | null>(null);
   const { isOpen, openModal, closeModal } = useModal();
@@ -50,12 +49,6 @@ export default function PermissionsPage() {
       toast.error(t('fetchError') + error.message);
     }
   };
-
-  useEffect(() => {
-    if (!hasResourcePermissionStatus) {
-      navigateTo('/manager/admin/permissions/template');
-    }
-  }, [hasResourcePermissionStatus]);
 
   useEffect(() => {
     fetchPermissions();
