@@ -5,7 +5,7 @@ import { Media, mediaApi, MediaQueryParams, MediaResponse } from '@/services/med
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
-import { Upload, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, X, Check, Search, ImageOff, Info, Pen, Save } from 'lucide-react';
+import { Upload, Trash2, Image as ImageIcon, ChevronLeft, ChevronRight, X, Check, Search, ImageOff, Info, Pen, Save, VideoIcon, ImageOffIcon } from 'lucide-react';
 import Image from 'next/image';
 import {
   Select,
@@ -21,6 +21,7 @@ import 'react-image-crop/dist/ReactCrop.css';
 import { AlertDialogUtils } from './AlertDialogUtils';
 import { useTranslations } from 'next-intl';
 import ImageCrop from './react-crop/imageCrop';
+import { AudioIcon } from '@/public/icons';
 
 interface MediaManagerProps {
   onSelect?: (media: Media | Media[] | null) => void;
@@ -72,6 +73,24 @@ const MediaThumbnail: React.FC<{ item: Media }> = ({ item }) => {
     </div>
   );
 };
+
+const fileTypes = [
+  {
+    mimeType: 'image/*',
+    label: 'Hình ảnh',
+    icon: <ImageIcon className="h-4 w-4" />
+  },
+  {
+    mimeType: 'video/*',
+    label: 'Video',
+    icon: <VideoIcon className="h-4 w-4" />
+  },
+  {
+    mimeType: 'audio/*',
+    label: 'Âm thanh',
+    icon: <AudioIcon className="h-4 w-4" />
+  }
+]
 
 export function MediaManager({ onSelect, selectedMedia, multiple = true }: MediaManagerProps) {
   const t = useTranslations('Utils');
@@ -454,11 +473,16 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
           <SelectTrigger className="w-[180px]">
             <SelectValue placeholder="Loại file" />
           </SelectTrigger>
-          <SelectContent className='bg-white'>
-            <SelectItem value="*">Tất cả</SelectItem>
-            <SelectItem value="image/">Hình ảnh</SelectItem>
-            <SelectItem value="video/">Video</SelectItem>
-            <SelectItem value="audio/">Âm thanh</SelectItem>
+          <SelectContent className='bg-white z-[99999]'>
+            <SelectItem className='hover:bg-gray-100 px-2 py-1' value="*">Tất cả</SelectItem>
+            {fileTypes.map((type) => (
+              <SelectItem className='hover:bg-gray-100 px-2 py-1' key={type.mimeType} value={type.mimeType}>
+                <div className='flex flex-row gap-2 items-start'>
+                  <div className='mr-2 text-gray-400'>{type.icon}</div>
+                  <div className='text-sm'>{type.label}</div>
+                </div>
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -517,8 +541,11 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
       {
         medias.length === 0 && (
           <div className="container mx-auto">
-            <div className="flex justify-center items-center h-full">
-              <p className="text-muted-foreground">Không có dữ liệu</p>
+            <div className="flex justify-center items-center h-full py-10">
+              <p className="text-muted-foreground flex flex-col items-center gap-2">
+                <ImageOffIcon className="h-36 w-36 text-gray-400 mb-4" />
+                <span className='text-sm text-gray-500 '>Không có dữ liệu</span>
+              </p>
             </div>
           </div>
         )
@@ -609,7 +636,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
         </div>
       </div>
 
-      <div className="flex justify-center gap-2 mt-4">
+      {medias.length > 0 && <div className="flex justify-center gap-2 mt-4">
         <Button
           variant="outline"
           onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
@@ -627,7 +654,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
         >
           Sau
         </Button>
-      </div>
+      </div>}
 
       <Modal isOpen={isPreviewOpen} onClose={() => { setIsPreviewOpen(false); setEditMode(false); }} className='w-3/4'>
         <div className="w-full p-4">
@@ -716,7 +743,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                   </div>
                 )}
                 {/* Overlay next/prev buttons - đặt ngoài controls */}
-                <div className="absolute inset-0 flex items-center justify-between p-4 pointer-events-none">
+               {medias && medias.length > 0 && <div className="absolute inset-0 flex items-center justify-between p-4 pointer-events-none">
                   <Button
                     variant="secondary"
                     size="icon"
@@ -733,7 +760,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                   >
                     <ChevronRight className="h-6 w-6" />
                   </Button>
-                </div>
+                </div>}
               </div>
               <div className="mt-4 text-sm text-muted-foreground">
                 <p><span className='text-gray-500'>Tên file:</span> {medias && medias[previewIndex]?.originalName}</p>

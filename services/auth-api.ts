@@ -1,4 +1,4 @@
-import { AppConstants } from '@/constants';
+import { AppConstants, AppRoutes } from '@/constants';
 import axiosApi from './base/api';
 import { CreatePermissionDto, CreateRoleDto, Permission, UpdatePermissionDto, UpdateRoleDto } from '@/types/permission';
 import { Role } from '@/types/role';
@@ -36,7 +36,7 @@ export const refreshToken = async (): Promise<RefreshTokenResponse> => {
       throw new Error('Không tìm thấy refresh token');
     }
 
-    const response = await axiosApi.post('/auth/refresh-token', {
+    const response = await axiosApi.post(AppRoutes.Auth.RefreshToken, {
       refreshToken,
     });
 
@@ -57,7 +57,7 @@ export const refreshToken = async (): Promise<RefreshTokenResponse> => {
 export const login = async (data: LoginData): Promise<AuthResponse> => {
   try {
     console.log('run login', data);
-    const response = await axiosApi.post(`/auth/login`, data);
+    const response = await axiosApi.post(AppRoutes.Auth.Login, data);
     // lưu trữ token vào localStorage
     localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);
     localStorage.setItem(AppConstants.RefreshToken, response.data.refreshToken);
@@ -72,7 +72,7 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
 // đăng ký tài khoản
 export const register = async (data: RegisterData): Promise<any> => {
   try {
-    const response = await axiosApi.post(`/auth/register`, data);
+    const response = await axiosApi.post(AppRoutes.Auth.Register, data);
     return response.data;
   } catch (_error) {
     console.error('Lỗi đăng ký:', _error);
@@ -89,7 +89,7 @@ export const logout = (): void => {
 
 export const verifyEmail = async (token: string): Promise<AuthResponse> => {
   try {
-    const response = await axiosApi.get(`/auth/verify-email?token=${token}`);
+    const response = await axiosApi.get(`${AppRoutes.Auth.VerifyEmail}?token=${token}`);
     return response.data;
   } catch (_error) {
     console.error('Lỗi xác thực email:', _error);
@@ -99,7 +99,7 @@ export const verifyEmail = async (token: string): Promise<AuthResponse> => {
 
 export const forgotPassword = async (username: string): Promise<any> => {
   try {
-    const response = await axiosApi.get(`/auth/forgot-password?username=${username}`);
+    const response = await axiosApi.get(`${AppRoutes.Auth.ForgotPassword}?username=${username}`);
     return response.data;
   } catch (_error) {
     console.error('Lỗi quên mật khẩu:', _error);
@@ -109,7 +109,7 @@ export const forgotPassword = async (username: string): Promise<any> => {
 
 export const verifyResetPassword = async (token: string, password: string): Promise<any> => {
   try {
-    const response = await axiosApi.post(`/auth/reset-password`, { token, password });
+    const response = await axiosApi.post(`${AppRoutes.Auth.ResetPassword}`, { token, password });
     return response.data;
   } catch (_error) {
     console.error('Lỗi xác thực mật khẩu:', _error);
@@ -119,7 +119,7 @@ export const verifyResetPassword = async (token: string, password: string): Prom
 
 export const resendEmail = async (email: string): Promise<AuthResponse> => {
   try {
-    const response = await axiosApi.post(`/auth/resend-email`, { email });
+    const response = await axiosApi.post(`${AppRoutes.Auth.ResendEmail}`, { email });
     return response.data;
   } catch (_error) {
     console.error('Lỗi gửi email xác thực:', _error);
@@ -130,7 +130,7 @@ export const resendEmail = async (email: string): Promise<AuthResponse> => {
 // kiểm tra token hợp lệ
 export const validateToken = async (token: string): Promise<boolean> => {
   try {
-    const response = await axiosApi.get(`/auth/validate-token?token=${token}`);
+    const response = await axiosApi.get(`${AppRoutes.Auth.ValidateToken}?token=${token}`);
     return response.status === 200;
   } catch (error) {
     return false;
@@ -165,7 +165,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
   }
 };
 
-export const getPermissionsStorage = (): Permission[] | [] => {
+export const getPermissionsStorage = (): string[] | [] => {
   const user = localStorage.getItem(AppConstants.User);
   const userData = user ? JSON.parse(user) : [];
   return userData ? userData.permissions : [];

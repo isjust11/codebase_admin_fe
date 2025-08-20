@@ -84,7 +84,7 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
                 </FormControl>
                 <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
                   {Object.entries(AppCategoryCode).map(([key, value]) => (
-                    <SelectItem key={key} value={key}>
+                    <SelectItem key={key} value={key} className="hover:bg-gray-100">
                       <div className="flex flex-start items-center">
                         <span className="text-sm text-gray-500">{value}</span>
                       </div>

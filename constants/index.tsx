@@ -11,12 +11,14 @@ export const AppConstants = {
 }
 export const AppRoutes = {
   Auth: {
-    Login: '/login',
-    Register: '/register',
-    ForgotPassword: '/forgot-password',
-    ResetPassword: '/reset-password',
-    VerifyEmail: '/verify-email',
+    Login: '/auth/login',
+    Register: '/auth/register',
+    ForgotPassword: '/auth/forgot-password',
+    ResetPassword: '/auth/reset-password',
+    VerifyEmail: '/auth/verify-email',
     RefreshToken: '/auth/refresh-token',
+    ResendEmail: '/auth/resend-email',
+    ValidateToken: '/auth/validate-token',
   },
   Home: '/',
   Manager: {
@@ -25,6 +27,10 @@ export const AppRoutes = {
     TablesUpdate: '/manager/tables/update',
     TablesDetail: '/manager/tables',
     TablesQrCodes: '/manager/tables/qrcodes',
+    Articles: '/manager/articles',
+    ArticlesCreate: '/manager/articles/create',
+    ArticlesUpdate: '/manager/articles/update',
+    ArticlesDetail: '/manager/articles',
   }
 }
 export const AppCategoryCode = {

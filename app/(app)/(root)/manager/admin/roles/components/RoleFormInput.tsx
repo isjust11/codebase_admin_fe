@@ -23,9 +23,13 @@ import Switch from '@/components/form/switch/Switch';
 import { useTranslations } from 'next-intl';
 
 // Tạo schema validation với đa ngôn ngữ
-const createFormSchema = (t: any) => z.object({
-  name: z.string().min(6, t('validation.nameMinLength')),
-  code: z.string().min(1, t('validation.codeMinLength')),
+const roleFormSchema = (t: any) => z.object({
+  name: z.string()
+    .min(3, t('validation.nameMinLength'))
+    .refine(val => val.trim() !== '', t('validation.nameRequired')),
+  code: z.string()
+    .min(3, t('validation.codeMinLength'))
+    .refine(val => val.trim() !== '', t('validation.codeRequired')),
   isActive: z.boolean(),
   description: z.string().optional(),
   features: z.array(z.string()).optional(),
@@ -38,21 +42,23 @@ type RoleFormProps = {
   isView?: boolean;
 };
 
- export const RoleFormInput = forwardRef<{ validate: () => boolean }, RoleFormProps>(({ role, onFormChange, isView = false }, ref) => {
+export const RoleFormInput = forwardRef<{ validate: () => Promise<boolean> }, RoleFormProps>(({ role, onFormChange, isView = false }, ref) => {
   const t = useTranslations('RolesPage');
   const [features, setFeatures] = useState<Feature[]>([]);
 
   // Tạo schema validation với đa ngôn ngữ
-  const formSchema = createFormSchema(t);
+  const formSchema = roleFormSchema(t);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
+    mode: 'onChange',
+    reValidateMode: 'onChange',
     defaultValues: {
       name: role?.name || '',
       code: role?.code || '',
-      isActive: role?.isActive || true,
+      isActive: role?.isActive ?? true,
       description: role?.description || '',
-      features: role?.features!.map(p => p.id) || [],
+      features: role?.features?.map(p => p.id) ?? [],
     },
   });
 
@@ -97,9 +103,9 @@ type RoleFormProps = {
   }, []);
 
   useImperativeHandle(ref, () => ({
-    validate: () => {
-      form.trigger();
-      return form.formState.isValid;
+    validate: async () => {
+      const isValid = await form.trigger(undefined, { shouldFocus: true });
+      return isValid;
     }
   }));
 
@@ -113,9 +119,9 @@ type RoleFormProps = {
             <FormItem>
               <FormLabel>{t('name')}</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder={t('namePlaceholder')} 
-                  {...field} 
+                <Input
+                  placeholder={t('namePlaceholder')}
+                  {...field}
                   disabled={isView}
                   className={fieldState.invalid ? 'input-error' : ''}
                   onBlur={() => form.trigger('name')}
@@ -125,7 +131,7 @@ type RoleFormProps = {
                   }}
                 />
               </FormControl>
-              <FormMessage className='text-red-500'/>
+              <FormMessage className='text-red-500' />
             </FormItem>
           )}
         />
@@ -136,10 +142,10 @@ type RoleFormProps = {
             <FormItem>
               <FormLabel>{t('code')}</FormLabel>
               <FormControl>
-                <Input 
-                  disabled={role?.id != null || isView || role?.code == 'ADMIN'} 
-                  placeholder={t('codePlaceholder')} 
-                  {...field} 
+                <Input
+                  disabled={role?.id != null || isView || role?.code == 'ADMIN'}
+                  placeholder={t('codePlaceholder')}
+                  {...field}
                   className={fieldState.invalid ? 'input-error' : ''}
                   onBlur={() => form.trigger('code')}
                   onChange={(e) => {
@@ -148,7 +154,7 @@ type RoleFormProps = {
                   }}
                 />
               </FormControl>
-              <FormMessage className='text-red-500'/>
+              <FormMessage className='text-red-500' />
             </FormItem>
           )}
         />
@@ -173,7 +179,7 @@ type RoleFormProps = {
             <FormItem>
               <FormLabel>{t('description')}</FormLabel>
               <FormControl>
-                <Textarea 
+                <Textarea
                   className={`input-focus ${fieldState.invalid ? 'input-error' : ''}`}
                   placeholder={t('descriptionPlaceholder')}
                   {...field}
@@ -185,7 +191,7 @@ type RoleFormProps = {
                   }}
                 />
               </FormControl>
-              <FormMessage className='text-red-500'/>
+              <FormMessage className='text-red-500' />
             </FormItem>
           )}
         />

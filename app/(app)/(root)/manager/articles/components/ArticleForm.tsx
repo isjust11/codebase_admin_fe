@@ -17,7 +17,23 @@ import { ArticleDto } from '@/types/dto/ArticleDto';
 import { useLoading } from '@/contexts/LoadingContext';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
-import { AppCategoryCode } from '@/constants';
+import { AppCategoryCode, AppRoutes } from '@/constants';
+import { z } from 'zod';
+
+const articleFormSchema = (t: any) => z.object({
+  title: z.string().min(3, t('validation.titleMinLength'))
+    .refine(val => val.trim() !== '', t('validation.titleRequired')),
+  content: z.string().min(3, t('validation.contentMinLength'))
+    .refine(val => val.trim() !== '', t('validation.contentRequired')),
+  description: z.string().min(3, t('validation.descriptionMinLength'))
+    .refine(val => val.trim() !== '', t('validation.descriptionRequired')),
+  thumbnail: z.string().min(3, t('validation.thumbnailMinLength'))
+    .refine(val => val.trim() !== '', t('validation.thumbnailRequired')),
+  status: z.string().min(3, t('validation.statusMinLength'))
+    .refine(val => val.trim() !== '', t('validation.statusRequired')),
+  thumbnailFile: z.instanceof(File).optional(),
+  thumbnailUrl: z.string().optional(),
+});
 
 const ArticleForm = () => {
   const t = useTranslations('ArticlePage');
@@ -29,13 +45,26 @@ const ArticleForm = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [article, setArticle] = useState<ArticleDto>();
-  const [formData, setFormData] = useState<ArticleDto>({
+  const articleForm = articleFormSchema(t);
+  const [formData, setFormData] = useState<z.infer<typeof articleForm>>(
+    article ? {
+      title: article.title,
+      content: article.content,
+      description: article.description || '',
+      thumbnail: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
+      status: article.status || 'draft',
+      thumbnailFile: undefined,
+      thumbnailUrl: '',
+    } : {
     title: '',
     content: '',
     description: '',
     thumbnail: '',
     status: 'draft',
+    thumbnailFile: undefined,
+    thumbnailUrl: '',
   });
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof articleForm>, string>>>({});
   const id = params.id?.toString();
 
   const title = id ? t('updateArticle') : t('addArticle');
@@ -57,14 +86,31 @@ const ArticleForm = () => {
         description: article.description || '',
         thumbnail: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
         status: article.status || 'draft',
+        thumbnailFile: undefined,
+        thumbnailUrl: '',
       });
     } catch (_error) {
       toast.error(t('messages.loadError'));
-      navigateTo('/manager/articles');
+      navigateTo(AppRoutes.Manager.Articles);
     }
   };
 
   const handleSubmit = async () => {
+    const result = await articleForm.safeParseAsync(formData);
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
+      setFormErrors({
+        title: fieldErrors.title?.[0],
+        content: fieldErrors.content?.[0],
+        description: fieldErrors.description?.[0],
+        thumbnail: fieldErrors.thumbnail?.[0],
+        status: fieldErrors.status?.[0],
+        thumbnailFile: fieldErrors.thumbnailFile?.[0],
+      } as Partial<Record<keyof z.infer<typeof articleForm>, string>>);
+      toast.error(t('validation.validationError'));
+      return;
+    }
+    setFormErrors({});
     setLoading(true);
     try {
       let thumbnail = formData.thumbnail || '';
@@ -89,7 +135,7 @@ const ArticleForm = () => {
         await createArticle(submitData);
         toast.success(t('messages.createSuccess'));
       }
-      navigateTo('/manager/articles');
+      navigateTo(AppRoutes.Manager.Articles);
     } catch (_error) {
       toast.error(isEditing ? t('messages.updateError') : t('messages.createError'));
     } finally {
@@ -105,6 +151,10 @@ const ArticleForm = () => {
       ...prev,
       [name]: value,
     }));
+    setFormErrors(prev => {
+      const key = name as keyof z.infer<typeof articleForm>;
+      return { ...prev, [key]: undefined } as Partial<Record<keyof z.infer<typeof articleForm>, string>>;
+    });
   };
 
   const handleSelectStatusChange = (value: string) => {
@@ -112,6 +162,7 @@ const ArticleForm = () => {
       ...prev,
       status: value,
     }));
+    setFormErrors(prev => ({ ...prev, status: undefined }));
   };
 
   const changeContent = (content: string) => {
@@ -161,7 +212,7 @@ const ArticleForm = () => {
               <div className="space-y-2">
                 <Label htmlFor="thumbnail" className="text-sm font-medium">{t('thumbnail')}</Label>
                 <ImageUpload
-                  value={formData.thumbnail ? mergeImageUrl(formData.thumbnail) : undefined}
+                  value={formData.thumbnailUrl}
                   onChange={(value) => handleImageChange('thumbnail', value)}
                 />
               </div>
@@ -172,7 +223,7 @@ const ArticleForm = () => {
               <form className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">{t('title')}</Label>
+                    <Label htmlFor="title">{t('title')} <span className="text-red-500">*</span></Label>
                     <Input
                       id="title"
                       name="title"
@@ -182,10 +233,13 @@ const ArticleForm = () => {
                       onChange={handleChange}
                       required
                     />
+                    {formErrors.title && (
+                      <div className="text-red-500 text-sm">{formErrors.title}</div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="status">{t('status')}</Label>
+                    <Label htmlFor="status">{t('status')} <span className="text-red-500">*</span></Label>
                     <Select value={formData.status} onValueChange={(value) => handleSelectStatusChange(value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('messages.statusPlaceholder')} />
@@ -207,7 +261,7 @@ const ArticleForm = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">{t('description')}</Label>
+                  <Label htmlFor="description">{t('description')} <span className="text-red-500">*</span></Label>
                   <Input
                     id="description"
                     name="description"
@@ -217,20 +271,31 @@ const ArticleForm = () => {
                     onChange={handleChange}
                     maxLength={500}
                   />
+                  {formErrors.description && (
+                    <div className="text-red-500 text-sm">{formErrors.description}</div>
+                  )}
                   <div className="text-xs text-gray-500 text-right">
                     {formData.description?.length || 0}/500
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="content">{t('content')}</Label>
+                  <Label htmlFor="content">{t('content')} <span className="text-red-500">*</span></Label>
                   <div className="ring-1 ring-gray-100/5 rounded-md shadow-sm p-2">
                     <SimpleEditor
                       key={article?.id || 'new'}
                       initialContent={article?.content || ''}
                       placeholder={t('contentPlaceholder')}
-                      onContentChange={(content) => changeContent(content)}
+                      onContentChange={(content) => {
+                        setFormData(prev => ({
+                          ...prev,
+                          content: content,
+                        }));
+                      }}
                     />
+                    {formErrors.content && (
+                      <div className="text-red-500 text-sm">{formErrors.content}</div>
+                    )}
                   </div>
                 </div>
               </form>

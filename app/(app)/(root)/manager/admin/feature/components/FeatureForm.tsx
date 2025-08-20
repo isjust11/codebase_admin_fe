@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import Switch from "@/components/form/switch/Switch";
 import { Feature } from "@/types/feature";
 import { useEffect, useState } from "react";
-import { SmilePlus } from "lucide-react";
+import { Loader2, SmilePlus } from "lucide-react";
 import { IconPickerModal } from "@/components/IconPickerModal";
 import { emojiToUnicode, getFeatureType, unicodeToEmoji } from "@/lib/utils";
 import { IconType } from "@/enums/icon-type.enum";
@@ -19,13 +19,13 @@ import { getCategoryByCode } from "@/services/manager-api";
 import { AppCategoryCode } from "@/constants";
 import { useTranslations } from "next-intl";
 
-const formSchema = z.object({
-    label: z.string().min(2, {
-        message: "Tên chức năng phải có ít nhất 2 ký tự.",
-    }),
-    link: z.string().min(2, {
-        message: "Đường dẫn phải có ít nhất 2 ký tự.",
-    }),
+const featureFormSchema = (t: any) => z.object({
+    label: z.string()
+        .min(3, t('validation.labelMinLength'))
+        .refine(val => val.trim() !== '', t('validation.labelRequired')),
+    link: z.string()
+        .min(3, t('validation.linkMinLength'))
+        .refine(val => val.trim() !== '', t('validation.linkRequired')),
     isActive: z.boolean(),
     sortOrder: z.string().optional(),
     roles: z.array(z.string()).optional(),
@@ -39,7 +39,7 @@ const formSchema = z.object({
 
 interface FeatureFormProps {
     initialData?: Feature | null;
-    onSubmit: (values: z.infer<typeof formSchema>) => void;
+    onSubmit: (values: any) => void;
     onCancel: () => void;
     featureParents: Feature[];
     featureParent?: Feature;
@@ -47,12 +47,14 @@ interface FeatureFormProps {
 
 export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, featureParent }: FeatureFormProps) {
     const t = useTranslations('FeaturePage');
+    const featureForm = featureFormSchema(t)
     const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
     const [iconType, setIconType] = useState(IconType.lucide);
     const [iconSize, setIconSize] = useState(20)
     const [featureType, setFeatureType] = useState<Category[]>([]);
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
+    const [isLoading, setIsLoading] = useState(false);
+    const form = useForm<z.infer<typeof featureForm>>({
+        resolver: zodResolver(featureForm),
         defaultValues: initialData
             ? {
                 ...initialData,
@@ -83,10 +85,12 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
             },
     });
 
-    const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    const handleSubmit = (values: z.infer<typeof featureForm>) => {
         // Đảm bảo sortOrder là số
+        setIsLoading(true);
         values.sortOrder = values.sortOrder || "0";
         onSubmit(values);
+        setIsLoading(false);
     };
 
     useEffect(() => {
@@ -136,7 +140,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                                     </FormControl>
                                     <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
                                         {featureType.length > 0 ? featureType.map((type) => (
-                                            <SelectItem key={type.id} value={type.id}>
+                                            <SelectItem key={type.id} value={type.id} className="hover:bg-gray-100">
                                                 <div className="flex flex-start items-center">
                                                     <span className="text-2xl mr-2">
                                                         {
@@ -279,7 +283,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                                                 </div>
                                                 {field.value && (<div className="flex-1" >
                                                     <Slider
-                                                        className="[&_.slider-track]:bg-gray-200 [&_.slider-range]:bg-blue-500 [&_.slider-thumb]:bg-white [&_.slider-thumb]:border-2 [&_.slider-thumb]:border-blue-500"
+                                                        className="[&_.slider-track]:bg-gray-800 [&_.slider-range]:bg-blue-500 [&_.slider-thumb]:bg-white [&_.slider-thumb]:border-2 [&_.slider-thumb]:border-blue-500"
                                                         defaultValue={[iconSize]}
                                                         max={40}
                                                         step={1}
@@ -321,8 +325,8 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                     <Button variant="outline" onClick={onCancel}>
                         {t('cancel')}
                     </Button>
-                    <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
-                        {initialData ? t('update') : t('add')}
+                    <Button type="submit" className="bg-blue-500 hover:bg-blue-600" disabled={isLoading}>
+                        {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : initialData ? t('update') : t('add')}
                     </Button>
                 </div>
 

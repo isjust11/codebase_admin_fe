@@ -438,7 +438,13 @@
     "linkMinLength": "Link must be at least 2 characters",
     "featureNameMinLength": "Feature name must be at least 2 characters",
     "update": "Update",
-    "add": "Add"
+    "add": "Add",
+    "validation": {
+      "labelRequired": "Feature name is required",
+      "labelMinLength": "Feature name must be at least 3 characters",
+      "linkRequired": "Link is required",
+      "linkMinLength": "Link must be at least 3 characters"
+    }
   },
   "PermissionsPage": {
     "permissionList": "Permission List",
@@ -996,6 +1002,19 @@
       "statusPlaceholder": "Select status",
       "draft": "Draft",
       "published": "Published"
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "titleMinLength": "Title must be at least 3 characters",
+      "contentRequired": "Content is required",
+      "contentMinLength": "Content must be at least 3 characters",
+      "descriptionRequired": "Description is required",
+      "descriptionMinLength": "Description must be at least 3 characters",
+      "thumbnailRequired": "Thumbnail is required",
+      "thumbnailMinLength": "Thumbnail must be at least 3 characters",
+      "statusRequired": "Status is required",
+      "statusMinLength": "Status must be at least 3 characters",
+      "validationError": "Please check the information again"
     }
   }
 }

@@ -350,9 +350,9 @@
     "roles": "Vai trò",
     "validation": {
       "nameRequired": "Tên vai trò không được để trống",
-      "nameMinLength": "Tên vai trò phải có ít nhất 6 ký tự",
+      "nameMinLength": "Tên vai trò phải có ít nhất 3 ký tự",
       "codeRequired": "Mã vai trò không được để trống", 
-      "codeMinLength": "Mã vai trò phải có ít nhất 6 ký tự"
+      "codeMinLength": "Mã vai trò phải có ít nhất 3 ký tự"
     }
   },
   "UsersPage": {
@@ -437,7 +437,13 @@
     "linkMinLength": "Đường dẫn phải có ít nhất 2 ký tự",
     "featureNameMinLength": "Tên chức năng phải có ít nhất 2 ký tự",
     "update": "Cập nhật",
-    "add": "Thêm mới"
+    "add": "Thêm mới",
+    "validation": {
+      "labelRequired": "Tên chức năng không được để trống",
+      "labelMinLength": "Tên chức năng phải có ít nhất 3 ký tự",
+      "linkRequired": "Đường dẫn không được để trống",
+      "linkMinLength": "Đường dẫn phải có ít nhất 3 ký tự"
+    }
   },
   "PermissionsPage": {
     "permissionList": "Danh sách quyền",
@@ -1013,6 +1019,19 @@
       "statusPlaceholder": "Chọn trạng thái",
       "draft": "Bản nháp",
       "published": "Đã xuất bản"
+    },
+    "validation": { 
+      "titleRequired": "Tiêu đề bài viết không được để trống",
+      "titleMinLength": "Tiêu đề bài viết phải có ít nhất 3 ký tự",
+      "contentRequired": "Nội dung bài viết không được để trống",
+      "contentMinLength": "Nội dung bài viết phải có ít nhất 3 ký tự",
+      "descriptionRequired": "Mô tả bài viết không được để trống",
+      "descriptionMinLength": "Mô tả bài viết phải có ít nhất 3 ký tự",
+      "thumbnailRequired": "Hình ảnh bài viết không được để trống",
+      "thumbnailMinLength": "Hình ảnh bài viết phải có ít nhất 3 ký tự",
+      "statusRequired": "Trạng thái bài viết không được để trống",
+      "statusMinLength": "Trạng thái bài viết phải có ít nhất 3 ký tự",
+      "validationError": "Vui lòng kiểm tra lại thông tin"
     }
   }
 }

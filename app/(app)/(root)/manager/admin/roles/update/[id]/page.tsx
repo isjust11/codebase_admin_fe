@@ -3,7 +3,7 @@
 import RoleForm from "../../components/RoleForm";
 
 
-export default function CreateRole() {
+export default function UpdateRole() {
   return (
     <RoleForm />
   )

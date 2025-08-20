@@ -85,7 +85,7 @@ import "@/components/tiptap-templates/simple/simple-editor.scss"
 import { AlignEndVertical, AlignHorizontalJustifyCenter, AlignStartVertical, FileImage } from "lucide-react"
 
 import { Modal } from "@/components/ui/modal"
-import { useModal } from "@/hooks/useModal"
+import { useState, useEffect } from "react"
 // const { isOpen, openModal, closeModal } = useModal();
 const ImageAlignButton = ({
   align,
@@ -113,13 +113,14 @@ const MainToolbarContent = ({
   onHighlighterClick,
   onLinkClick,
   isMobile,
+  onMediaClick,
 }: {
   onHighlighterClick: () => void
   onLinkClick: () => void
   isMobile: boolean
+  onMediaClick: () => void
 }) => {
   const { editor } = useCurrentEditor()
-  const [mediaOpen, setMediaOpen] = React.useState(false)
 
   return (
     <>
@@ -189,23 +190,9 @@ const MainToolbarContent = ({
         </>
       )}
 
-      <Button onClick={() => setMediaOpen(true)}>
+      <Button onClick={onMediaClick}>
         <FileImage size={16} className="text-gray-600"/> Thư viện
       </Button>
-      <Modal isOpen={mediaOpen} onClose={()=>setMediaOpen(false)} className="max-h-9/10 w-3/4">
-        <div className="d-flex px-20 justify-center mx-10">
-        <MediaManager
-          onSelect={media => {
-            if (!editor) return
-            const url = Array.isArray(media) ? media[0]?.url || media[0]?.path : media?.url || media?.path
-            if (url) editor.chain().focus().setImage({ src: process.env.NEXT_PUBLIC_API_URL + url }).run()
-            setMediaOpen(false)
-          }}
-          multiple={false}
-        />
-        </div>
-     
-      </Modal>
 
       <Spacer />
 
@@ -259,6 +246,7 @@ export function SimpleEditor({
   const [mobileView, setMobileView] = React.useState<
     "main" | "highlighter" | "link"
   >("main")
+  const [mediaOpen, setMediaOpen] = React.useState(false)
   const [rect, setRect] = React.useState<
     Pick<DOMRect, "x" | "y" | "width" | "height">
   >({
@@ -268,6 +256,7 @@ export function SimpleEditor({
     height: 0,
   })
   const toolbarRef = React.useRef<HTMLDivElement>(null)
+  const lastContentRef = React.useRef<string>(initialContent)
 
   React.useEffect(() => {
     const updateRect = () => {
@@ -335,7 +324,11 @@ export function SimpleEditor({
     content: initialContent,
     onUpdate: ({ editor }) => {
       const updatedContent = editor.getHTML()
-      onContentChange(updatedContent)
+      // Only call onContentChange if content actually changed
+      if (updatedContent !== lastContentRef.current) {
+        lastContentRef.current = updatedContent
+        onContentChange(updatedContent)
+      }
     },
   })
 
@@ -395,6 +388,7 @@ export function SimpleEditor({
             onHighlighterClick={() => setMobileView("highlighter")}
             onLinkClick={() => setMobileView("link")}
             isMobile={isMobile}
+            onMediaClick={() => setMediaOpen(true)}
           />
         ) : (
           <MobileToolbarContent
@@ -412,6 +406,26 @@ export function SimpleEditor({
           className="simple-editor-content"
         />
       </div>
+
+      {/* Move Modal outside of toolbar to prevent re-renders */}
+      <Modal isOpen={mediaOpen} onClose={() => setMediaOpen(false)} className="max-h-9/10 w-3/4">
+        <div className="d-flex px-20 justify-center mx-10">
+          <MediaManager
+            onSelect={media => {
+              if (!editor) return
+              const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
+              const urls = Array.isArray(media) 
+                ? media.map(m => baseUrl + (m.url || m.path))
+                : [baseUrl + (media?.url || media?.path)]
+              if (urls.length > 0) {
+                editor.chain().focus().setImage({ src: urls[0] }).run()
+              }
+              setMediaOpen(false)
+            }}
+            multiple={true}
+          />
+        </div>
+      </Modal>
     </EditorContext.Provider>
   )
 }

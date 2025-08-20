@@ -5,12 +5,11 @@ import { login, register, logout, isAuthenticated, getCurrentUser, getFeature, g
 import { useRouter } from 'next/navigation';
 import { User } from '@/types/user';
 import { Feature } from '@/types/feature';
-import { Permission } from '@/types/permission';
 
 interface AuthContextType {
   user: User | null;
   feature: Feature[];
-  permissions: Permission[];
+  permissions: string[];
   loading: boolean;
   error: string | null;
   isLoggedIn: boolean;
@@ -38,7 +37,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
-  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [permissions, setPermissions] = useState<string[]>([]);
 
   const checkAuthAndRedirect = async () => {
     try {
@@ -46,10 +45,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isAuth) {
         const currentUser = getCurrentUser();
         const feature = getFeature();
-        const permissions = getPermissionsStorage();
+        const permissionsStorage = getPermissionsStorage();
         setUser(currentUser);
         setFeature(feature || []);
-        setPermissions(permissions || []);
+        setPermissions(permissionsStorage || []);
         setIsLoggedIn(true);
       } else {
         setUser(null);
@@ -90,11 +89,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const hasResourcePermission = (resource: string) => {
-    return permissions.some(p => p.resource === resource);
+    return permissions.some(p => p === resource);
   };
 
   const hasPermission = (permission: string) => {
-    return permissions.some(p => p.code === permission);
+    return permissions.some(p => p === permission);
   };
 
   const handleRegister = async (username: string, password: string, fullName?: string, email?: string) => {
