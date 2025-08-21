@@ -206,6 +206,7 @@ export const getRoles = async (params?: PaginationParams): Promise<PaginatedResp
   }
 };
 
+
 export const getRole = async (id: string): Promise<Role> => {
   const response = await axiosApi.get(`/roles/${id}`);
   return response.data;
@@ -396,5 +397,10 @@ export const removeRolePermissions = async (roleId: string, permissionIds: strin
 export const getRolePermissionStats = async (roleId: string): Promise<any> => {
   const response = await axiosApi.get(`/roles/${roleId}/permissions/stats`);
   return response.data;
+};
+
+export const hasPermissionByCode = async (permission: string): Promise<boolean> => {
+  const response = await axiosApi.get(`/permissions/has-permission?permission=${permission}`);
+  return response.status === 200;
 };
 

@@ -1,10 +1,11 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { login, register, logout, isAuthenticated, getCurrentUser, getFeature, getPermissionsStorage } from '@/services/auth-api';
+import { login, register, logout, isAuthenticated, getCurrentUser, getFeature, getPermissionsStorage, hasPermissionByCode } from '@/services/auth-api';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types/user';
 import { Feature } from '@/types/feature';
+import { AppRoutes } from '@/constants';
 
 interface AuthContextType {
   user: User | null;
@@ -48,18 +49,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         const permissionsStorage = getPermissionsStorage();
         setUser(currentUser);
         setFeature(feature || []);
-        setPermissions(permissionsStorage || []);
+        setPermissions(permissions);
         setIsLoggedIn(true);
       } else {
         setUser(null);
         setIsLoggedIn(false);
-        router.push('/login');
+        router.push(AppRoutes.Auth.Login);
       }
     } catch (_error) {
       console.error('có lỗi trong quá trình thực hiện: ', error);
       setUser(null);
       setIsLoggedIn(false);
-      router.push('/login');
+      router.push(AppRoutes.Auth.Login);
     } finally {
       setLoading(false);
     }
@@ -120,7 +121,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(null);
     setFeature([]);
     setIsLoggedIn(false);
-    router.push('/login');
+    router.push(AppRoutes.Auth.Login);
   };
 
   const value = {
