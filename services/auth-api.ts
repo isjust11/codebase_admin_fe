@@ -1,4 +1,4 @@
-import { AppConstants } from '@/constants';
+import { AppApi, AppConstants, AppRoutes } from '@/constants';
 import axiosApi from './base/api';
 import { CreatePermissionDto, CreateRoleDto, Permission, UpdatePermissionDto, UpdateRoleDto } from '@/types/permission';
 import { Role } from '@/types/role';
@@ -36,7 +36,7 @@ export const refreshToken = async (): Promise<RefreshTokenResponse> => {
       throw new Error('Không tìm thấy refresh token');
     }
 
-    const response = await axiosApi.post('/auth/refresh-token', {
+    const response = await axiosApi.post(AppApi.Auth.RefreshToken, {
       refreshToken,
     });
 
@@ -72,7 +72,7 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
 // đăng ký tài khoản
 export const register = async (data: RegisterData): Promise<any> => {
   try {
-    const response = await axiosApi.post(`/auth/register`, data);
+    const response = await axiosApi.post(AppApi.Auth.Register, data);
     return response.data;
   } catch (_error) {
     console.error('Lỗi đăng ký:', _error);
@@ -89,7 +89,7 @@ export const logout = (): void => {
 
 export const verifyEmail = async (token: string): Promise<AuthResponse> => {
   try {
-    const response = await axiosApi.get(`/auth/verify-email?token=${token}`);
+    const response = await axiosApi.get(`${AppApi.Auth.VerifyEmail}?token=${token}`);
     return response.data;
   } catch (_error) {
     console.error('Lỗi xác thực email:', _error);
@@ -99,7 +99,7 @@ export const verifyEmail = async (token: string): Promise<AuthResponse> => {
 
 export const forgotPassword = async (username: string): Promise<any> => {
   try {
-    const response = await axiosApi.get(`/auth/forgot-password?username=${username}`);
+    const response = await axiosApi.get(`${AppApi.Auth.ForgotPassword}?username=${username}`);
     return response.data;
   } catch (_error) {
     console.error('Lỗi quên mật khẩu:', _error);
@@ -109,7 +109,7 @@ export const forgotPassword = async (username: string): Promise<any> => {
 
 export const verifyResetPassword = async (token: string, password: string): Promise<any> => {
   try {
-    const response = await axiosApi.post(`/auth/reset-password`, { token, password });
+    const response = await axiosApi.post(`${AppApi.Auth.ResetPassword}`, { token, password });
     return response.data;
   } catch (_error) {
     console.error('Lỗi xác thực mật khẩu:', _error);
@@ -130,7 +130,7 @@ export const resendEmail = async (email: string): Promise<AuthResponse> => {
 // kiểm tra token hợp lệ
 export const validateToken = async (token: string): Promise<boolean> => {
   try {
-    const response = await axiosApi.get(`/auth/validate-token?token=${token}`);
+    const response = await axiosApi.get(`${AppApi.Auth.ValidateToken}?token=${token}`);
     return response.status === 200;
   } catch (error) {
     return false;

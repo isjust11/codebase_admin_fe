@@ -46,10 +46,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (isAuth) {
         const currentUser = getCurrentUser();
         const feature = getFeature();
-        const permissions = getPermissionsStorage();
+        const permissionsStorage = getPermissionsStorage();
         setUser(currentUser);
         setFeature(feature || []);
-        setPermissions(permissions);
+        setPermissions(permissionsStorage || []);
         setIsLoggedIn(true);
       } else {
         setUser(null);

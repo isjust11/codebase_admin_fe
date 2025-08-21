@@ -10,7 +10,7 @@ import { DataTable } from '@/components/DataTable';
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { createCategory, deleteCategory, getAllCategoryTypes, getCategories, updateCategory } from '@/services/manager-api';
+import { createCategory, deleteCategory, getAllCategoryTypes, getCategories, updateCategory, updateCategoryStatus } from '@/services/manager-api';
 import { CategoryType } from '@/types/category-type';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Category } from '@/types/category';
@@ -286,7 +286,7 @@ export default function CategoriesManagement() {
   }
 
   const handleChangeStatus = async (category: Category) => {
-    await updateCategory(category.id, { isActive: !category.isActive });
+    await updateCategoryStatus(category.id, { isActive: !category.isActive });
     await fetchData();
     toast.success(t('messages.updateSuccess'));
   };

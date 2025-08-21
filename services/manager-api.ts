@@ -199,6 +199,17 @@ export const updateCategory = async (id: string, data: any): Promise<any> => {
   }
 };
 
+export const updateCategoryStatus = async (id: string, data: any): Promise<any> => {
+
+  try {
+    const response = await axiosApi.put(`/categories/update-status/${id}`, data);
+    return response.data;
+  } catch (_error) {
+    console.error('Error updating category status:', _error);
+    throw _error;
+  }
+};
+
 export const deleteCategory = async (id: string): Promise<void> => {
   try {
     await axiosApi.delete(`/categories/${id}`);

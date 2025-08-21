@@ -1,4 +1,4 @@
-import { AppConstants, AppRoutes } from '@/constants';
+import { AppApi, AppConstants, AppRoutes } from '@/constants';
 import axios from 'axios';
 
 export const axiosInstance = axios.create({
@@ -35,7 +35,7 @@ axiosInstance.interceptors.response.use(
       const refreshToken = localStorage.getItem(AppConstants.RefreshToken);
       if (refreshToken) {
         try {
-          const response = await axiosInstance.post(AppRoutes.Auth.RefreshToken, {
+          const response = await axiosInstance.post(AppApi.Auth.RefreshToken, {
             refreshToken,
           });
           localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);
