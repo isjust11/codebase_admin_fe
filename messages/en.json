@@ -987,6 +987,8 @@
     "published": "Published",
     "titlePlaceholder": "Enter article title",
     "statusPlaceholder": "Select status",
+    "category": "Category",
+    "categoryPlaceholder": "Select category",
     "messages": {
       "deleteTitle": "Delete article",
       "deleteDescription": "Are you sure you want to delete this article?",
@@ -998,8 +1000,6 @@
       "updateError": "Error updating article",
       "createError": "Error creating article",
       "descriptionLengthError": "Description cannot be more than 500 characters",
-      "titlePlaceholder": "Enter article title",
-      "statusPlaceholder": "Select status",
       "draft": "Draft",
       "published": "Published"
     },

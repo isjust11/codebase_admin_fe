@@ -11,7 +11,7 @@ import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor
 import { Action } from '@/types/actions';
 import { Plus, Save, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mergeImageUrl } from '@/lib/utils';
+import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArticleDto } from '@/types/dto/ArticleDto';
 import { useLoading } from '@/contexts/LoadingContext';
@@ -19,6 +19,9 @@ import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { AppCategoryCode, AppRoutes } from '@/constants';
 import { z } from 'zod';
+import { Category } from '@/types/category';
+import { getCategoryByCode } from '@/services/manager-api';
+import { Icon } from '@/components/ui/icon';
 
 const articleFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
@@ -27,10 +30,10 @@ const articleFormSchema = (t: any) => z.object({
     .refine(val => val.trim() !== '', t('validation.contentRequired')),
   description: z.string().min(3, t('validation.descriptionMinLength'))
     .refine(val => val.trim() !== '', t('validation.descriptionRequired')),
-  thumbnail: z.string().min(3, t('validation.thumbnailMinLength'))
-    .refine(val => val.trim() !== '', t('validation.thumbnailRequired')),
   status: z.string().min(3, t('validation.statusMinLength'))
     .refine(val => val.trim() !== '', t('validation.statusRequired')),
+  category: z.string().min(3, t('validation.categoryMinLength'))
+    .refine(val => val.trim() !== '', t('validation.categoryRequired')),
   thumbnailFile: z.instanceof(File).optional(),
   thumbnailUrl: z.string().optional(),
 });
@@ -38,7 +41,7 @@ const articleFormSchema = (t: any) => z.object({
 const ArticleForm = () => {
   const t = useTranslations('ArticlePage');
   const tUtils = useTranslations('Utils');
-  const {user} = useAuth();
+  const { user } = useAuth();
   const { navigateTo, back } = useLoading();
   const params = useParams();
   const [loading, setLoading] = useState(false);
@@ -46,24 +49,26 @@ const ArticleForm = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [article, setArticle] = useState<ArticleDto>();
   const articleForm = articleFormSchema(t);
+  const [articleStatus, setArticleStatus] = useState<Category[]>([]);
+  const [articleType, setArticleType] = useState<Category[]>([]);
+
   const [formData, setFormData] = useState<z.infer<typeof articleForm>>(
     article ? {
       title: article.title,
       content: article.content,
       description: article.description || '',
-      thumbnail: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
+      thumbnailUrl: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
       status: article.status || 'draft',
       thumbnailFile: undefined,
-      thumbnailUrl: '',
+      category: '',
     } : {
-    title: '',
-    content: '',
-    description: '',
-    thumbnail: '',
-    status: 'draft',
-    thumbnailFile: undefined,
-    thumbnailUrl: '',
-  });
+      title: '',
+      content: '',
+      description: '',
+      status: 'draft',
+      thumbnailFile: undefined,
+      category: '',
+    });
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof articleForm>, string>>>({});
   const id = params.id?.toString();
 
@@ -74,7 +79,17 @@ const ArticleForm = () => {
       setIsEditing(true);
       loadArticle(id);
     }
+    loadCategories();
   }, []);
+
+  const loadCategories = async () => {
+    const [articleStatus, articleType] = await Promise.all([
+      getCategoryByCode(AppCategoryCode.ArticleStatus.id),
+      getCategoryByCode(AppCategoryCode.ArticleType.id)
+    ]);
+    setArticleStatus(articleStatus);
+    setArticleType(articleType);
+  }
 
   const loadArticle = async (id: string) => {
     try {
@@ -84,10 +99,10 @@ const ArticleForm = () => {
         title: article.title,
         content: article.content,
         description: article.description || '',
-        thumbnail: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
         status: article.status || 'draft',
         thumbnailFile: undefined,
-        thumbnailUrl: '',
+        thumbnailUrl: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
+        category: article.category || '',
       });
     } catch (_error) {
       toast.error(t('messages.loadError'));
@@ -97,6 +112,7 @@ const ArticleForm = () => {
 
   const handleSubmit = async () => {
     const result = await articleForm.safeParseAsync(formData);
+    console.log(result);
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
       setFormErrors({
@@ -113,7 +129,7 @@ const ArticleForm = () => {
     setFormErrors({});
     setLoading(true);
     try {
-      let thumbnail = formData.thumbnail || '';
+      let thumbnail = formData.thumbnailUrl || '';
 
       // Upload image if there's a new file selected
       if (selectedFile) {
@@ -157,6 +173,10 @@ const ArticleForm = () => {
     });
   };
 
+  const onContentChange = (e: string) => {
+    setFormData(prev => ({ ...prev, content: e }));
+  }
+
   const handleSelectStatusChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
@@ -165,18 +185,19 @@ const ArticleForm = () => {
     setFormErrors(prev => ({ ...prev, status: undefined }));
   };
 
-  const changeContent = (content: string) => {
-    setFormData(prev => ({
-      ...prev,
-      content: content,
-    }));
-  };
 
-  const handleImageChange = (field: string, value: File | null) => {
+  const handleImageChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value,
     }));
+  };
+  const handleFileChange = (field: string, value: File | null) => {
+    if (value instanceof File) {
+      setSelectedFile(value);
+    } else {
+      setSelectedFile(null);
+    }
   };
 
   const listAction: Action[] = [
@@ -213,92 +234,113 @@ const ArticleForm = () => {
                 <Label htmlFor="thumbnail" className="text-sm font-medium">{t('thumbnail')}</Label>
                 <ImageUpload
                   value={formData.thumbnailUrl}
-                  onChange={(value) => handleImageChange('thumbnail', value)}
+                  onChange={(value) => handleFileChange('thumbnailFile', value)}
                 />
               </div>
             </div>
 
             {/* Phần thông tin - chiếm 7/10 */}
             <div className="w-7/10">
-              <form className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="title">{t('title')} <span className="text-red-500">*</span></Label>
-                    <Input
-                      id="title"
-                      name="title"
-                      placeholder={t('messages.titlePlaceholder')}
-                      type="text"
-                      value={formData.title}
-                      onChange={handleChange}
-                      required
-                    />
-                    {formErrors.title && (
-                      <div className="text-red-500 text-sm">{formErrors.title}</div>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="status">{t('status')} <span className="text-red-500">*</span></Label>
-                    <Select value={formData.status} onValueChange={(value) => handleSelectStatusChange(value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('messages.statusPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent className="w-full bg-white">
-                        <SelectItem value="draft" className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
-                          <div className="flex items-center">
-                            <span className="text-sm text-gray-500">{t('draft')}</span>
+              <div className="space-y-4">
+                <Label htmlFor="title">{t('title')} <span className="text-red-500">*</span></Label>
+                <Input
+                  id="title"
+                  name="title"
+                  placeholder={t('titlePlaceholder')}
+                  type="text"
+                  value={formData.title}
+                  onChange={handleChange}
+                />
+                {formErrors.title && (
+                  <div className="text-red-500 text-sm">{formErrors.title}</div>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-4 my-4">
+                <div className="space-y-2">
+                  <Label htmlFor="status">{t('status')} <span className="text-red-500">*</span></Label>
+                  <Select value={formData.status} onValueChange={(value) => handleSelectStatusChange(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('statusPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent className="w-full bg-white">
+                      {articleType ? articleType.map((status) => (
+                        <SelectItem key={status.id} value={status.id} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
+                          <div className="flex flex-row justify-start">
+                           <Icon name={status.icon} className='text-2xl mr-2'/>
+                            <span className="text-sm text-gray-500">{status.name}</span>
                           </div>
                         </SelectItem>
-                        <SelectItem value={AppCategoryCode.ArticleStatus} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
-                          <div className="flex items-center">
-                            <span className="text-sm text-gray-500">{t('published')}</span>
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                      )) : <div 
+                      onClick={() => navigateTo(`${AppRoutes.Manager.Category}?onCreate=true`)} 
+                      className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
+                        <div className="flex items-start">
+                          <span className="text-2xl mr-2"> <Icon name="plus" /></span>
+                          <span className="text-sm text-gray-500">{tUtils('addCategory')}</span>
+                        </div>
+                      </div>}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">{t('description')} <span className="text-red-500">*</span></Label>
-                  <Input
-                    id="description"
-                    name="description"
-                    placeholder={t('descriptionPlaceholder')}
-                    type="text"
-                    value={formData.description}
-                    onChange={handleChange}
-                    maxLength={500}
+                  <Label htmlFor="status">{t('category')} <span className="text-red-500">*</span></Label>
+                  <Select value={formData.status} onValueChange={(value) => handleSelectStatusChange(value)}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t('categoryPlaceholder')} />
+                    </SelectTrigger>
+                    <SelectContent className="w-full bg-white">
+                      {articleStatus.length > 0 ? articleStatus.map((status) => (
+                        <SelectItem key={status.id} value={status.id} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
+                          <div className="flex flex-row justify-start">
+                            <span className="text-2xl mr-2"> {status.icon}</span>
+                            <span className="text-sm text-gray-500">{status.name}</span>
+                          </div>
+                        </SelectItem>
+                        )) : <div 
+                        onClick={() => navigateTo(`${AppRoutes.Manager.Category}?onCreate=true`)} 
+                      className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
+                        <div className="flex items-start cursor-pointer px-3 py-2">
+                          <Icon name="plus" className='text-2xl mr-2'/>
+                          <span className="text-sm text-gray-500">{tUtils('addCategory')}</span>
+                        </div>
+                      </div>}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="description">{t('description')} <span className="text-red-500">*</span></Label>
+                <Input
+                  id="description"
+                  name="description"
+                  placeholder={t('descriptionPlaceholder')}
+                  type="text"
+                  value={formData.description}
+                  onChange={handleChange}
+                  maxLength={500}
+                />
+                {formErrors.description && (
+                  <div className="text-red-500 text-sm">{formErrors.description}</div>
+                )}
+                <div className="text-xs text-gray-500 text-right">
+                  {formData.description?.length || 0}/500
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="content">{t('content')} <span className="text-red-500">*</span></Label>
+                <div className="ring-1 ring-gray-100/5 rounded-md shadow-sm p-2">
+                  <SimpleEditor
+                    key={article?.id || 'new'}
+                    initialContent={article?.content || ''}
+                    placeholder={t('contentPlaceholder')}
+                    onContentChange={onContentChange}
                   />
-                  {formErrors.description && (
-                    <div className="text-red-500 text-sm">{formErrors.description}</div>
+                  {formErrors.content && (
+                    <div className="text-red-500 text-sm">{formErrors.content}</div>
                   )}
-                  <div className="text-xs text-gray-500 text-right">
-                    {formData.description?.length || 0}/500
-                  </div>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="content">{t('content')} <span className="text-red-500">*</span></Label>
-                  <div className="ring-1 ring-gray-100/5 rounded-md shadow-sm p-2">
-                    <SimpleEditor
-                      key={article?.id || 'new'}
-                      initialContent={article?.content || ''}
-                      placeholder={t('contentPlaceholder')}
-                      onContentChange={(content) => {
-                        setFormData(prev => ({
-                          ...prev,
-                          content: content,
-                        }));
-                      }}
-                    />
-                    {formErrors.content && (
-                      <div className="text-red-500 text-sm">{formErrors.content}</div>
-                    )}
-                  </div>
-                </div>
-              </form>
+              </div>
             </div>
           </div>
         </ComponentCard>

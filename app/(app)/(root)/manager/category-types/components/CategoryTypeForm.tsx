@@ -25,12 +25,12 @@ import { Slider } from "@radix-ui/react-slider"
 import { Icon } from "@/components/ui/icon"
 import { useTranslations } from "next-intl";
 
-const formSchema = z.object({
+const formCategoryTypeSchema = (t: any) => z.object({
   code: z.string().min(2, {
-    message: "Mã loại phải có ít nhất 2 ký tự.",
+    message: t('validation.codeMinLength'),
   }),
   name: z.string().min(2, {
-    message: "Tên loại phải có ít nhất 2 ký tự.",
+    message: t('validation.nameMinLength'),
   }),
   description: z.string().optional(),
   iconType: z.nativeEnum(IconType).optional(),
@@ -40,17 +40,19 @@ const formSchema = z.object({
 
 interface CategoryTypeFormProps {
   initialData?: CategoryType;
-  onSubmit: (values: z.infer<typeof formSchema>) => void;
+  onSubmit: (values: any) => void;
   onCancel: () => void;
+  isView: boolean;
 }
 
-export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTypeFormProps) {
+export function CategoryTypeForm({ initialData, onSubmit, onCancel, isView }: CategoryTypeFormProps) {
   const t = useTranslations("CategoryTypesPage");
   const tUtils = useTranslations("Utils");
   const [iconSize, setIconSize] = useState(20);
   if (initialData && initialData?.icon !== null) {
     initialData.icon = unicodeToEmoji(initialData.icon ?? '');
   }
+  const formSchema = formCategoryTypeSchema(t);
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
@@ -84,9 +86,9 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
                 </FormControl>
                 <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
                   {Object.entries(AppCategoryCode).map(([key, value]) => (
-                    <SelectItem key={key} value={key} className="hover:bg-gray-100">
+                    <SelectItem key={key} value={key} className="hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300">
                       <div className="flex flex-start items-center">
-                        <span className="text-sm text-gray-500">{value}</span>
+                        <span className="text-sm text-gray-500">{value.name}</span>
                       </div>
                     </SelectItem>
                   ))}
@@ -196,9 +198,9 @@ export function CategoryTypeForm({ initialData, onSubmit, onCancel }: CategoryTy
           <Button type="button" variant="outline" onClick={onCancel}>
               {tUtils('cancel')}
           </Button>
-          <Button type="submit">
+          {!isView && (<Button type="submit" disabled={isView}>
             {initialData ? tUtils('update') : tUtils('add')}
-          </Button>
+          </Button>)}
         </div>
       </form>
       <IconPickerModal

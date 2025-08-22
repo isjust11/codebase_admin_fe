@@ -16,14 +16,14 @@ import { unicodeToEmoji } from "@/lib/utils";
 import { IconType } from "@/enums/icon-type.enum";
 import { useTranslations } from "next-intl";
 
-const formSchema = z.object({
-    name: z.string().min(2, {
-        message: "Tên loại phải có ít nhất 2 ký tự.",
+const formCategorySchema = (t: any) => z.object({
+    name: z.string().min(1, {
+        message: t('validation.nameMinLength'),
     }),
     description: z.string().optional(),
     isActive: z.boolean(),
     categoryTypeId: z.string({
-        required_error: "Vui lòng chọn loại danh mục",
+        required_error: t('validation.categoryTypeIdRequired'),
     }),
     icon: z.string().optional(),
     iconType: z.nativeEnum(IconType).optional(),
@@ -32,7 +32,7 @@ const formSchema = z.object({
 
 interface CategoryFormProps {
     initialData?: Category | null;
-    onSubmit: (values: z.infer<typeof formSchema>) => void;
+    onSubmit: (values: any) => void;
     onCancel: () => void;
     categoryTypes: CategoryType[];
 }
@@ -40,6 +40,7 @@ interface CategoryFormProps {
 export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }: CategoryFormProps) {
     const t = useTranslations("CategoriesPage");
     const tUtils = useTranslations("Utils");
+    const formSchema = formCategorySchema(t);
     if (initialData && initialData?.icon !== null) {
         initialData.icon = unicodeToEmoji(initialData.icon ?? '');
     }
@@ -126,7 +127,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                                 </FormControl>
                                 <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
                                     {categoryTypes.map((type) => (
-                                        <SelectItem key={type.id} value={type.id}>
+                                        <SelectItem key={type.id} value={type.id} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
                                             <div className="flex flex-start items-center">
                                                 <span className="text-2xl mr-2"> {type.icon && unicodeToEmoji(type.icon)}</span>
                                                 <span className="text-sm text-gray-500">{type.name}</span>

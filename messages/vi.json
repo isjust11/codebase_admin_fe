@@ -64,7 +64,7 @@
     "createError": "Lỗi khi tạo",
     "updateSuccess": "Cập nhật thành công",
     "updateError": "Lỗi khi cập nhật"
-  },
+    },
   "LocaleSwitcher": {
     "en": "English",
     "vi": "Tiếng Việt"
@@ -635,6 +635,10 @@
       "createSuccess": "Loại danh mục đã được thêm thành công",
       "updateSuccess": "Loại danh mục đã được cập nhật thành công",
       "syncSuccess": "Đồng bộ loại danh mục thành công"
+    },
+    "validation": {
+      "codeMinLength": "Mã loại danh mục phải có ít nhất 2 ký tự.",
+      "nameMinLength": "Tên loại danh mục phải có ít nhất 2 ký tự."
     }
   },
   "FolkMedicinesPage": {
@@ -1004,6 +1008,8 @@
     "published": "Đã xuất bản",
     "titlePlaceholder": "Nhập tiêu đề bài viết",
     "statusPlaceholder": "Chọn trạng thái",
+    "category": "Danh mục",
+    "categoryPlaceholder": "Chọn danh mục",
     "messages": {
       "deleteTitle": "Xóa bài viết",
       "deleteDescription": "Bạn có chắc chắn muốn xóa bài viết này không?",
@@ -1015,8 +1021,6 @@
       "updateError": "Lỗi khi cập nhật bài viết",
       "createError": "Lỗi khi tạo bài viết",
       "descriptionLengthError": "Mô tả không được quá 500 ký tự",
-      "titlePlaceholder": "Nhập tiêu đề bài viết",
-      "statusPlaceholder": "Chọn trạng thái",
       "draft": "Bản nháp",
       "published": "Đã xuất bản"
     },

@@ -7,5 +7,6 @@ export interface ArticleDto {
     thumbnail?: string;
     description?: string;
     status?: string;
+    category?: string;
   }
   

@@ -6,6 +6,7 @@ export interface Article {
     description?: string;
     slug?: string;
     status?: string;
+    category?: string;
     createdAt?: Date;
     updatedAt?: Date;
   }

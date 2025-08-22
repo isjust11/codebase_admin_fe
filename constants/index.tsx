@@ -31,18 +31,52 @@ export const AppRoutes = {
     ArticlesCreate: '/manager/articles/create',
     ArticlesUpdate: '/manager/articles/update',
     ArticlesDetail: '/manager/articles',
+    Category:'/manager/category'
   }
 }
 export const AppCategoryCode = {
-  FeatureType: 'Menu chức năng',
-  FoodCategory: 'Danh mục món ăn',
-  FoodType: 'Loại món ăn',
-  FoodStatus:'Trạng thái món ăn',
-  FoodUnit: 'Đơn vị món ăn',
-  TableType: 'Loại bàn',
-  TableStatus: 'Trạng thái bàn',
-  TableArea: 'Khu vực bàn',
-  FolkMedicine: 'FolkMedicine',
-  FEATURE_MENU: 'FEATURE_MENU',
-  ArticleStatus: 'Trạng thái bài viết',
+  FeatureType: {
+    id: 'FeatureType',
+    name: 'Menu chức năng',
+  },
+  FoodCategory: {
+    id: 'FoodCategory',
+    name: 'Danh mục món ăn',
+  },
+  FoodType: {
+    id: 'FoodType',
+    name: 'Loại món ăn',
+  },
+  FoodStatus: {
+    id: 'FoodStatus',
+    name: 'Trạng thái món ăn',
+  },
+  FoodUnit: {
+    id: 'FoodUnit',
+    name: 'Đơn vị món ăn',
+  },
+  TableType: {
+    id: 'TableType',
+    name: 'Loại bàn',
+  },
+  TableStatus: {
+    id: 'TableStatus',
+    name: 'Trạng thái bàn',
+  },
+  TableArea: {
+    id: 'TableArea',
+    name: 'Khu vực bàn',
+  },
+  FolkMedicine: {
+    id: 'FolkMedicine',
+    name: 'FolkMedicine',
+  },
+  ArticleStatus: {
+    id: 'ArticleStatus',
+    name: 'Trạng thái bài viết',
+  },
+  ArticleType: {
+    id: 'ArticleType',
+    name: 'Loại bài viết',
+  },
 }
