@@ -3,10 +3,12 @@ export interface Article {
     title: string;
     content: string;
     thumbnail?: string;
-    description?: string;
+    summary?: string;
     slug?: string;
-    status?: string;
-    category?: string;
+    statusId?: string;
+    categoryId?: string;
+    createdBy?: string;
+    updatedBy?: string;
     createdAt?: Date;
     updatedAt?: Date;
   }

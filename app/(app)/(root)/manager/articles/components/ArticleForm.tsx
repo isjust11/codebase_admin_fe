@@ -27,9 +27,9 @@ const articleFormSchema = (t: any) => z.object({
     .refine(val => val.trim() !== '', t('validation.titleRequired')),
   content: z.string().min(3, t('validation.contentMinLength'))
     .refine(val => val.trim() !== '', t('validation.contentRequired')),
-  description: z.string().min(3, t('validation.descriptionMinLength')),
-  status: z.string().refine(val => val.trim() !== '', t('validation.statusRequired')),
-  category: z.string().refine(val => val.trim() !== '', t('validation.categoryRequired')),
+  summary: z.string().min(3, t('validation.summaryMinLength')),
+  statusId: z.string().refine(val => val.trim() !== '', t('validation.statusRequired')),
+  categoryId: z.string().refine(val => val.trim() !== '', t('validation.categoryRequired')),
   thumbnailFile: z.instanceof(File).optional(),
   thumbnailUrl: z.string().optional(),
 });
@@ -52,18 +52,18 @@ const ArticleForm = () => {
     article ? {
       title: article.title,
       content: article.content,
-      description: article.description || '',
+      summary: article.summary || '',
       thumbnailUrl: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
-      status: article.status || 'draft',
+      statusId: article.statusId || '',
       thumbnailFile: undefined,
-      category: '',
+      categoryId: '',
     } : {
       title: '',
       content: '',
-      description: '',
-      status: 'draft',
+      summary: '',
+      statusId: 'draft',
       thumbnailFile: undefined,
-      category: '',
+      categoryId: '',
     });
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof articleForm>, string>>>({});
   const id = params.id?.toString();
@@ -94,11 +94,11 @@ const ArticleForm = () => {
       setFormData({
         title: article.title,
         content: article.content,
-        description: article.description || '',
-        status: article.status || 'draft',
+        summary: article.summary || '',
+        statusId: article.statusId || '',
         thumbnailFile: undefined,
         thumbnailUrl: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
-        category: article.category || '',
+        categoryId: article.categoryId || '',
       });
     } catch (_error) {
       toast.error(t('messages.loadError'));
@@ -114,7 +114,7 @@ const ArticleForm = () => {
       setFormErrors({
         title: fieldErrors.title?.[0],
         content: fieldErrors.content?.[0],
-        description: fieldErrors.description?.[0],
+        summary: fieldErrors.summary?.[0],
         thumbnail: fieldErrors.thumbnail?.[0],
         status: fieldErrors.status?.[0],
         thumbnailFile: fieldErrors.thumbnailFile?.[0],
@@ -135,8 +135,10 @@ const ArticleForm = () => {
 
       const submitData = {
         ...formData,
-        authorId: user?.id || '', // Sử dụng ID của người dùng hiện tại
-        // Nếu là URL đầy đủ, chuyển về đường dẫn tương đối trước khi lưu
+        createdBy: user?.id || '',
+        statusId: formData.statusId,
+        categoryId: formData.categoryId,
+        updatedBy: user?.id || '', 
         thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : thumbnail,
       };
 
@@ -176,17 +178,17 @@ const ArticleForm = () => {
   const handleSelectStatusChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      status: value,
+      statusId: value,
     }));
-    setFormErrors(prev => ({ ...prev, status: undefined }));
+    setFormErrors(prev => ({ ...prev, statusId: undefined }));
   };
 
   const handleSelectCategoryChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      category: value,
+      categoryId: value,
     }));
-    setFormErrors(prev => ({ ...prev, category: undefined }));
+    setFormErrors(prev => ({ ...prev, categoryId: undefined }));
   };
 
   const handleFileChange = (field: string, value: File | null) => {
@@ -257,14 +259,14 @@ const ArticleForm = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="category">{t('category')}</Label>
-                    <Select value={formData.category} onValueChange={(value) => handleSelectCategoryChange(value)}>
+                    <Select value={formData.categoryId} onValueChange={(value) => handleSelectCategoryChange(value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('categoryPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white">
                         {
                           articleType?.length > 0 ? articleType.map((item) => (
-                            <SelectItem key={item.id} value={item.code} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
+                            <SelectItem key={item.id} value={item.id} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
                               <div className="flex items-center">
                                 <div className="text-sm text-gray-500">{item.name}</div>
                               </div>
@@ -280,25 +282,25 @@ const ArticleForm = () => {
                             </div>
                         }
                       </SelectContent>
-                      {formErrors.category && (
-                        <div className="text-red-500 text-sm">{formErrors.category}</div>
+                      {formErrors.categoryId && (
+                        <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
                       )}
                     </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="status">{t('status')}</Label>
-                    <Select value={formData.status} onValueChange={(value) => handleSelectStatusChange(value)}>
+                    <Select value={formData.statusId} onValueChange={(value) => handleSelectStatusChange(value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('statusPlaceholder')} />
-                        {formErrors.status && (
-                          <div className="text-red-500 text-sm">{formErrors.status}</div>
+                        {formErrors.statusId && (
+                          <div className="text-red-500 text-sm">{formErrors.statusId}</div>
                         )}
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white">
                         {
                           articleStatus?.length > 0 ? articleStatus.map((item) => (
-                            <SelectItem key={item.id} value={item.code} className='hover:bg-gray-100 
+                            <SelectItem key={item.id} value={item.id} className='hover:bg-gray-100 
                         dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 cursor-pointer'>
                               <div className="flex items-center">
                                 <span className="text-sm text-gray-500">{item.name}</span>
@@ -318,32 +320,32 @@ const ArticleForm = () => {
                       </SelectContent>
 
                     </Select>
-                    {formErrors.status && (
-                      <div className="text-red-500 text-sm">{formErrors.status}</div>
+                    {formErrors.statusId && (
+                      <div className="text-red-500 text-sm">{formErrors.statusId}</div>
                     )}
                   </div>
                 </div>
 
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">{t('description')}</Label>
+                  <Label htmlFor="summary">{t('summary')}</Label>
                   <Input
-                    id="description"
-                    name="description"
-                    placeholder={t('descriptionPlaceholder')}
+                    id="summary"
+                    name="summary"
+                    placeholder={t('summaryPlaceholder')}
                     type="text"
-                    value={formData.description}
+                    value={formData.summary}
                     onChange={handleChange}
                     maxLength={500}
                   />
                   <div className="flex justify-between">
                     <div className="text-xs text-gray-500">
-                      {formErrors.description && (
-                        <div className="text-red-500 text-sm">{formErrors.description}</div>
+                      {formErrors.summary && (
+                        <div className="text-red-500 text-sm">{formErrors.summary}</div>
                       )}
                     </div>
                     <div className="text-xs text-gray-500">
-                      {formData.description?.length || 0}/500
+                      {formData.summary?.length || 0}/500
                     </div>
                   </div>
                 </div>

@@ -18,6 +18,7 @@ import { Action } from '@/types/actions';
 import { Article } from '@/types/article';
 import { useTranslations } from 'next-intl';
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
+import { Category } from '@/types/category';
 
 export default function ArticlesManagement() {
   
@@ -138,13 +139,13 @@ export default function ArticlesManagement() {
       },
     },
     {
-      accessorKey: "description",
-      header: t('description'),
+      accessorKey: "summary",
+      header: t('summary'),
       cell: ({ row }) => {
-        const description = row.getValue("description") as string
+        const summary = row.getValue("summary") as string
         return (
           <div className="text-sm text-gray-500 max-w-xs truncate">
-            {description || 'Không có mô tả'}
+            {summary || 'Không có mô tả'}
           </div>
         )
       }
@@ -153,15 +154,23 @@ export default function ArticlesManagement() {
       accessorKey: "status",
       header: t('status'),
       cell: ({ row }) => {
-        const status = row.getValue("status") as string
+        const status = row.getValue("status") as Category
         return (
-          <Badge className={`capitalize px-2 py-1 rounded-full text-xs ${
-            status === 'published' ? 'bg-green-100 text-green-800' : 
-            status === 'draft' ? 'bg-yellow-100 text-yellow-800' : 
-            'bg-gray-100 text-gray-800'
-          }`}>
-            {status || tUtils('unknown')}
-          </Badge>
+          <div className="text-sm text-gray-500">
+            {status?.name || tUtils('unknown')}
+          </div>
+        )
+      },
+    },
+    {
+      accessorKey: "category",
+      header: t('category'),
+      cell: ({ row }) => {
+        const category = row.getValue("category") as Category
+        return (
+          <div className="text-sm text-gray-500">
+            {category?.name || tUtils('unknown')}
+          </div>
         )
       },
     },

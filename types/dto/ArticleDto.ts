@@ -1,12 +1,13 @@
 
 export interface ArticleDto {
     id?: string;
-    authorId?: string;
+    createdBy?: string;
+    updatedBy?: string;
     title: string;
     content: string;
     thumbnail?: string;
-    description?: string;
-    status?: string;
-    category?: string;
+    summary?: string;
+    statusId?: string;
+    categoryId?: string;
   }
   
