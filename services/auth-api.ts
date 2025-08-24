@@ -57,7 +57,7 @@ export const refreshToken = async (): Promise<RefreshTokenResponse> => {
 export const login = async (data: LoginData): Promise<AuthResponse> => {
   try {
     console.log('run login', data);
-    const response = await axiosApi.post(`/auth/login`, data);
+    const response = await axiosApi.post(AppRoutes.Auth.Login, data);
     // lưu trữ token vào localStorage
     localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);
     localStorage.setItem(AppConstants.RefreshToken, response.data.refreshToken);
@@ -119,7 +119,7 @@ export const verifyResetPassword = async (token: string, password: string): Prom
 
 export const resendEmail = async (email: string): Promise<AuthResponse> => {
   try {
-    const response = await axiosApi.post(`/auth/resend-email`, { email });
+    const response = await axiosApi.post(`${AppRoutes.Auth.ResendEmail}`, { email });
     return response.data;
   } catch (_error) {
     console.error('Lỗi gửi email xác thực:', _error);

@@ -2,9 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, RefreshCcw } from 'lucide-react';
+import { Plus, Pencil, Trash, ArrowDown, ArrowUp, MoreHorizontal, RefreshCcw, ArrowLeftRight, Info } from 'lucide-react';
 import { CategoryType } from '@/types/category-type';
-import { useLoading } from '@/contexts/LoadingContext';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
@@ -22,20 +21,20 @@ import { unicodeToEmoji } from '@/lib/utils';
 import { IconType } from '@/enums/icon-type.enum';
 import { Icon } from '@/components/ui/icon';
 import { useTranslations } from 'next-intl';
+import { AlertDialogUtils } from '@/components/AlertDialogUtils';
 
-
-
-export default function CategoryTypesManagement() { 
+export default function CategoryTypesManagement() {
   const t = useTranslations("CategoryTypesPage");
-  const tUtils = useTranslations("Utils");  
+  const tUtils = useTranslations("Utils");
   const [categoryTypes, setCategoryTypes] = useState<CategoryType[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedCategoryType, setSelectedCategoryType] = useState<CategoryType>();
-  const { isOpen, openModal, closeModal } = useModal();
+  const { isOpen, openModal, closeModal,isView,openViewModal } = useModal();
   const [pageCount, setPageCount] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
+  const [isOpenAlert, setIsOpenAlert] = useState(false);
   const listAction: Action[] = [
     {
       icon: <RefreshCcw className="w-4 h-4 mr-2" />,
@@ -150,23 +149,7 @@ export default function CategoryTypesManagement() {
       header: t('actions'),
       cell: ({ row }) => {
         const categoryType = row.original
-        const handleDelete = async (id: string) => {
-          try {
-            await deleteCategoryType(id);
-            toast.success(t('messages.deleteSuccess'));
-            try {
-              fetchData(); // Refresh data after deletion
-              setLoading(true);
-            } catch (error) {
-              console.error('Error fetching data:', error);
-              toast.error(t('messages.loadError'));
-            } finally {
-              setLoading(false);
-            }
-          } catch (_error) {
-            toast.error(t('messages.deleteError'));
-          }
-        }
+
         return (
           <div className="p-2 ">
             <DropdownMenu>
@@ -177,16 +160,36 @@ export default function CategoryTypesManagement() {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
-                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-gray-500 dark:text-white'
+                  onClick={() => {
+                    setSelectedCategoryType(categoryType);
+                    openViewModal();
+                  }}
+                >
+                  <Info className="mr-2 h-4 w-4 text-gray-500 dark:text-white" />
+                  {tUtils('viewDetail')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/10 text-violet-500 dark:text-white'
+                  onClick={() => {
+                    handleChangeStatus(categoryType)
+                  }}
+                >
+                  <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
+                  {categoryType.isActive ? t('inactive') : t('active')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-blue-500'
                   onClick={() => {
                     setSelectedCategoryType(categoryType);
                     openModal();
                   }}
                 >
-                  <Pencil className="mr-2 h-4 w-4" />
+                  <Pencil className="mr-2 h-4 w-4 text-blue-500" />
                   {t('edit')}
                 </DropdownMenuItem>
-                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleDelete(categoryType.id)}>
+                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => {
+                  setSelectedCategoryType(categoryType);
+                  setIsOpenAlert(true);
+                }}>
                   <Trash className="mr-2 h-4 w-4" />
                   {t('delete')}
                 </DropdownMenuItem>
@@ -206,6 +209,12 @@ export default function CategoryTypesManagement() {
     await syncCategoryType();
     await fetchData();
     toast.success(t('messages.syncSuccess'));
+  }
+
+  const handleChangeStatus = async (categoryType: CategoryType) => {
+    await updateCategoryType(categoryType.id, { isActive: !categoryType.isActive });
+    await fetchData();
+    toast.success(t('messages.updateSuccess'));
   }
 
   const handleSearch = (searchValue: string) => {
@@ -252,6 +261,18 @@ export default function CategoryTypesManagement() {
     }
   }
 
+  const handleConfirm = async () => {
+    try {
+      await deleteCategoryType(selectedCategoryType?.id || '');
+      await fetchData();
+      toast.success(t('messages.deleteSuccess'));
+    } catch (error) {
+      toast.error(t('messages.deleteError'));
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <div>
       <PageBreadcrumb pageTitle={t('pageTitle')} />
@@ -269,15 +290,24 @@ export default function CategoryTypesManagement() {
             modalSize='2xl'
           >
             <h4 className="font-semibold text-gray-800 mb-7 text-title-sm dark:text-white/90">
-              {selectedCategoryType ? t('update') : t('add')}
+              {isView ? tUtils('viewDetail') : selectedCategoryType ? t('update') : t('add')}
             </h4>
             <CategoryTypeForm
               initialData={selectedCategoryType}
+              isView = {isView}
               onSubmit={handleSave}
               onCancel={closeModal}
             />
           </Modal>
         </ComponentCard>
+        <AlertDialogUtils
+          isOpen={isOpenAlert}
+          onConfirm={handleConfirm}
+          title={tUtils('warning')}
+          content={tUtils('deleteConfirm', { name: selectedCategoryType?.name || '' })}
+          confirmText={tUtils('confirm')}
+          cancelText={tUtils('cancel')}
+        />
       </div>
     </div>
   );

@@ -27,6 +27,11 @@ export const AppRoutes = {
     TablesUpdate: '/manager/tables/update',
     TablesDetail: '/manager/tables',
     TablesQrCodes: '/manager/tables/qrcodes',
+    Articles: '/manager/articles',
+    ArticlesCreate: '/manager/articles/create',
+    ArticlesUpdate: '/manager/articles/update',
+    ArticlesDetail: '/manager/articles',
+    Category:'/manager/category'
   }
 }
 export const AppApi = {

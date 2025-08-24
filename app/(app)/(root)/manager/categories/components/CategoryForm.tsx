@@ -16,14 +16,14 @@ import { unicodeToEmoji } from "@/lib/utils";
 import { IconType } from "@/enums/icon-type.enum";
 import { useTranslations } from "next-intl";
 
-const formSchema = z.object({
-    name: z.string().min(2, {
-        message: "Tên loại phải có ít nhất 2 ký tự.",
+const formCategorySchema = (t: any) => z.object({
+    name: z.string().min(1, {
+        message: t('validation.nameMinLength'),
     }),
     description: z.string().optional(),
     isActive: z.boolean(),
     categoryTypeId: z.string({
-        required_error: "Vui lòng chọn loại danh mục",
+        required_error: t('validation.categoryTypeIdRequired'),
     }),
     icon: z.string().optional(),
     iconType: z.nativeEnum(IconType).optional(),
@@ -32,7 +32,7 @@ const formSchema = z.object({
 
 interface CategoryFormProps {
     initialData?: Category | null;
-    onSubmit: (values: z.infer<typeof formSchema>) => void;
+    onSubmit: (values: any) => void;
     onCancel: () => void;
     categoryTypes: CategoryType[];
     selectedType?: CategoryType | null;
@@ -41,6 +41,7 @@ interface CategoryFormProps {
 export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, selectedType }: CategoryFormProps) {
     const t = useTranslations("CategoriesPage");
     const tUtils = useTranslations("Utils");
+    const formSchema = formCategorySchema(t);
     if (initialData && initialData?.icon !== null) {
         initialData.icon = unicodeToEmoji(initialData.icon ?? '');
     }

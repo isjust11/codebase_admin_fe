@@ -167,12 +167,14 @@ export default function FeaturePage() {
         const parentId = row.original.parentId;
         return (
           parentId ?
-            <Link
-              href={link ?? '#'}
-              className='text-sm text-blue-400'
+            <div
+              onClick={() => {
+                navigateTo(link);
+              }}
+              className='text-sm text-blue-400 cursor-pointer'
             >
               {link ?? ''}
-            </Link>
+            </div>
             :
             <div className='text-sm text-gray-500'>
               {link ?? ''}

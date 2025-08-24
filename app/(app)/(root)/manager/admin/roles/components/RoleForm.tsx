@@ -30,9 +30,9 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
   const [formValues, setFormValues] = useState<any>(null);
   const [assignFeatures, setAssignFeatures] = useState<string[]>([]);
   const id = params.id as string;
-  const formRef = useRef<{ validate: () => boolean }>(null);
+  const formRef = useRef<{ validate: () => Promise<boolean> }>(null);
   const title = isView ? t('viewDetail') : (id ? t('updateRole') : t('addRole'));
-  
+
   useEffect(() => {
     if (id) {
       setIsEditing(true);
@@ -44,7 +44,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
     try {
       const roleData = await getRole(id);
       setRole(roleData);
-      setAssignFeatures(roleData.features?.map(item => item.id)??[]);
+      setAssignFeatures(roleData.features?.map(item => item.id) ?? []);
     } catch (_error) {
       toast.error(t('cannotLoadRoleInformation'));
       navigateTo('/manager/admin/roles');
@@ -52,7 +52,9 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
   };
 
   const handleSubmit = async () => {
-    if (!formRef.current?.validate()) {
+    console.log('formRef: ', formRef);
+    const isValid = await formRef.current?.validate();
+    if (!isValid) {
       toast.error(t('pleaseFillAllInformation'));
       return;
     }
@@ -79,7 +81,7 @@ const RoleForm = ({ isView = false }: RoleFormProps) => {
   };
 
   const handleChangeLstAssign = (
-   values: any[] | string[],
+    values: any[] | string[],
   ) => {
     setAssignFeatures(values);
     setFormValues((prev: any) => ({
