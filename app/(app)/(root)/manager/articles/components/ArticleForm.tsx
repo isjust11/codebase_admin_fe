@@ -9,7 +9,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Action } from '@/types/actions';
-import { Plus, Save, X } from 'lucide-react';
+import { Loader2, Plus, PlusIcon, Save, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { mergeImageUrl } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
@@ -18,23 +18,29 @@ import { useLoading } from '@/contexts/LoadingContext';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { AppCategoryCode } from '@/constants';
+import { Article } from '@/types/article';
+import { getCategoryByCode } from '@/services/manager-api';
+import { Category } from '@/types/category';
 
 const ArticleForm = () => {
   const t = useTranslations('ArticlePage');
   const tUtils = useTranslations('Utils');
-  const {user} = useAuth();
+  const { user } = useAuth();
   const { navigateTo, back } = useLoading();
   const params = useParams();
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [article, setArticle] = useState<ArticleDto>();
-  const [formData, setFormData] = useState<ArticleDto>({
+  const [article, setArticle] = useState<Article>();
+  const [articleCategory, setArticleCategory] = useState<Category[]>([]);
+  const [articleStatus, setArticleStatus] = useState<Category[]>([]);
+  const [formData, setFormData] = useState<Article>({
     title: '',
     content: '',
     description: '',
     thumbnail: '',
     status: 'draft',
+    category: '',
   });
   const id = params.id?.toString();
 
@@ -45,7 +51,17 @@ const ArticleForm = () => {
       setIsEditing(true);
       loadArticle(id);
     }
+    loadCategory();
   }, []);
+
+  const loadCategory = async () => {
+    const [categoryStatus, category] = await Promise.all([
+      getCategoryByCode(AppCategoryCode.ArticleStatus.code),
+      getCategoryByCode(AppCategoryCode.ArticleType.code),
+    ]);
+    setArticleStatus(categoryStatus);
+    setArticleCategory(category);
+  };
 
   const loadArticle = async (id: string) => {
     try {
@@ -57,6 +73,7 @@ const ArticleForm = () => {
         description: article.description || '',
         thumbnail: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
         status: article.status || 'draft',
+        category: article.category || '',
       });
     } catch (_error) {
       toast.error(t('messages.loadError'));
@@ -170,38 +187,77 @@ const ArticleForm = () => {
             {/* Phần thông tin - chiếm 7/10 */}
             <div className="w-7/10">
               <form className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title">{t('title')}</Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    placeholder={t('messages.titlePlaceholder')}
+                    type="text"
+                    value={formData.title}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="title">{t('title')}</Label>
-                    <Input
-                      id="title"
-                      name="title"
-                      placeholder={t('messages.titlePlaceholder')}
-                      type="text"
-                      value={formData.title}
-                      onChange={handleChange}
-                      required
-                    />
+                    <Label htmlFor="category">{t('category')}</Label>
+                    <Select value={formData.category} onValueChange={(value) => handleSelectStatusChange(value)}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder={t('categoryPlaceholder')} />
+                      </SelectTrigger>
+                      <SelectContent className="w-full bg-white">
+                        {
+                          articleCategory?.length > 0 ? articleCategory.map((item) => (
+                            <SelectItem key={item.id} value={item.code} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
+                              <div className="flex items-center">
+                                <span className="text-sm text-gray-500">{item.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))
+                            :
+                            <div className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 p-2 cursor-pointer'
+                              onClick={() => navigateTo('/manager/categories?onCreate=true&code=' + AppCategoryCode.ArticleType.code)}>
+                              <div className="flex items-center">
+                                <PlusIcon className="h-4 w-4 mr-2 text-gray-500" />
+                                <span className="text-sm text-gray-500">{tUtils('addCategory')}</span>
+                              </div>
+                            </div>
+                        }
+                      </SelectContent>
+
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="status">{t('status')}</Label>
                     <Select value={formData.status} onValueChange={(value) => handleSelectStatusChange(value)}>
                       <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('messages.statusPlaceholder')} />
+                        <SelectValue placeholder={t('statusPlaceholder')} />
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white">
-                        <SelectItem value="draft" className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
-                          <div className="flex items-center">
-                            <span className="text-sm text-gray-500">{t('draft')}</span>
-                          </div>
-                        </SelectItem>
-                        <SelectItem value={AppCategoryCode.ArticleStatus} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
-                          <div className="flex items-center">
-                            <span className="text-sm text-gray-500">{t('published')}</span>
-                          </div>
-                        </SelectItem>
+                        {
+                          articleStatus?.length > 0 ? articleStatus.map((item) => (
+                            <SelectItem key={item.id} value={item.code} className='hover:bg-gray-100 
+                        dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 cursor-pointer'>
+                              <div className="flex items-center">
+                                <span className="text-sm text-gray-500">{item.name}</span>
+                              </div>
+                            </SelectItem>
+                          ))
+                            :
+                            <div className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 p-2'
+                              onClick={() => navigateTo('/manager/categories?onCreate=true&code=' + AppCategoryCode.ArticleStatus.code)}>
+                              <div className="flex items-center">
+                                <PlusIcon className="h-4 w-4 mr-2 text-gray-500" />
+                                <span className="text-sm text-gray-500">{tUtils('addCategory')}</span>
+                              </div>
+                            </div>
+                        }
+
                       </SelectContent>
+
                     </Select>
                   </div>
                 </div>

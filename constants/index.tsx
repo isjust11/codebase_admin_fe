@@ -42,15 +42,48 @@ export const AppApi = {
   },
 }
 export const AppCategoryCode = {
-  FeatureType: 'Menu chức năng',
-  FoodCategory: 'Danh mục món ăn',
-  FoodType: 'Loại món ăn',
-  FoodStatus:'Trạng thái món ăn',
-  FoodUnit: 'Đơn vị món ăn',
-  TableType: 'Loại bàn',
-  TableStatus: 'Trạng thái bàn',
-  TableArea: 'Khu vực bàn',
-  FolkMedicine: 'FolkMedicine',
-  FEATURE_MENU: 'FEATURE_MENU',
-  ArticleStatus: 'Trạng thái bài viết',
+  FeatureType:{
+    code: 'FeatureType',
+    name: 'Menu chức năng',
+  },
+  FoodCategory:{
+    code: 'FoodCategory',
+    name: 'Danh mục món ăn',
+  },
+  FoodType:{
+    code: 'FoodType',
+    name: 'Loại món ăn',
+  },
+  FoodStatus:{
+    code: 'FoodStatus',
+    name: 'Trạng thái món ăn',
+  },
+  FoodUnit:{
+    code: 'FoodUnit',
+    name: 'Đơn vị món ăn',
+  },
+  TableStatus:{
+    code: 'TableStatus',
+    name: 'Trạng thái bàn',
+  },
+  TableArea:{
+    code: 'TableArea',
+    name: 'Khu vực bàn',
+  },
+  FolkMedicine:{
+    code: 'FolkMedicine',
+    name: 'Dược liệu dân gian',
+  },
+  FEATURE_MENU:{
+    code: 'FEATURE_MENU',
+    name: 'Menu chức năng',
+  },
+  ArticleStatus:{
+    code: 'ArticleStatus',
+    name: 'Trạng thái bài viết',
+  },
+  ArticleType:{
+    code: 'ArticleType',
+    name: 'Loại bài viết',
+  }, 
 }

@@ -45,7 +45,6 @@ export default function CategoriesManagement() {
   const [filterByType, setFilterByType] = useState<Category[]>([]);
   const { isOpen, openModal, closeModal } = useModal();
   const { hasPermission,hasResourcePermission } = useAuth();
-  const hasResourcePermissionStatus = hasResourcePermission('category');
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [dialogContent, setDialogContent] = useState<string>();
   const searchParams = useSearchParams();
@@ -186,6 +185,7 @@ export default function CategoriesManagement() {
     },
   ]
   const queryOpen = searchParams.get('onCreate');
+  const queryCode = searchParams.get('code');
   const handleDelete = async (category: Category) => {
     setSelectedCategory(category)
     setOpenDialog(true);
@@ -195,7 +195,7 @@ export default function CategoriesManagement() {
   useEffect(() => {
     if (queryOpen) {
       openModal();
-    }
+    } 
   }, [queryOpen]);
 
   const confirmDelete = async () => {
@@ -214,6 +214,12 @@ export default function CategoriesManagement() {
       setCategories(categoriesData.data);
       setFilters(categoriesData.data);
       setCategoryTypes(typesData);
+      if (queryCode) {
+        const foundType = typesData.find(type => type.code === queryCode);
+        if (foundType) {
+          setSelectedType(foundType);
+        }
+      }
       setPageCount(categoriesData.totalPages);
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -283,6 +289,7 @@ export default function CategoriesManagement() {
     setFilterByType(filters);
     const foundType = categoryTypes.find(type => type.id === id);
     setSelectedType(foundType || null);
+    console.log(foundType)
   }
 
   const handleChangeStatus = async (category: Category) => {
@@ -352,7 +359,9 @@ export default function CategoriesManagement() {
               initialData={selectedCategory}
               onSubmit={handleSave}
               onCancel={closeModal}
-              categoryTypes={categoryTypes} />
+              categoryTypes={categoryTypes}
+              selectedType={selectedType}
+            />
           </Modal>
           <AlertDialogUtils
             type="warning"

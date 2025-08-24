@@ -77,7 +77,7 @@ const FolkMedicineForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoriesData = await getCategoryByCode(AppCategoryCode.FolkMedicine);
+        const categoriesData = await getCategoryByCode(AppCategoryCode.FolkMedicine.code);
         setCategories(categoriesData || []);
       } catch (error) {
         toast.error(t('messages.error'));
@@ -206,7 +206,7 @@ const FolkMedicineForm = () => {
 
   const handleCreateCategory = () => {
     startTransition(() => {
-      navigateTo('/manager/categories?onCreate=true');
+      navigateTo('/manager/categories?onCreate=true&code=' + AppCategoryCode.FolkMedicine.code);
     });
   }
 

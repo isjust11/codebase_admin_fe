@@ -1,11 +1,12 @@
 export interface Article {
-    id: string;
+    id?: string;
     title: string;
     content: string;
     thumbnail?: string;
     description?: string;
     slug?: string;
     status?: string;
+    category?: string;
     createdAt?: Date;
     updatedAt?: Date;
   }

@@ -35,9 +35,10 @@ interface CategoryFormProps {
     onSubmit: (values: z.infer<typeof formSchema>) => void;
     onCancel: () => void;
     categoryTypes: CategoryType[];
+    selectedType?: CategoryType | null;
 }
 
-export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }: CategoryFormProps) {
+export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, selectedType }: CategoryFormProps) {
     const t = useTranslations("CategoriesPage");
     const tUtils = useTranslations("Utils");
     if (initialData && initialData?.icon !== null) {
@@ -64,7 +65,9 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                 iconType: IconType.lucide
             },
     });
-
+    if (selectedType) {
+        form.setValue("categoryTypeId", selectedType.id);
+    }
     const handleSubmit = (values: z.infer<typeof formSchema>) => {
         onSubmit(values);
     };
@@ -118,7 +121,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>{t('type')}</FormLabel>
-                            <Select value={field.value} onValueChange={field.onChange} defaultValue={field.value}>
+                            <Select value={field.value} onValueChange={field.onChange}>
                                 <FormControl>
                                     <SelectTrigger>
                                         <SelectValue placeholder={t('selectType')} />
@@ -126,7 +129,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes }:
                                 </FormControl>
                                 <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
                                     {categoryTypes.map((type) => (
-                                        <SelectItem key={type.id} value={type.id}>
+                                        <SelectItem key={type.id} value={type.id} className="hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 cursor-pointer">
                                             <div className="flex flex-start items-center">
                                                 <span className="text-2xl mr-2"> {type.icon && unicodeToEmoji(type.icon)}</span>
                                                 <span className="text-sm text-gray-500">{type.name}</span>

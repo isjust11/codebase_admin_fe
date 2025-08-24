@@ -998,6 +998,8 @@
     "published": "Đã xuất bản",
     "titlePlaceholder": "Nhập tiêu đề bài viết",
     "statusPlaceholder": "Chọn trạng thái",
+    "category": "Danh mục bài viết",
+    "categoryPlaceholder": "Chọn danh mục bài viết",
     "messages": {
       "deleteTitle": "Xóa bài viết",
       "deleteDescription": "Bạn có chắc chắn muốn xóa bài viết này không?",
