@@ -1,3 +1,5 @@
+import { Category } from "./category";
+
 export interface Article {
     id?: string;
     title: string;
@@ -11,5 +13,9 @@ export interface Article {
     updatedBy?: string;
     createdAt?: Date;
     updatedAt?: Date;
+    like?: number;
+    view?: number;
+    status?: Category;
+    category?: Category;
   }
   

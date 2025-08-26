@@ -33,17 +33,16 @@ export default function ArticleDetailPage() {
   if (!article) return null;
 
   return (
-    <div className="pb-3">
-    <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-gray-900 rounded shadow max-h-screen overflow-y-auto">
-      <h1 className="text-2xl font-bold mb-4">{article.title}</h1>
-      <div className="mb-2 text-gray-500 text-sm">
-        {t('createdAt')}: {article.createdAt ? new Date(article.createdAt).toLocaleString() : tUtils('unknown')}
+    <div className="pb-3 bg-white rounded-lg shadow p-6">
+      <div className="flex justify-center items-center">
+        <div className="space-y-6 w-full max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-4">{article.title}</h1>
+          <div className="mb-2 text-gray-500 text-sm">
+            {tUtils('createdAt')}: {article.createdAt ? new Date(article.createdAt).toLocaleString() : tUtils('unknown')}
+          </div>
+          <div className="prose dark:prose-invert max-w-none " dangerouslySetInnerHTML={{ __html: article.content }} />
+        </div>
       </div>
-      {article.description && (
-        <div className="mb-4 text-lg text-gray-700 dark:text-gray-300">{article.description}</div>
-      )}
-      <div className="prose dark:prose-invert max-w-none " dangerouslySetInnerHTML={{ __html: article.content }} />
-    </div>
     </div>
   );
 }

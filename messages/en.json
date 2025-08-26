@@ -63,7 +63,8 @@
     "createSuccess": "Create success",
     "createError": "Error creating",
     "updateSuccess": "Update success",
-    "updateError": "Error updating"
+    "updateError": "Error updating",
+    "createdAt": "Created at"
   },
   "LocaleSwitcher": {
     "en": "English",

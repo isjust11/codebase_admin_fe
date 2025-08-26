@@ -63,7 +63,8 @@
     "createSuccess": "Tạo thành công",
     "createError": "Lỗi khi tạo",
     "updateSuccess": "Cập nhật thành công",
-    "updateError": "Lỗi khi cập nhật"
+    "updateError": "Lỗi khi cập nhật",
+    "createdAt": "Ngày tạo"
     },
   "LocaleSwitcher": {
     "en": "English",

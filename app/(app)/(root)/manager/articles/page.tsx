@@ -201,24 +201,24 @@ export default function ArticlesManagement() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
-                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
+                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300"
                     onClick={() => navigateTo(`/manager/articles/details/${article.id}`)}>
-                    <BadgeInfo className="mr-2 h-4 w-4" />
+                    <BadgeInfo className="mr-2 h-4 w-4 text-gray-500" />
                     {t('viewDetails')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
+                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer text-yellow-300 hover:bg-yellow-100"
                     onClick={() => navigateTo(`/manager/articles/${article.slug}/${article.id}`)}>
-                    <Eye className="mr-2 h-4 w-4 color-yellow-300" />
+                    <Eye className="mr-2 h-4 w-4 text-yellow-300" />
                     {t('viewArticle')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20'
+                  <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-300 text-blue-500'
                     onClick={() => navigateTo(`/manager/articles/update/${article.id}`)}
                   >
-                    <Pencil className="mr-2 h-4 w-4" />
+                    <Pencil className="mr-2 h-4 w-4 text-blue-500" />
                     {tUtils('edit')}
                   </DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20" onClick={() => handleOpenDeleteDialog(article)}>
-                    <Trash className="mr-2 h-4 w-4" />
+                  <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-red-300" onClick={() => handleOpenDeleteDialog(article)}>
+                    <Trash className="mr-2 h-4 w-4 text-red-600" />
                     {tUtils('delete')}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
