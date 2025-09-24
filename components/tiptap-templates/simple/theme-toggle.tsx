@@ -10,10 +10,10 @@ import { MoonStarIcon } from "@/components/tiptap-icons/moon-star-icon"
 import { SunIcon } from "@/components/tiptap-icons/sun-icon"
 
 export function ThemeToggle() {
-  const [isDarkMode, setIsDarkMode] = React.useState<boolean>(false)
+  const [isDarkMode, setIsDarkMode] = React.useState<boolean>(true)
 
   React.useEffect(() => {
-    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: light)")
     const handleChange = () => setIsDarkMode(mediaQuery.matches)
     mediaQuery.addEventListener("change", handleChange)
     return () => mediaQuery.removeEventListener("change", handleChange)
@@ -22,7 +22,7 @@ export function ThemeToggle() {
   React.useEffect(() => {
     const initialDarkMode =
       !!document.querySelector('meta[name="color-scheme"][content="dark"]') ||
-      window.matchMedia("(prefers-color-scheme: dark)").matches
+      window.matchMedia("(prefers-color-scheme: light)").matches
     setIsDarkMode(initialDarkMode)
   }, [])
 
@@ -39,9 +39,11 @@ export function ThemeToggle() {
       data-style="ghost"
     >
       {isDarkMode ? (
-        <MoonStarIcon className="tiptap-button-icon" />
+        <>
+          <SunIcon className="tiptap-button-icon" />
+        </>
       ) : (
-        <SunIcon className="tiptap-button-icon" />
+        <MoonStarIcon className="tiptap-button-icon" />
       )}
     </Button>
   )

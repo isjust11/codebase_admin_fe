@@ -689,6 +689,7 @@
     "slug": "Slug",
     "updatedAt": "Updated at",
     "basicInfo": "Basic Info",
+    "selectAuthor": "Select author",
     "messages": {
       "error": "Error loading folk medicine list",
       "deleteSuccess": "Folk medicine deleted successfully",

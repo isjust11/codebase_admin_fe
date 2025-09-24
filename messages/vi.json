@@ -692,6 +692,7 @@
     "slug": "Slug",
     "updatedAt": "Ngày cập nhật",
     "basicInfo": "Thông tin cơ bản",
+    "selectAuthor": "Chọn tác giả",
     "messages": {
       "error": "Lỗi tải danh sách bài thuốc dân gian",
       "deleteSuccess": "Bài thuốc dân gian đã được xóa thành công",

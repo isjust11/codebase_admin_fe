@@ -22,6 +22,8 @@ import { getCategoryByCode } from '@/services/manager-api';
 import { AppCategoryCode } from '@/constants';
 import Switch from '@/components/form/switch/Switch';
 import { useLoading } from '@/contexts/LoadingContext';
+import { getAllAuthors, createAuthor } from '@/services/author-api';
+import { Author } from '@/types/author';
 
 const FolkMedicineForm = () => {
   const t = useTranslations('FolkMedicinesPage');
@@ -36,7 +38,7 @@ const FolkMedicineForm = () => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [folkMedicine, setFolkMedicine] = useState<FolkMedicine | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
-
+  const [authors, setAuthors] = useState<Author[]>([]);
   const [formData, setFormData] = useState<CreateFolkMedicineDto>({
     title: '',
     summary: '',
@@ -78,7 +80,9 @@ const FolkMedicineForm = () => {
     const fetchData = async () => {
       try {
         const categoriesData = await getCategoryByCode(AppCategoryCode.FolkMedicine.code);
+        const authorsData = await getAllAuthors({ page: 1, size: 1000, search: '' });
         setCategories(categoriesData || []);
+        setAuthors(authorsData.data || []);
       } catch (error) {
         toast.error(t('messages.error'));
       }
@@ -105,7 +109,7 @@ const FolkMedicineForm = () => {
         usage: data.usage || '',
         notes: data.notes || '',
         thumbnail: data.thumbnail ? mergeImageUrl(data.thumbnail) : '',
-        authorId: data.authorId?.toString() || '',
+        authorId: data.authorId?.toString() ||  '',
         categoryId: data.categoryId || '',
         isActive: data.isActive,
       });
@@ -114,6 +118,12 @@ const FolkMedicineForm = () => {
       navigateTo('/manager/folk-medicines');
     }
   };
+
+  const handleCreateAuthor = () => {
+    startTransition(() => {
+      navigateTo('/manager/authors/create');
+    });
+  }
 
   const handleSubmit = async () => {
     setLoading(true);
@@ -169,19 +179,6 @@ const FolkMedicineForm = () => {
     setFormData(prev => ({
       ...prev,
       content: content,
-    }));
-  };
-
-  const changeSummary = (summary: string) => {
-    // Kiểm tra độ dài summary
-    if (summary.length > 500) {
-      toast.error('Tóm tắt không được quá 500 ký tự');
-      return;
-    }
-
-    setFormData(prev => ({
-      ...prev,
-      summary: summary,
     }));
   };
 
@@ -349,15 +346,38 @@ const FolkMedicineForm = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
+                  <div className="space-y-2">
                     <Label htmlFor="authorId">{t('author')}</Label>
-                    <Input
-                      id="authorId"
-                      name="authorId"
-                      placeholder={t('enterAuthor')}
-                      type="text"
+                    <Select
                       value={formData.authorId}
-                      onChange={handleChange}
-                    />
+                      onValueChange={(value) => handleSelectChange('authorId', value)}
+                    >
+                      <SelectTrigger className="w-full ">
+                        <SelectValue placeholder={t('selectAuthor')} />
+                      </SelectTrigger>
+                      <SelectContent className="w-full bg-white">
+
+                        {authors.length > 0?
+                        authors.map((author) => (
+
+                          <SelectItem key={author.id} value={author.id} className='hover:bg-gray-100 '>
+                            {author.name}
+                          </SelectItem>
+                        )):
+                        (
+                          <div className="flex flex-col items-start gap-2 justify-between p-4">
+                            <div>Chưa có tác giả</div>
+                            <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
+                              handleCreateAuthor();
+                            }}>
+                              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tUtils('addAuthor')}
+                            </span>
+                          </div>
+                        )
+                        }
+                      </SelectContent>
+                    </Select>
+                  </div>
                   </div>
 
                   <div className="space-y-2">
