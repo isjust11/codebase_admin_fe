@@ -91,4 +91,8 @@ export const AppCategoryCode = {
     code: 'ArticleType',
     name: 'Loại bài viết',
   }, 
+  Herbal:{
+    code: 'Herbal',
+    name: 'Dược liệu dân gian',
+  },
 }

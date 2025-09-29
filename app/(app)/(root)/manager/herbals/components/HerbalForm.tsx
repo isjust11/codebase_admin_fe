@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { getCategories } from '@/services/manager-api';
+import { getCategories, getCategoryByCode } from '@/services/manager-api';
 import { Category } from '@/types/category';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDropzone } from 'react-dropzone';
@@ -13,6 +13,7 @@ import { useTranslations } from 'next-intl';
 import { mergeImageUrl } from '@/lib/utils';
 import Switch from "@/components/form/switch/Switch";
 import { useLoading } from '@/contexts/LoadingContext';
+import { AppCategoryCode } from '@/constants';
 
 interface HerbalFormProps {
   initialData?: Partial<Herbal>;
@@ -29,7 +30,6 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
   onCancel,
   loading = false
 }) => {
-  const { navigateTo, back } = useLoading();
   const [categories, setCategories] = useState<Category[]>([]);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -83,8 +83,8 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await getCategories({ page: 1, size: 1000, search: '' });
-        setCategories(response.data || []);
+        const response = await getCategoryByCode(AppCategoryCode.Herbal.code);
+        setCategories(response || []);
       } catch (error) {
         console.error('Lỗi khi tải danh mục:', error);
       }
