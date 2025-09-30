@@ -64,7 +64,8 @@
     "createError": "Lỗi khi tạo",
     "updateSuccess": "Cập nhật thành công",
     "updateError": "Lỗi khi cập nhật",
-    "createdAt": "Ngày tạo"
+    "createdAt": "Ngày tạo",
+    "uploadedImages": "Hình ảnh đã tải lên"
     },
   "LocaleSwitcher": {
     "en": "English",
@@ -601,6 +602,10 @@
       "createSuccess": "Danh mục đã được thêm thành công",
       "updateSuccess": "Danh mục đã được cập nhật thành công",
       "confirmDelete":"Bạn có chắc chắn muốn xóa chức năng này không?"
+    },
+    "validation": {
+      "codeMinLength": "Mã danh mục phải có ít nhất 2 ký tự",
+      "nameMinLength": "Tên danh mục phải có ít nhất 2 ký tự"
     }
   },
   "CategoryTypesPage": {
@@ -792,7 +797,19 @@
     "deleteHerbal":"Xóa thảo dược",
     "success":"Thành công",
     "error":"Lỗi",
-    "confirmDeleteHerbal":"Bạn có chắc chắn muốn xóa thảo dược này không?"
+    "confirmDeleteHerbal":"Bạn có chắc chắn muốn xóa thảo dược này không?",
+    "main": "Hình ảnh chính",
+    "hoverImage": "Hover image",
+    "setMain": "Set main",
+    "deleteImage": "Xóa hình ảnh",
+    "setMainImageSuccess": "Đặt hình ảnh chính thành công",
+    "errorSettingMainImage": "Lỗi khi đặt hình ảnh chính",
+    "errorDeletingImage": "Lỗi khi xóa hình ảnh",
+    "clickSetMain": "Click để đặt hình ảnh chính",
+    "clickDelete": "Click để xóa hình ảnh",
+    "sortOrder": "Sắp xếp thứ tự",
+    "guide": "Hướng dẫn",
+    "noImage": "Không có hình ảnh"
 
   },
   "AuthorsPage": {

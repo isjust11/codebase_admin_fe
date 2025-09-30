@@ -5,7 +5,7 @@ import { ArrowDown, ArrowLeftRight, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal
 import { useRouter } from 'next/navigation'
 import { useLoading } from '@/contexts/LoadingContext'
 import { DataTable } from '@/components/DataTable'
-import { deleteAuthor, getAllAuthors, updateAuthor } from '@/services/author-api'
+import { deleteAuthor, getAllAuthors, getAuthorsByPage, updateAuthor } from '@/services/author-api'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
@@ -250,7 +250,7 @@ const AuthorsPage = () => {
   }
   const fetchAuthors = async () => {
     try {
-      const response = await getAllAuthors({ page: pageIndex + 1, size: pageSize, search });
+      const response = await getAuthorsByPage({ page: pageIndex + 1, size: pageSize, search });
       if (response && response.data) {
         setAuthors(response.data);
         setPageCount(response.totalPages);

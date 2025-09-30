@@ -12,7 +12,6 @@ import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import { mergeImageUrl } from '@/lib/utils';
 import Switch from "@/components/form/switch/Switch";
-import { useLoading } from '@/contexts/LoadingContext';
 import { AppCategoryCode } from '@/constants';
 
 interface HerbalFormProps {
@@ -250,7 +249,9 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 </SelectTrigger>
                 <SelectContent className='bg-white dark:bg-gray-900'>
                   {categories.map((category) => (
-                    <SelectItem className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' key={category.id} value={category.id.toString()}>
+                    <SelectItem 
+                    className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' 
+                    key={category.id} value={category.id.toString()}>
                       {category.name}
                     </SelectItem>
                   ))}

@@ -22,7 +22,7 @@ import { getCategoryByCode } from '@/services/manager-api';
 import { AppCategoryCode } from '@/constants';
 import Switch from '@/components/form/switch/Switch';
 import { useLoading } from '@/contexts/LoadingContext';
-import { getAllAuthors, createAuthor } from '@/services/author-api';
+import { getAllAuthors, getAuthorsByPage } from '@/services/author-api';
 import { Author } from '@/types/author';
 
 const FolkMedicineForm = () => {
@@ -81,9 +81,9 @@ const FolkMedicineForm = () => {
     const fetchData = async () => {
       try {
         const categoriesData = await getCategoryByCode(AppCategoryCode.FolkMedicine.code);
-        const authorsData = await getAllAuthors({ page: 1, size: 1000, search: '' });
+        const authorsData = await getAllAuthors();
         setCategories(categoriesData || []);
-        setAuthors(authorsData.data || []);
+        setAuthors(authorsData || []);
       } catch (error) {
         toast.error(t('messages.error'));
       }
@@ -361,7 +361,7 @@ const FolkMedicineForm = () => {
                         {authors.length > 0?
                         authors.map((author) => (
 
-                          <SelectItem key={author.id} value={author.id} className='hover:bg-gray-100 '>
+                          <SelectItem key={author.id} value={author.id}  className='hover:bg-gray-100 '>
                             {author.name}
                           </SelectItem>
                         )):
@@ -386,6 +386,7 @@ const FolkMedicineForm = () => {
                     <div className="flex items-center space-x-2">
                       <Switch
                         onChange={(checked: boolean) => handleSelectChange('isActive', checked)}
+                        defaultChecked={formData.isActive}
                         label={formData.isActive ? t('active') : t('inactive')}
                       />
                     </div>

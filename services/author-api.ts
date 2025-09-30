@@ -3,7 +3,13 @@ import { Author } from "@/types/author";
 import { AuthorDto } from "@/types/dto/AuthorDto";
 
 
-export const getAllAuthors = async (params: { page: number; size: number; search?: string }): Promise<PaginatedResponse<Author>> => {
+export const getAllAuthors = async (): Promise<Author[]> => {
+  const response = await axiosInstance.get('/authors');
+  return response.data;
+};
+
+export const getAuthorsByPage = async (params: { page?: number; size?: number; search?: string }):
+ Promise<PaginatedResponse<Author>> => {
   const response = await axiosInstance.get('/authors', { params });
   return response.data;
 };

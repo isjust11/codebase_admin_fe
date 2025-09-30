@@ -64,7 +64,18 @@
     "createError": "Error creating",
     "updateSuccess": "Update success",
     "updateError": "Error updating",
-    "createdAt": "Created at"
+    "createdAt": "Created at",
+    "uploadedImages": "Uploaded images",
+    "main": "Main image",
+    "hoverImage": "Hover image",
+    "setMain": "Set main",
+    "setMainImageSuccess": "Set main image success",
+    "errorSettingMainImage": "Error setting main image",
+    "errorDeletingImage": "Error deleting image",
+    "clickSetMain": "Click to set main image",
+    "clickDelete": "Click to delete image",
+    "sortOrder": "Sort order",
+    "guide": "Guide"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -637,6 +648,10 @@
       "createSuccess": "Category type created successfully",
       "updateSuccess": "Category type updated successfully",
       "syncSuccess": "Sync category type successfully"
+    },
+    "validation": {
+      "codeMinLength": "Category type code must be at least 2 characters",
+      "nameMinLength": "Category type name must be at least 2 characters"
     }
   },
   "FolkMedicinesPage": {
