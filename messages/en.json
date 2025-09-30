@@ -698,7 +698,9 @@
       "createError": "Error adding folk medicine",
       "updateSuccess": "Folk medicine updated successfully",
       "updateError": "Error updating folk medicine",
-      "notFound": "Folk medicine not found"
+      "notFound": "Folk medicine not found",
+      "changeStatusSuccess": "Folk medicine status changed successfully",
+      "changeStatusError": "Error changing folk medicine status"
     }
   },
   "Herbals": {
@@ -950,6 +952,7 @@
     "deletingError": "Error deleting author",
     "detailInfo":"Detail info",
     "additionalInfo":"Additional info",
+    "noAuthor":"No author",
     "messages": {
       "errorLoadAuthors": "Error loading authors list",
       "deleteSuccess": "Author deleted successfully",

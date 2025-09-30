@@ -238,7 +238,7 @@ export default function FolkMedicineDetail() {
                         <span className="text-sm text-gray-600">{t('viewCount')}:</span>
                       </div>
                       <span className="text-sm font-medium text-blue-600">
-                        {folkMedicine.viewCount.toLocaleString()}
+                        {folkMedicine.viewCount || 0}
                       </span>
                     </div>
 
@@ -248,7 +248,7 @@ export default function FolkMedicineDetail() {
                         <span className="text-sm text-gray-600">{t('likeCount')}:</span>
                       </div>
                       <span className="text-sm font-medium text-red-600">
-                        {folkMedicine.likeCount.toLocaleString()}
+                        {folkMedicine.likeCount || 0}
                       </span>
                     </div>
                   </CardContent>

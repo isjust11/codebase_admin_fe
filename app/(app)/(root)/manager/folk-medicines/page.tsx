@@ -15,7 +15,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image'
 import { Action } from '@/types/actions';
-import { FolkMedicine } from '@/types/folk-medicine'; 
+import { FolkMedicine } from '@/types/folk-medicine';
 import { useTranslations } from 'next-intl';
 import Badge from '@/components/ui/badge/Badge';
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
@@ -79,10 +79,14 @@ export default function FolkMedicinesManagement() {
     }
   };
 
-  const handleChangeStatus = (folkMedicine: FolkMedicine) => {
-    updateFolkMedicine(folkMedicine.id.toString(), { isActive: !folkMedicine.isActive });
-    fetchFolkMedicines(pageIndex, pageSize, search);
-    toast.success(t('messages.changeStatusSuccess'));
+  const handleChangeStatus = async (folkMedicine: FolkMedicine) => {
+    try {
+      await updateFolkMedicine(folkMedicine.id.toString(), { isActive: !folkMedicine.isActive });
+      await fetchFolkMedicines(pageIndex, pageSize, search);
+      toast.success(t('messages.changeStatusSuccess'));
+    } catch (error) {
+      toast.error(t('messages.changeStatusError'));
+    }
   }
 
   const columns: ColumnDef<FolkMedicine>[] = [
@@ -115,13 +119,13 @@ export default function FolkMedicinesManagement() {
       cell: ({ row }) => {
         const thumbnail = mergeImageUrl(row.getValue("thumbnail") as string)
         return (
-          thumbnail ? 
-          <Image width={64}
-            height={64}
-            src={thumbnail}
-            alt="folk medicine"
-            className="w-16 h-16 object-cover rounded-md"
-          /> :
+          thumbnail ?
+            <Image width={64}
+              height={64}
+              src={thumbnail}
+              alt="folk medicine"
+              className="w-16 h-16 object-cover rounded-md"
+            /> :
             <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
               <span className="text-gray-500">
                 <ImageOff className="w-8 h-8" />
@@ -143,6 +147,12 @@ export default function FolkMedicinesManagement() {
           </Button>
         )
       },
+      cell: ({ row }) => {
+        const title = row.getValue("title") as string
+        return (
+          <div className="text-sm text-gray-500 max-w-xs truncate">{title}</div>
+        )
+      }
     },
     {
       accessorKey: "summary",
@@ -200,13 +210,13 @@ export default function FolkMedicinesManagement() {
         return (
           <Badge variant="light" color={isActive === true ? 'success' : 'error'} >
             {isActive == true ? t('active') : t('inactive')}
-          </Badge>  
+          </Badge>
         )
       },
     },
     {
       accessorKey: "createdAt",
-            header: t('createdAt'),
+      header: t('createdAt'),
       cell: ({ row }) => {
         const createdAt = row.getValue("createdAt") as string
         return (
@@ -223,46 +233,46 @@ export default function FolkMedicinesManagement() {
         const folkMedicine = row.original
         return (
           <div className="p-2 ">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="h-8 w-8 p-0">
-                    <span className="sr-only">{tUtils('openMenu')}</span>
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
-                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
-                    onClick={() => navigateTo(`/manager/folk-medicines/detail/${folkMedicine.id}`)}>
-                    <BadgeInfo className="mr-2 h-4 w-4 text-gray-500" />
-                    {t('viewDetail')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-fuchsia-500/20"
-                    onClick={() => handleChangeStatus(folkMedicine)}>
-                    <ArrowLeftRight className="mr-2 h-4 w-4 text-fuchsia-500" />
-                    {folkMedicine.isActive ? tUtils('inactive') : tUtils('active')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
-                    onClick={() => navigateTo(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}>
-                    <Eye className="mr-2 h-4 w-4 color-yellow-300" />
-                    {t('viewFolkMedicine')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-500/20 text-blue-500'
-                    onClick={() => navigateTo(`/manager/folk-medicines/update/${folkMedicine.id}`)}
-                  >
-                    <Pencil className="mr-2 h-4 w-4 text-blue-500" />
-                    {t('edit')}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-red-500/50" onClick={() => handleDelete(folkMedicine)}>
-                    <Trash className="mr-2 h-4 w-4" />
-                    {t('delete')}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">{tUtils('openMenu')}</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className='bg-white shadow-sm rounded-xs '>
+                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20"
+                  onClick={() => navigateTo(`/manager/folk-medicines/detail/${folkMedicine.id}`)}>
+                  <BadgeInfo className="mr-2 h-4 w-4 text-gray-500" />
+                  {t('viewDetail')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer hover:bg-fuchsia-500/20"
+                  onClick={() => handleChangeStatus(folkMedicine)}>
+                  <ArrowLeftRight className="mr-2 h-4 w-4 text-fuchsia-500" />
+                  {folkMedicine.isActive ? tUtils('inactive') : tUtils('active')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="flex flex-start px-4 py-2 cursor-pointer color-yellow-300 hover:bg-yellow-300/20"
+                  onClick={() => navigateTo(`/manager/folk-medicines/${folkMedicine.slug}/${folkMedicine.id}`)}>
+                  <Eye className="mr-2 h-4 w-4 color-yellow-300" />
+                  {t('viewFolkMedicine')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className='flex flex-start px-4 py-2 cursor-pointer hover:bg-blue-500/20 text-blue-500'
+                  onClick={() => navigateTo(`/manager/folk-medicines/update/${folkMedicine.id}`)}
+                >
+                  <Pencil className="mr-2 h-4 w-4 text-blue-500" />
+                  {t('edit')}
+                </DropdownMenuItem>
+                <DropdownMenuItem className="text-red-600 flex flex-start px-4 py-2 cursor-pointer hover:bg-red-500/50" onClick={() => handleDelete(folkMedicine)}>
+                  <Trash className="mr-2 h-4 w-4" />
+                  {t('delete')}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         )
       },
     },
-  ] 
+  ]
 
   const lstActions: Action[] = [
     {
@@ -292,8 +302,8 @@ export default function FolkMedicinesManagement() {
               <span className="text-gray-500 ">{tUtils('loading')}</span>
             </div>
           ) : (
-            <DataTable 
-              columns={columns} 
+            <DataTable
+              columns={columns}
               data={folkMedicines}
               pageCount={pageCount}
               onPaginationChange={handlePaginationChange}
@@ -304,12 +314,12 @@ export default function FolkMedicinesManagement() {
           )}
         </ComponentCard>
         <AlertDialogUtils
-              type='warning'
-              title={tUtils('delete')}
-              content={t('confirmDelete')}
-              onConfirm={() => confirmDelete()}
-              isOpen={isOpen}
-              />
+          type='warning'
+          title={tUtils('delete')}
+          content={t('confirmDelete')}
+          onConfirm={() => confirmDelete()}
+          isOpen={isOpen}
+        />
       </div>
     </div>
   );

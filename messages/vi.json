@@ -701,8 +701,9 @@
       "createError": "Lỗi khi thêm bài thuốc dân gian",
       "updateSuccess": "Bài thuốc dân gian đã được cập nhật thành công",
       "updateError": "Lỗi khi cập nhật bài thuốc dân gian",
-      "notFound": "Không tìm thấy bài thuốc dân gian"
-      
+      "notFound": "Không tìm thấy bài thuốc dân gian",
+      "changeStatusSuccess": "Đổi trạng thái bài thuốc dân gian thành công",
+      "changeStatusError": "Lỗi khi đổi trạng thái bài thuốc dân gian"
     }
   },
   "Herbals": {
@@ -966,6 +967,7 @@
     "deletingError": "Lỗi khi xóa tác giả",
     "detailInfo":"Thông tin chi tiết",
     "additionalInfo":"Thông tin bổ sung",
+    "noAuthor":"Chưa có tác giả",
     "messages": {
       "errorLoadAuthors": "Lỗi khi tải danh sách tác giả",
       "deleteSuccess": "Tác giả đã được xóa thành công",

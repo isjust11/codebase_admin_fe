@@ -28,6 +28,7 @@ import { Author } from '@/types/author';
 const FolkMedicineForm = () => {
   const t = useTranslations('FolkMedicinesPage');
   const [isPending, startTransition] = useTransition();
+  const tAuthor = useTranslations('AuthorsPage');
   const tUtils = useTranslations('Utils');
   const { user } = useAuth();
   const { navigateTo, back } = useLoading();
@@ -366,11 +367,11 @@ const FolkMedicineForm = () => {
                         )):
                         (
                           <div className="flex flex-col items-start gap-2 justify-between p-4">
-                            <div>Chưa có tác giả</div>
+                            <div>{tAuthor('noAuthor')}</div>
                             <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
                               handleCreateAuthor();
                             }}>
-                              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tUtils('addAuthor')}
+                              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tAuthor('addAuthor')}
                             </span>
                           </div>
                         )
