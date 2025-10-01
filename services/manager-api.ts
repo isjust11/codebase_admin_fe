@@ -7,6 +7,7 @@ import { CategoryType } from '@/types/category-type';
 import { Table } from '@/types/table';
 import { Feature } from '@/types/feature';
 import { Category } from '@/types/category';
+import { DataSource, DataSourceTypeOption } from '@/types/data-source';
 
 
 // todo: api manager fooditem
@@ -330,6 +331,76 @@ export const deleteTable = async (id: string): Promise<void> => {
     await axiosApi.delete(`/table/${id}`);
   } catch (_error) {
     console.error('Error deleting table:', _error);
+    throw _error;
+  }
+};
+
+// Data Source API functions
+export const getDataSources = async (params?: PaginationParams): Promise<PaginatedResponse<DataSource>> => {
+  try {
+    const response = await axiosApi.get(`/data-source`, { params });
+    return response.data;
+  } catch (_error) {
+    console.error('Error fetching data sources:', _error);
+    return { data: [], total: 0, page: 0, size: 10, totalPages: 0 };
+  }
+};
+
+export const getDataSource = async (id: string): Promise<DataSource> => {
+  try {
+    const response = await axiosApi.get(`/data-source/${id}`);
+    return response.data;
+  } catch (_error) {
+    console.error('Error fetching data source:', _error);
+    throw _error;
+  }
+};
+
+export const createDataSource = async (data: any): Promise<DataSource> => {
+  try {
+    const response = await axiosApi.post(`/data-source`, data);
+    return response.data;
+  } catch (_error) {
+    console.error('Error creating data source:', _error);
+    throw _error;
+  }
+};
+
+export const updateDataSource = async (id: string, data: any): Promise<DataSource> => {
+  try {
+    const response = await axiosApi.put(`/data-source/${id}`, data);
+    return response.data;
+  } catch (_error) {
+    console.error('Error updating data source:', _error);
+    throw _error;
+  }
+};
+
+export const updateDataSourceStatus = async (id: string, data: any): Promise<DataSource> => {
+  try {
+    const response = await axiosApi.patch(`/data-source/${id}/status`, data);
+    return response.data;
+  } catch (_error) {
+    console.error('Error updating data source status:', _error);
+    throw _error;
+  }
+};
+
+export const deleteDataSource = async (id: string): Promise<void> => {
+  try {
+    await axiosApi.delete(`/data-source/${id}`);
+  } catch (_error) {
+    console.error('Error deleting data source:', _error);
+    throw _error;
+  }
+};
+
+export const getDataSourceTypes = async (): Promise<DataSourceTypeOption[]> => {
+  try {
+    const response = await axiosApi.get(`/data-source/types`);
+    return response.data;
+  } catch (_error) {
+    console.error('Error fetching data source types:', _error);
     throw _error;
   }
 }; 

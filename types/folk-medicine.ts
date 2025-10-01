@@ -1,3 +1,6 @@
+import { Author } from "./author";
+import { Category } from "./category";
+
 export interface FolkMedicine {
   id: string;
   title: string;
@@ -12,13 +15,9 @@ export interface FolkMedicine {
   viewCount: number;
   likeCount: number;
   authorId?: string;
-  author?: string;
+  author?: Author;
   categoryId?: string;
-  category?: {
-    id: string;
-    name: string;
-    code: string;
-  };
+  category?: Category;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

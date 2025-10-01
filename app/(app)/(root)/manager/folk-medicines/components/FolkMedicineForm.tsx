@@ -13,7 +13,6 @@ import { Action } from '@/types/actions';
 import { Loader2, Plus, Save, X } from 'lucide-react';
 import { useDropzone } from "react-dropzone";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mergeImageUrl } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/types/category';
 import { FolkMedicine, CreateFolkMedicineDto } from '@/types/folk-medicine';
@@ -24,6 +23,9 @@ import Switch from '@/components/form/switch/Switch';
 import { useLoading } from '@/contexts/LoadingContext';
 import { getAllAuthors, getAuthorsByPage } from '@/services/author-api';
 import { Author } from '@/types/author';
+import { mergeImageUrl } from '@/lib/utils';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import Image from 'next/image';
 
 const FolkMedicineForm = () => {
   const t = useTranslations('FolkMedicinesPage');
@@ -40,7 +42,11 @@ const FolkMedicineForm = () => {
   const [folkMedicine, setFolkMedicine] = useState<FolkMedicine | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
-  const [formData, setFormData] = useState<CreateFolkMedicineDto>({
+  const [formData, setFormData] = useState<FolkMedicine>({
+    id: '',
+    slug: '',
+    viewCount: 0,
+    likeCount: 0,
     title: '',
     summary: '',
     content: '',
@@ -52,6 +58,8 @@ const FolkMedicineForm = () => {
     authorId: '',
     categoryId: '',
     isActive: true,
+    createdAt: '',
+    updatedAt: '',
   });
 
   const id = params.id?.toString();
@@ -90,30 +98,35 @@ const FolkMedicineForm = () => {
     };
 
     fetchData();
+  }, []);
 
+  useEffect(() => {
     if (id) {
       setIsEditing(true);
       loadFolkMedicine(id);
     }
   }, [id]);
 
+  // Thêm useEffect để theo dõi formData
+  useEffect(() => {
+    if (isEditing && formData.id) {
+      console.log('formData updated:', formData);
+    }
+  }, [formData, isEditing]);
+
   const loadFolkMedicine = async (id: string) => {
     try {
       const data = await getFolkMedicine(id);
       setFolkMedicine(data);
-      setFormData({
-        title: data.title,
-        summary: data.summary || '',
-        content: data.content,
-        ingredients: data.ingredients || '',
-        preparation: data.preparation || '',
-        usage: data.usage || '',
-        notes: data.notes || '',
-        thumbnail: data.thumbnail ? mergeImageUrl(data.thumbnail) : '',
-        authorId: data.authorId?.toString() ||  '',
-        categoryId: data.categoryId || '',
-        isActive: data.isActive,
-      });
+      console.log('data values:', data);
+      setFormData(prev => ({
+        ...prev,
+        ...data,
+      }));
+      if (data.thumbnail) {
+        data.thumbnail = mergeImageUrl(data.thumbnail);
+      }
+      // Không log formData ở đây vì nó chưa được cập nhật
     } catch (_error) {
       toast.error(t('messages.error'));
       navigateTo('/manager/folk-medicines');
@@ -139,7 +152,7 @@ const FolkMedicineForm = () => {
 
       const submitData = {
         ...formData,
-        authorId: formData.authorId || user?.id?.toString() || '' ,
+        authorId: formData.authorId || user?.id?.toString() || '',
         // Nếu là URL đầy đủ, chuyển về đường dẫn tương đối trước khi lưu
         thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : thumbnail,
       };
@@ -298,11 +311,11 @@ const FolkMedicineForm = () => {
             <div className="w-7/10">
               <form className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2"> 
+                  <div className="space-y-2">
                     <Label htmlFor="title">{t('title')} *</Label>
                     <Input
                       id="title"
-                      name="title"  
+                      name="title"
                       placeholder={t('enterTitle')}
                       type="text"
                       value={formData.title}
@@ -314,7 +327,7 @@ const FolkMedicineForm = () => {
                   <div className="space-y-2">
                     <Label htmlFor="categoryId">{t('category')}</Label>
                     <Select
-                      value={formData.categoryId}
+                      value={formData.category?.id.toString() || formData.categoryId}
                       onValueChange={(value) => handleSelectChange('categoryId', value)}
                     >
                       <SelectTrigger className="w-full ">
@@ -322,23 +335,23 @@ const FolkMedicineForm = () => {
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white">
 
-                        {categories.length > 0?
-                        categories.map((category) => (
+                        {categories.length > 0 ?
+                          categories.map((category) => (
 
-                          <SelectItem key={category.id} value={category.id} className='hover:bg-gray-100 '>
-                            {category.name}
-                          </SelectItem>
-                        )):
-                        (
-                          <div className="flex flex-col items-start gap-2 justify-between p-4">
-                            <div>Chưa có danh mục</div>
-                            <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
-                              handleCreateCategory();
-                            }}>
-                              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tUtils('addCategory')}
-                            </span>
-                          </div>
-                        )
+                            <SelectItem key={category.id} value={category.id} className='hover:bg-gray-100 '>
+                              {category.name}
+                            </SelectItem>
+                          )) :
+                          (
+                            <div className="flex flex-col items-start gap-2 justify-between p-4">
+                              <div>Chưa có danh mục</div>
+                              <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
+                                handleCreateCategory();
+                              }}>
+                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tUtils('addCategory')}
+                              </span>
+                            </div>
+                          )
                         }
                       </SelectContent>
                     </Select>
@@ -347,38 +360,46 @@ const FolkMedicineForm = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="authorId">{t('author')}</Label>
-                    <Select
-                      value={formData.authorId}
-                      onValueChange={(value) => handleSelectChange('authorId', value)}
-                    >
-                      <SelectTrigger className="w-full ">
-                        <SelectValue placeholder={t('selectAuthor')} />
-                      </SelectTrigger>
-                      <SelectContent className="w-full bg-white">
+                    <div className="space-y-2">
+                      <Label htmlFor="authorId">{t('author')}</Label>
+                      <Select
+                        value={formData.author?.id.toString() || formData.authorId}
+                        onValueChange={(value) => handleSelectChange('authorId', value)}
+                      >
+                        <SelectTrigger className="w-full ">
+                          <SelectValue placeholder={t('selectAuthor')} />
+                        </SelectTrigger>
+                        <SelectContent className="w-full bg-white">
 
-                        {authors.length > 0?
-                        authors.map((author) => (
+                          {authors.length > 0 ?
+                            authors.map((author) => (
 
-                          <SelectItem key={author.id} value={author.id}  className='hover:bg-gray-100 '>
-                            {author.name}
-                          </SelectItem>
-                        )):
-                        (
-                          <div className="flex flex-col items-start gap-2 justify-between p-4">
-                            <div>{tAuthor('noAuthor')}</div>
-                            <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
-                              handleCreateAuthor();
-                            }}>
-                              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tAuthor('addAuthor')}
-                            </span>
-                          </div>
-                        )
-                        }
-                      </SelectContent>
-                    </Select>
-                  </div>
+                              <SelectItem key={author.id} value={author.id} className='hover:bg-gray-100 '>
+                                <span className='flex items-center gap-2'>
+                                  {author.avatar && (
+                                    <Image width={8} height={8}
+                                      src={mergeImageUrl(author.avatar || '')} alt={author.name} className="w-8 h-8
+                                    rounded-full
+                                    bg-gray-200 ring-1 ring-gray-300">
+                                    </Image>
+                                  )}
+                                  {author.name}</span>
+                              </SelectItem>
+                            )) :
+                            (
+                              <div className="flex flex-col items-start gap-2 justify-between p-4">
+                                <div>{tAuthor('noAuthor')}</div>
+                                <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
+                                  handleCreateAuthor();
+                                }}>
+                                  {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tAuthor('addAuthor')}
+                                </span>
+                              </div>
+                            )
+                          }
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
 
                   <div className="space-y-2">

@@ -809,7 +809,9 @@
     "clickDelete": "Click để xóa hình ảnh",
     "sortOrder": "Sắp xếp thứ tự",
     "guide": "Hướng dẫn",
-    "noImage": "Không có hình ảnh"
+    "noImage": "Không có hình ảnh",
+    "backToList": "Quay lại danh sách",
+    "editHerbal": "Chỉnh sửa thảo dược"
 
   },
   "AuthorsPage": {
@@ -1058,6 +1060,57 @@
       "statusMinLength": "Trạng thái bài viết phải có ít nhất 3 ký tự",
       "validationError": "Vui lòng kiểm tra lại thông tin",
       "categoryRequired": "Danh mục bài viết không được để trống"
+    }
+  },
+  "DataSourcePage": {
+    "pageTitle": "Danh sách nguồn dữ liệu",
+    "title": "Danh sách nguồn dữ liệu",
+    "name": "Tên",
+    "dataTitle": "Tiêu đề",
+    "description": "Mô tả",
+    "type": "Loại",
+    "url": "URL",
+    "author": "Tác giả",
+    "publisher": "Nhà xuất bản",
+    "publishDate": "Ngày xuất bản",
+    "isbn": "ISBN",
+    "doi": "DOI",
+    "citation": "Trích dẫn",
+    "notes": "Ghi chú",
+    "status": "Trạng thái",
+    "actions": "Thao tác",
+    "openMenu": "Mở menu",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "add": "Thêm",
+    "update": "Cập nhật",
+    "selectType": "Chọn loại",
+    "all": "Tất cả",
+    "active": "Hoạt động",
+    "inactive": "Không hoạt động",
+    "enterName": "Nhập tên nguồn dữ liệu",
+    "enterTitle": "Nhập tiêu đề",
+    "enterDescription": "Nhập mô tả",
+    "enterUrl": "Nhập URL",
+    "enterAuthor": "Nhập tác giả",
+    "enterPublisher": "Nhập nhà xuất bản",
+    "enterPublishDate": "Nhập ngày xuất bản",
+    "enterIsbn": "Nhập ISBN",
+    "enterDoi": "Nhập DOI",
+    "enterCitation": "Nhập trích dẫn",
+    "enterNotes": "Nhập ghi chú",
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách nguồn dữ liệu",
+      "deleteSuccess": "Nguồn dữ liệu đã được xóa thành công",
+      "deleteError": "Lỗi khi xóa nguồn dữ liệu",
+      "saveError": "Lỗi khi lưu nguồn dữ liệu",
+      "createSuccess": "Nguồn dữ liệu đã được tạo thành công",
+      "updateSuccess": "Nguồn dữ liệu đã được cập nhật thành công",
+      "confirmDelete": "Bạn có chắc chắn muốn xóa nguồn dữ liệu này không?"
+    },
+    "validation": {
+      "nameMinLength": "Tên phải có ít nhất 1 ký tự",
+      "typeRequired": "Loại là bắt buộc"
     }
   }
 }

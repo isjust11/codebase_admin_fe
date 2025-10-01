@@ -82,8 +82,8 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const response = await getCategoryByCode(AppCategoryCode.Herbal.code);
-        setCategories(response || []);
+        const data = await getCategoryByCode(AppCategoryCode.Herbal.code);
+        setCategories(data || []);
       } catch (error) {
         console.error('Lỗi khi tải danh mục:', error);
       }
@@ -237,13 +237,13 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
                 placeholder={t('title')}
-                required
               />
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="categoryId">{t('category')}</Label>
-              <Select value={formData.categoryId} onValueChange={(value) => handleInputChange('categoryId', value)}>
+              <Select value={formData.categoryId}
+               onValueChange={(value) => handleInputChange('categoryId', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('category')} />
                 </SelectTrigger>

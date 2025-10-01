@@ -757,8 +757,6 @@
     "cancel": "Cancel",
     "update": "Update",
     "createHerbal": "Create herbal",
-    "backToList": "Back to list",
-    "editHerbal": "Edit herbal",
     "back": "Back",
     "errorLoadingImages": "Error loading images",
     "mainImage": "Main image",
@@ -805,7 +803,9 @@
     "deleteHerbal":"Delete herbal",
     "success":"Success",
     "error":"Error",
-    "confirmDeleteHerbal":"Are you sure you want to delete this herbal?"
+    "confirmDeleteHerbal":"Are you sure you want to delete this herbal?",
+    "backToList":"Back to list",
+    "editHerbal":"Edit herbal"
   },
   "AuthorsPage": {
     "basicInformation": "Basic information",
@@ -1036,6 +1036,57 @@
       "statusMinLength": "Status must be at least 3 characters",
       "validationError": "Please check the information again",
       "categoryRequired": "Category is required"
+    }
+  },
+  "DataSourcePage": {
+    "pageTitle": "Data Source List",
+    "title": "Data Source List",
+    "name": "Name",
+    "dataTitle": "Title",
+    "description": "Description",
+    "type": "Type",
+    "url": "URL",
+    "author": "Author",
+    "publisher": "Publisher",
+    "publishDate": "Publish Date",
+    "isbn": "ISBN",
+    "doi": "DOI",
+    "citation": "Citation",
+    "notes": "Notes",
+    "status": "Status",
+    "actions": "Actions",
+    "openMenu": "Open menu",
+    "edit": "Edit",
+    "delete": "Delete",
+    "add": "Add",
+    "update": "Update",
+    "selectType": "Select type",
+    "all": "All",
+    "active": "Active",
+    "inactive": "Inactive",
+    "enterName": "Enter data source name",
+    "enterTitle": "Enter title",
+    "enterDescription": "Enter description",
+    "enterUrl": "Enter URL",
+    "enterAuthor": "Enter author",
+    "enterPublisher": "Enter publisher",
+    "enterPublishDate": "Enter publish date",
+    "enterIsbn": "Enter ISBN",
+    "enterDoi": "Enter DOI",
+    "enterCitation": "Enter citation",
+    "enterNotes": "Enter notes",
+    "messages": {
+      "loadError": "Error loading data source list",
+      "deleteSuccess": "Data source deleted successfully",
+      "deleteError": "Error deleting data source",
+      "saveError": "Error saving data source",
+      "createSuccess": "Data source created successfully",
+      "updateSuccess": "Data source updated successfully",
+      "confirmDelete": "Are you sure you want to delete this data source?"
+    },
+    "validation": {
+      "nameMinLength": "Name must be at least 1 character",
+      "typeRequired": "Type is required"
     }
   }
 }
