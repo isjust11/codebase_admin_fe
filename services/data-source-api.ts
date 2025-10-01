@@ -40,3 +40,4 @@ export const deleteDataSource = async (id: string) => {
   const response = await axiosApi.delete(`/data-source/${id}`);
   return response.data;
 };
+
