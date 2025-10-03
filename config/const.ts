@@ -1,12 +1,19 @@
 // Cấu hình API URL cho các môi trường khác nhau
 const ENV = process.env.NODE_ENV || 'development';
-
+export const X_CLIENT_KEY = process.env.X_CLIENT_KEY;
 // Cấu hình URL cho API dựa trên môi trường
 export const API_URL = 
   ENV === 'production' 
     ? 'https://api.yourproduction.com' // URL cho môi trường production
     : ENV === 'development' 
       ? 'http://localhost:4000' // URL cho môi trường staging
+      : 'https://api.yourproduction.com'; // URL cho môi trường development
+
+export const API_URL_DOWNLOAD = 
+  ENV === 'production' 
+    ? 'https://api.yourproduction.com' // URL cho môi trường production
+    : ENV === 'development' 
+      ? 'http://localhost:3005' // URL cho môi trường staging
       : 'https://api.yourproduction.com'; // URL cho môi trường development
 
 // Các cấu hình API khác có thể được thêm vào đây

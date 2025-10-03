@@ -1,4 +1,4 @@
-import { API_URL, API_TIMEOUT } from "@/config/const";
+import { API_URL, API_TIMEOUT, API_URL_DOWNLOAD, X_CLIENT_KEY } from "@/config/const";
 import { AppApi, AppConstants } from "@/constants";
 import axios from "axios";
 
@@ -18,7 +18,14 @@ export const logout = (): void => {
     localStorage.removeItem(AppConstants.User);
   }
 };
-
+const axiosDownload = axios.create({
+  baseURL: API_URL_DOWNLOAD,
+  timeout: API_TIMEOUT,
+  headers: {
+    'Accept': 'application/json',
+    'x-client-key': X_CLIENT_KEY,
+  }
+});
 
 const axiosApi = axios.create({
   baseURL: API_URL,

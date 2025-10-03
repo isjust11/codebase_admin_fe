@@ -3,6 +3,7 @@ import { twMerge } from "tailwind-merge"
 import crypto from 'crypto';
 import { AppCategoryCode } from "@/constants";
 import { Feature } from "@/types/feature";
+import { downloadFile } from "@/services/utils-api";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -49,6 +50,11 @@ export const mergeImageUrl = (relativeUrl: string): string => {
   
   // Merge URL
   return `${apiUrl}${relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`}`;
+};
+
+export const getMediaUtils = async (relativeUrl: string): Promise<string> => {
+  const mediaData = await downloadFile(relativeUrl);
+  return mediaData;
 };
 
 export const isImgFormat = (url: string): boolean => {

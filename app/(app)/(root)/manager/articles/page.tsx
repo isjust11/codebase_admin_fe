@@ -106,7 +106,7 @@ export default function ArticlesManagement() {
       accessorKey: "thumbnail",
       header: t('thumbnail'),
       cell: ({ row }) => {
-        const thumbnail = mergeImageUrl(row.getValue("thumbnail") as string)
+        const thumbnail = row.getValue("thumbnail") as string
         // console.log(thumbnail)
         return (
           thumbnail ? 
