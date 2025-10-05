@@ -53,7 +53,7 @@ const ArticleForm = () => {
       title: article.title,
       content: article.content,
       summary: article.summary || '',
-      thumbnailUrl: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
+      thumbnailUrl: article.thumbnail,
       statusId: article.statusId || '',
       thumbnailFile: undefined,
       categoryId: '',
@@ -97,7 +97,7 @@ const ArticleForm = () => {
         summary: article.summary || '',
         statusId: article.statusId || '',
         thumbnailFile: undefined,
-        thumbnailUrl: article.thumbnail ? mergeImageUrl(article.thumbnail) : '',
+        thumbnailUrl: article.thumbnail,
         categoryId: article.categoryId || '',
       });
     } catch (_error) {

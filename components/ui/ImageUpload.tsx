@@ -21,7 +21,7 @@ const ImageUpload = ({
 }: ImageUploadProps) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [displayImage, setDisplayImage] = useState<string | null>(mergeImageUrl(value || '') || previewUrl || null);
+  const [displayImage, setDisplayImage] = useState<string | null>(value || previewUrl || null);
 
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles && acceptedFiles.length > 0) {
