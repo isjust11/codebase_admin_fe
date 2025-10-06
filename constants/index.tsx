@@ -8,6 +8,7 @@ export const AppConstants = {
   Password: 'password',
   Feature: 'feature',
   Permissions: 'permissions',
+  IsLoadSidebar: 'isLoadSidebar',
 }
 export const AppRoutes = {
   Auth: {

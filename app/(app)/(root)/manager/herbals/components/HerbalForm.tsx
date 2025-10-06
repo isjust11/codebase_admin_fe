@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { getCategories, getCategoryByCode } from '@/services/manager-api';
+import { getAllDataSources, getCategories, getCategoryByCode, getDataSources } from '@/services/manager-api';
+import { DataSource } from '@/types/data-source';
 import { Category } from '@/types/category';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useDropzone } from 'react-dropzone';
@@ -30,6 +31,8 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
   loading = false
 }) => {
   const [categories, setCategories] = useState<Category[]>([]);
+  const [dataSources, setDataSources] = useState<DataSource[]>([]);
+  const [loadingDataSources, setLoadingDataSources] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const t = useTranslations('Herbals')
@@ -50,6 +53,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
     sideEffects: '',
     thumbnail: '',
     categoryId: '',
+    dataSourceId: null,
     isActive: true,
     id: '',
     slug: '',
@@ -89,13 +93,27 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
       }
     };
     fetchCategories();
+    loadDataSources();
   }, []);
+
+  const loadDataSources = async () => {
+    setLoadingDataSources(true);
+    try {
+      const response = await getAllDataSources();
+      setDataSources(response);
+    } catch (error) {
+      console.error('Error fetching data sources:', error);
+    } finally {
+      setLoadingDataSources(false);
+    }
+  }
 
   useEffect(() => {
     if (initialData) {
       setFormData(prev => ({
         ...prev,
-        ...initialData
+        ...initialData,
+        dataSourceId: (initialData as any).dataSourceId || null,
       }));
       if (initialData.thumbnail) {
         setPreviewUrl(initialData.thumbnail);
@@ -103,7 +121,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
     }
   }, [initialData]);
 
-  const handleInputChange = (field: string, value: string | boolean) => {
+  const handleInputChange = (field: string, value: string | boolean | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
@@ -404,6 +422,36 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 onChange={(checked: boolean) => handleInputChange('isActive', checked)}
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
+            <Select 
+              value={formData.dataSourceId?.toString() || ''} 
+              onValueChange={(value) => handleInputChange('dataSourceId', value ? parseInt(value) : null)}
+              disabled={loadingDataSources}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
+              </SelectTrigger>
+              <SelectContent className='bg-white dark:bg-gray-900'>
+                <SelectItem value="">{t('noDataSource')}</SelectItem>
+                {dataSources.map((dataSource) => (
+                  <SelectItem 
+                    className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' 
+                    key={dataSource.id} 
+                    value={dataSource.id.toString()}
+                  >
+                    <div className="flex flex-col">
+                      <span className="font-medium">{dataSource.name}</span>
+                      {dataSource.title && (
+                        <span className="text-sm text-gray-500">{dataSource.title}</span>
+                      )}
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </form>
       </div>

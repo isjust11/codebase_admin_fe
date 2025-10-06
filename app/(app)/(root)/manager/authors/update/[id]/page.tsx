@@ -47,6 +47,7 @@ const UpdateAuthorPage = () => {
     honors: '',
     memorials: '',
     references: '',
+    dataSourceId: null,
     isActive: true,
     avatarFile: undefined,
     portraitFile: undefined,
@@ -88,6 +89,7 @@ const UpdateAuthorPage = () => {
             honors: response.honors || '',
             memorials: response.memorials || '',
             references: response.references || '',
+            dataSourceId: (response as any).dataSourceId || null,
             isActive: response.isActive ?? true,
             avatarFile: undefined,
             portraitFile: undefined,
@@ -108,7 +110,7 @@ const UpdateAuthorPage = () => {
     }
   }, [authorId])
 
-  const handleInputChange = (field: string, value: string | boolean | string[] | Date | File | File[] | null) => {
+  const handleInputChange = (field: string, value: string | boolean | string[] | Date | File | File[] | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value

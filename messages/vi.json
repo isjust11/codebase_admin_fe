@@ -550,7 +550,8 @@
     "selectAction": "Chọn hành động",
     "loading": "Đang tải...",
     "updateSuccess": "Cập nhật quyền thành công",
-    "updateError": "Lỗi khi cập nhật quyền: {message}"
+    "updateError": "Lỗi khi cập nhật quyền: {message}",
+    "dataSource": "Nguồn dữ liệu"
   },
   "UserForm": {
     "username": "Tên đăng nhập",
@@ -698,6 +699,10 @@
     "updatedAt": "Ngày cập nhật",
     "basicInfo": "Thông tin cơ bản",
     "selectAuthor": "Chọn tác giả",
+    "dataSource": "Nguồn dữ liệu",
+    "selectDataSource": "Chọn nguồn dữ liệu",
+    "noDataSource": "Không có nguồn dữ liệu",
+    "loading": "Đang tải...",
     "messages": {
       "error": "Lỗi tải danh sách bài thuốc dân gian",
       "deleteSuccess": "Bài thuốc dân gian đã được xóa thành công",
@@ -787,6 +792,9 @@
     "slug": "Slug",
     "id": "ID",
     "uploadSuccess": "Tải lên thành công {count} hình ảnh",
+    "dataSource": "Nguồn dữ liệu",
+    "selectDataSource": "Chọn nguồn dữ liệu",
+    "noDataSource": "Không có nguồn dữ liệu",
     "detail": "Chi tiết",
     "back":"Quay lại",
     "dosage": "Liều dùng",
@@ -977,6 +985,10 @@
     "uploadPortrait":"Tải lên hình ảnh tác giả",
     "creating": "Đang tạo tác giả...",
     "updating": "Đang cập nhật tác giả...",
+    "dataSource": "Nguồn dữ liệu",
+    "selectDataSource": "Chọn nguồn dữ liệu",
+    "noDataSource": "Không có nguồn dữ liệu",
+    "loading": "Đang tải...",
     "deleting": "Đang xóa tác giả...",
     "creatingSuccess": "Tác giả đã được tạo thành công",
     "updatingSuccess": "Tác giả đã được cập nhật thành công",
@@ -1060,7 +1072,11 @@
       "statusMinLength": "Trạng thái bài viết phải có ít nhất 3 ký tự",
       "validationError": "Vui lòng kiểm tra lại thông tin",
       "categoryRequired": "Danh mục bài viết không được để trống"
-    }
+    },
+    "dataSource": "Nguồn dữ liệu",
+    "selectDataSource": "Chọn nguồn dữ liệu",
+    "noDataSource": "Không có nguồn dữ liệu",
+    "loading": "Đang tải..."
   },
   "DataSourcePage": {
     "pageTitle": "Danh sách nguồn dữ liệu",

@@ -561,7 +561,8 @@
     "deleteSuccess": "Delete permission successfully!",
     "deleteError": "Error deleting permission: {message}",
     "updateSuccess": "Update permission successfully!",
-    "updateError": "Error updating permission: {message}"
+    "updateError": "Error updating permission: {message}",
+    "dataSource": "Data source"
   },
   "UserForm": {
     "username": "Username",
@@ -705,6 +706,10 @@
     "updatedAt": "Updated at",
     "basicInfo": "Basic Info",
     "selectAuthor": "Select author",
+    "dataSource": "Data source",
+    "selectDataSource": "Select data source",
+    "noDataSource": "No data source",
+    "loading": "Loading...",
     "messages": {
       "error": "Error loading folk medicine list",
       "deleteSuccess": "Folk medicine deleted successfully",
@@ -795,6 +800,9 @@
     "slug": "Slug",
     "id": "ID",
     "uploadSuccess": "Upload success {count} images",
+    "dataSource": "Data source",
+    "selectDataSource": "Select data source",
+    "noDataSource": "No data source",
     "detail": "Detail",
     "dosage": "Dosage",
     "isActive": "Is active",
@@ -958,6 +966,10 @@
     "uploadPortrait":"Upload portrait",
     "creating": "Creating author...",
     "updating": "Updating author...",
+    "dataSource": "Data source",
+    "selectDataSource": "Select data source",
+    "noDataSource": "No data source",
+    "loading": "Loading...",
     "deleting": "Deleting author...",
     "creatingSuccess": "Author created successfully",
     "updatingSuccess": "Author updated successfully",
@@ -1036,7 +1048,11 @@
       "statusMinLength": "Status must be at least 3 characters",
       "validationError": "Please check the information again",
       "categoryRequired": "Category is required"
-    }
+    },
+    "dataSource": "Data source",
+    "selectDataSource": "Select data source",
+    "noDataSource": "No data source",
+    "loading": "Loading..."
   },
   "DataSourcePage": {
     "pageTitle": "Data Source List",

@@ -103,6 +103,7 @@ export default function PermissionsPage() {
       notification: t('notification'),
       history: t('history'),
       food_item: t('foodItem'),
+      data_source: t('dataSource'),
     };
     return resourceNames[resourceKey] || resourceKey;
   };

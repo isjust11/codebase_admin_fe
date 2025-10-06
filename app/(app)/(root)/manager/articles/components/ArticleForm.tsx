@@ -20,7 +20,8 @@ import ImageUpload from '@/components/ui/ImageUpload';
 import { AppCategoryCode, AppRoutes } from '@/constants';
 import { z } from 'zod';
 import { Category } from '@/types/category';
-import { getCategoryByCode } from '@/services/manager-api';
+import { getAllDataSources, getCategoryByCode, getDataSources } from '@/services/manager-api';
+import { DataSource } from '@/types/data-source';
 
 const articleFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
@@ -30,6 +31,7 @@ const articleFormSchema = (t: any) => z.object({
   summary: z.string().min(3, t('validation.summaryMinLength')),
   statusId: z.string().refine(val => val.trim() !== '', t('validation.statusRequired')),
   categoryId: z.string().refine(val => val.trim() !== '', t('validation.categoryRequired')),
+  dataSourceId: z.number().nullable().optional(),
   thumbnailFile: z.instanceof(File).optional(),
   thumbnailUrl: z.string().optional(),
 });
@@ -47,6 +49,8 @@ const ArticleForm = () => {
   const articleForm = articleFormSchema(t);
   const [articleStatus, setArticleStatus] = useState<Category[]>([]);
   const [articleType, setArticleType] = useState<Category[]>([]);
+  const [dataSources, setDataSources] = useState<DataSource[]>([]);
+  const [loadingDataSources, setLoadingDataSources] = useState(false);
 
   const [formData, setFormData] = useState<z.infer<typeof articleForm>>(
     article ? {
@@ -57,6 +61,7 @@ const ArticleForm = () => {
       statusId: article.statusId || '',
       thumbnailFile: undefined,
       categoryId: '',
+      dataSourceId: (article as any).dataSourceId || null,
     } : {
       title: '',
       content: '',
@@ -64,6 +69,7 @@ const ArticleForm = () => {
       statusId: 'draft',
       thumbnailFile: undefined,
       categoryId: '',
+      dataSourceId: null,
     });
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof articleForm>, string>>>({});
   const id = params.id?.toString();
@@ -76,6 +82,7 @@ const ArticleForm = () => {
       loadArticle(id);
     }
     loadCategories();
+    loadDataSources();
   }, []);
 
   const loadCategories = async () => {
@@ -85,6 +92,18 @@ const ArticleForm = () => {
     ]);
     setArticleStatus(articleStatus);
     setArticleType(articleType);
+  }
+
+  const loadDataSources = async () => {
+    setLoadingDataSources(true);
+    try {
+      const response = await getAllDataSources();
+      setDataSources(response);
+    } catch (error) {
+      console.error('Error fetching data sources:', error);
+    } finally {
+      setLoadingDataSources(false);
+    }
   }
 
   const loadArticle = async (id: string) => {
@@ -99,6 +118,7 @@ const ArticleForm = () => {
         thumbnailFile: undefined,
         thumbnailUrl: article.thumbnail,
         categoryId: article.categoryId || '',
+        dataSourceId: (article as any).dataSourceId || null,
       });
     } catch (_error) {
       toast.error(t('messages.loadError'));
@@ -189,6 +209,13 @@ const ArticleForm = () => {
       categoryId: value,
     }));
     setFormErrors(prev => ({ ...prev, categoryId: undefined }));
+  };
+
+  const handleSelectDataSourceChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      dataSourceId: value ? parseInt(value) : null,
+    }));
   };
 
   const handleFileChange = (field: string, value: File | null) => {
@@ -324,6 +351,32 @@ const ArticleForm = () => {
                       <div className="text-red-500 text-sm">{formErrors.statusId}</div>
                     )}
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dataSource">{t('dataSource')}</Label>
+                  <Select 
+                    value={formData.dataSourceId?.toString() || ''} 
+                    onValueChange={handleSelectDataSourceChange}
+                    disabled={loadingDataSources}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
+                    </SelectTrigger>
+                    <SelectContent className="w-full bg-white">
+                      <SelectItem value="">{t('noDataSource')}</SelectItem>
+                      {dataSources.map((dataSource) => (
+                        <SelectItem key={dataSource.id} value={dataSource.id.toString()}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{dataSource.name}</span>
+                            {dataSource.title && (
+                              <span className="text-sm text-gray-500">{dataSource.title}</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
 

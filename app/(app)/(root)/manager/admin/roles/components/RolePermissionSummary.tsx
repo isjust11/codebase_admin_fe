@@ -54,7 +54,7 @@ export default function RolePermissionSummary({
 
   const getPermissionGroups = () => {
     const groups = assignedPermissions.reduce((acc: any, permission) => {
-      const resource = permission.resource || 'Unknown';
+      const resource = (permission.resource ?? permission.code.split("_")[0]) || 'Unknown';
       if (!acc[resource]) {
         acc[resource] = [];
       }

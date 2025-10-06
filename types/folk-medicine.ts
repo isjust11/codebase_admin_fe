@@ -18,6 +18,7 @@ export interface FolkMedicine {
   author?: Author;
   categoryId?: string;
   category?: Category;
+  dataSourceId?: number | null;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -34,6 +35,7 @@ export interface CreateFolkMedicineDto {
   thumbnail?: string;
   authorId?: string;
   categoryId?: string;
+  dataSourceId?: number | null;
   isActive?: boolean;
 }
 

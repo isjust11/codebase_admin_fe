@@ -85,6 +85,7 @@ export const logout = (): void => {
   localStorage.removeItem(AppConstants.AccessToken);
   localStorage.removeItem(AppConstants.RefreshToken);
   localStorage.removeItem(AppConstants.User);
+  localStorage.removeItem(AppConstants.IsLoadSidebar);
 };
 
 export const verifyEmail = async (token: string): Promise<AuthResponse> => {

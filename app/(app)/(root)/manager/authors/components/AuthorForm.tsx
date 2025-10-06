@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -9,6 +9,9 @@ import ImageUpload from '@/components/ui/ImageUpload'
 import MultipleImageUpload from '@/components/ui/MultipleImageUpload'
 import Switch from '@/components/form/switch/Switch'
 import { ArrowLeft, Save, ChevronDown, ChevronRight } from 'lucide-react'
+import { DataSource } from '@/types/data-source'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { getAllDataSources, getDataSources } from '@/services/manager-api'
 
 export interface AuthorFormData {
   name: string
@@ -38,6 +41,7 @@ export interface AuthorFormData {
   honors: string
   memorials: string
   references: string
+  dataSourceId: number | null
   isActive: boolean
   avatarFile?: File | null
   portraitFile?: File | null
@@ -47,7 +51,7 @@ export interface AuthorFormData {
 
 interface AuthorFormProps {
   formData: AuthorFormData
-  onInputChange: (field: string, value: string | boolean | string[] | File | File[] | null) => void
+  onInputChange: (field: string, value: string | boolean | string[] | File | File[] | number | null) => void
   onSubmit: (e: React.FormEvent) => void
   onCancel: () => void
   loading: boolean
@@ -66,6 +70,8 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
   const [isPersonalInfoOpen, setIsPersonalInfoOpen] = useState(false)
   const [isCareerInfoOpen, setIsCareerInfoOpen] = useState(false)
   const [isAdditionalInfoOpen, setIsAdditionalInfoOpen] = useState(false)
+  const [dataSources, setDataSources] = useState<DataSource[]>([])
+  const [loadingDataSources, setLoadingDataSources] = useState(false)
 
   const handleDateChange = (field: string, value: string) => {
     onInputChange(field, value)
@@ -78,6 +84,23 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
   const handleMultipleImageChange = (field: string, value: File[]) => {
     onInputChange(field, value)
   }
+
+  // Fetch data sources on component mount
+  useEffect(() => {
+    const fetchDataSources = async () => {
+      setLoadingDataSources(true)
+      try {
+        const response = await getAllDataSources()
+        setDataSources(response)
+      } catch (error) {
+        console.error('Error fetching data sources:', error)
+      } finally {
+        setLoadingDataSources(false)
+      }
+    }
+
+    fetchDataSources()
+  }, [])
 
   return (
     <form onSubmit={onSubmit} className="space-y-6">
@@ -469,7 +492,34 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                   />
                 </div>
 
-                {/* Tài liệu tham khảo */}
+                {/* Chọn nguồn dữ liệu */}
+                <div className="space-y-2">
+                  <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
+                  <Select
+                    value={formData.dataSourceId?.toString() || ''}
+                    onValueChange={(value) => onInputChange('dataSourceId', value ? parseInt(value) : null)}
+                    disabled={loadingDataSources}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">{t('noDataSource')}</SelectItem>
+                      {dataSources.map((dataSource) => (
+                        <SelectItem key={dataSource.id} value={dataSource.id.toString()}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{dataSource.name}</span>
+                            {dataSource.title && (
+                              <span className="text-sm text-gray-500">{dataSource.title}</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* nguồn dữ liệu tham khảo */}
                 <div className="space-y-2">
                   <Label htmlFor="references">{t('references')}</Label>
                   <Textarea

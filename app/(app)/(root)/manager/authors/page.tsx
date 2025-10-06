@@ -5,7 +5,7 @@ import { ArrowDown, ArrowLeftRight, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal
 import { useRouter } from 'next/navigation'
 import { useLoading } from '@/contexts/LoadingContext'
 import { DataTable } from '@/components/DataTable'
-import { deleteAuthor, getAllAuthors, getAuthorsByPage, updateAuthor } from '@/services/author-api'
+import { deleteAuthor, getAuthorsByPage, updateAuthor } from '@/services/author-api'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
@@ -14,7 +14,7 @@ import { toast } from 'sonner'
 import Badge from '@/components/ui/badge/Badge'
 import { Action } from '@/types/actions'
 import { Checkbox } from '@/components/ui/checkbox'
-import { getMediaUtils, isImgFormat, mergeImageUrl } from '@/lib/utils'
+import { isImgFormat } from '@/lib/utils'
 import Image from 'next/image'
 import { Author } from '@/types/author'
 import { AlertDialogUtils } from '@/components/AlertDialogUtils'
@@ -53,11 +53,10 @@ const AuthorsPage = () => {
     {
       accessorKey: "portrait",
       header: t('thumbnail'),
-      cell: async ({ row }) => {
+      cell: ({ row }) => {
         const author = row.original as any
-        const imageUrl = author.avatar || author.portrait
-        const finalImageUrl = await getMediaUtils(imageUrl)
-        if (errorImage || !isImgFormat(finalImageUrl)) {
+        const imageUrl = author.portrait
+        if (errorImage || !isImgFormat(imageUrl)) {
           return (
             <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
               <span className="text-gray-500">
@@ -67,10 +66,10 @@ const AuthorsPage = () => {
           )
         }
         return (
-          finalImageUrl ? <Image
+          imageUrl ? <Image
             width={164}
             height={124}
-            src={finalImageUrl}
+            src={imageUrl}
             alt="author-portrait"
             className="w-16 h-16 object-cover rounded-md"
             onError={() => setErrorImage(true)}

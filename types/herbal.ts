@@ -22,6 +22,7 @@ export interface Herbal {
     authorId?: string;
     category?: Category;
     categoryId?: string;
+    dataSourceId?: number | null;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;

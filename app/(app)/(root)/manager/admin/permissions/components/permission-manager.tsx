@@ -159,6 +159,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
       notification: t('notification'),
       history: t('history'),
       food_item: t('foodItem'),
+      data_source: t('dataSource'),
     };
     return resourceNames[resourceKey] || resourceKey;
   };
@@ -248,7 +249,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
           <SelectTrigger>
             <SelectValue placeholder={t('selectResource')} />
           </SelectTrigger>
-          <SelectContent className='bg-white dark:bg-gray-800'>
+          <SelectContent className='bg-white dark:bg-gray-800 max-h-[300px] overflow-y-auto'>
             {Object.entries(resources).map(([key, value]) => (
               <SelectItem key={key} value={value} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
                 {getResourceDisplayName(value)}

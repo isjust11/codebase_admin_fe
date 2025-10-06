@@ -17,7 +17,8 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/types/category';
 import { FolkMedicine, CreateFolkMedicineDto } from '@/types/folk-medicine';
 import { useTranslations } from 'next-intl';
-import { getCategoryByCode } from '@/services/manager-api';
+import { getAllDataSources, getCategoryByCode, getDataSources } from '@/services/manager-api';
+import { DataSource } from '@/types/data-source';
 import { AppCategoryCode } from '@/constants';
 import Switch from '@/components/form/switch/Switch';
 import { useLoading } from '@/contexts/LoadingContext';
@@ -42,6 +43,8 @@ const FolkMedicineForm = () => {
   const [folkMedicine, setFolkMedicine] = useState<FolkMedicine | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
+  const [dataSources, setDataSources] = useState<DataSource[]>([]);
+  const [loadingDataSources, setLoadingDataSources] = useState(false);
   const [formData, setFormData] = useState<FolkMedicine>({
     id: '',
     slug: '',
@@ -57,6 +60,7 @@ const FolkMedicineForm = () => {
     thumbnail: '',
     authorId: '',
     categoryId: '',
+    dataSourceId: null,
     isActive: true,
     createdAt: '',
     updatedAt: '',
@@ -88,8 +92,10 @@ const FolkMedicineForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const categoriesData = await getCategoryByCode(AppCategoryCode.FolkMedicine.code);
-        const authorsData = await getAllAuthors();
+        const [categoriesData, authorsData] = await Promise.all([
+          getCategoryByCode(AppCategoryCode.FolkMedicine.code),
+          getAllAuthors()
+        ]);
         setCategories(categoriesData || []);
         setAuthors(authorsData || []);
       } catch (error) {
@@ -98,7 +104,20 @@ const FolkMedicineForm = () => {
     };
 
     fetchData();
+    loadDataSources();
   }, []);
+
+  const loadDataSources = async () => {
+    setLoadingDataSources(true);
+    try {
+      const response = await getAllDataSources();
+      setDataSources(response);
+    } catch (error) {
+      console.error('Error fetching data sources:', error);
+    } finally {
+      setLoadingDataSources(false);
+    }
+  }
 
   useEffect(() => {
     if (id) {
@@ -122,6 +141,7 @@ const FolkMedicineForm = () => {
       setFormData(prev => ({
         ...prev,
         ...data,
+        dataSourceId: (data as any).dataSourceId || null,
       }));
       if (data.thumbnail) {
         data.thumbnail = mergeImageUrl(data.thumbnail);
@@ -412,6 +432,32 @@ const FolkMedicineForm = () => {
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
+                  <Select 
+                    value={formData.dataSourceId?.toString() || ''} 
+                    onValueChange={(value) => handleSelectChange('dataSourceId', value ? parseInt(value) : null)}
+                    disabled={loadingDataSources}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
+                    </SelectTrigger>
+                    <SelectContent className="w-full bg-white">
+                      <SelectItem value="">{t('noDataSource')}</SelectItem>
+                      {dataSources.map((dataSource) => (
+                        <SelectItem key={dataSource.id} value={dataSource.id.toString()}>
+                          <div className="flex flex-col">
+                            <span className="font-medium">{dataSource.name}</span>
+                            {dataSource.title && (
+                              <span className="text-sm text-gray-500">{dataSource.title}</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">

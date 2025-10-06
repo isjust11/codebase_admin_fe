@@ -14,7 +14,7 @@ import { Feature } from "@/types/feature";
 import { Icon } from "@/components/ui/icon";
 import { Category } from "@/types/category";
 import { getCategoryByCode } from "@/services/manager-api";
-import { AppCategoryCode, AppRoutes } from "@/constants";
+import { AppCategoryCode, AppConstants, AppRoutes } from "@/constants";
 import { buildFeature } from "@/lib/utils";
 import { useAsyncEffect } from "@/hooks/useAsyncEffect";
 import { Loader2 } from "lucide-react";
@@ -54,17 +54,62 @@ const AppSidebar: React.FC = () => {
     if (typeof window === "undefined") {
       return;
     }
-
     let isMounted = true;
 
     const fetchMenuTypes = async () => {
       try {
         const appCode = Object.entries(AppCategoryCode);
+        const CACHE_KEY = `sidebar_menu_types_${appCode[0][0]}`;
+        const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutes
+
+        // If flagged as loaded, still attempt to hydrate from cache
+        const isLoadSidebar = localStorage.getItem(AppConstants.IsLoadSidebar);
+        if (isLoadSidebar) {
+          const cachedHydrate = localStorage.getItem(CACHE_KEY);
+          if (cachedHydrate) {
+            try {
+              const cached = JSON.parse(cachedHydrate) as { data: Category[]; ts: number };
+              if (cached && Array.isArray(cached.data)) {
+                if (!isMounted) return;
+                setMenuTypes(cached.data.sort((a, b) => a.sortOrder - b.sortOrder));
+                setIsDataLoading(false);
+                return;
+              }
+            } catch (_e) {}
+          }
+        }
+
+        // Try fresh cache first
+        const cachedRaw = localStorage.getItem(CACHE_KEY);
+        if (cachedRaw) {
+          try {
+            const cached = JSON.parse(cachedRaw) as { data: Category[]; ts: number };
+            if (cached && Array.isArray(cached.data) && cached.ts && Date.now() - cached.ts < CACHE_TTL_MS) {
+              if (!isMounted) return;
+              setMenuTypes(cached.data.sort((a, b) => a.sortOrder - b.sortOrder));
+              setIsDataLoading(false);
+              localStorage.setItem(AppConstants.IsLoadSidebar, 'true');
+              return; // cache hit, skip network
+            }
+          } catch (_e) {
+            // ignore cache parse errors
+          }
+        }
+
+        // Fallback to network
         const data: Category[] = await getCategoryByCode(appCode[0][0]);
         if (!data || !isMounted) {
           return;
         }
-        setMenuTypes(data.sort((a, b) => a.sortOrder - b.sortOrder));
+        const sorted = data.sort((a, b) => a.sortOrder - b.sortOrder);
+        setMenuTypes(sorted);
+        // write cache
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ data: sorted, ts: Date.now() }));
+        } catch (_e) {
+          // ignore quota errors
+        }
+        localStorage.setItem(AppConstants.IsLoadSidebar, 'true');
       } catch (error) {
         console.error('Error fetching menu types:', error);
       } finally {
@@ -82,7 +127,10 @@ const AppSidebar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (typeof window === "undefined" ) {
+      return;
+    }
+    if (features && features.length > 0) {
       return;
     }
     const buildFeatureItems = buildFeature(feature);

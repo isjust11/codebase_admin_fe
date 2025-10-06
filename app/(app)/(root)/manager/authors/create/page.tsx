@@ -42,6 +42,7 @@ const CreateAuthorPage = () => {
     honors: '',
     memorials: '',
     references: '',
+    dataSourceId: null,
     isActive: true,
     avatarFile: undefined,
     portraitFile: undefined,
@@ -49,7 +50,7 @@ const CreateAuthorPage = () => {
     galleryImagesFile: undefined
   })
 
-  const handleInputChange = (field: string, value: string | boolean | string[] | Date | File | File[] | null) => {
+  const handleInputChange = (field: string, value: string | boolean | string[] | Date | File | File[] | number | null) => {
     setFormData(prev => ({
       ...prev,
       [field]: value

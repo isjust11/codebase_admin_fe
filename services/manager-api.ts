@@ -346,6 +346,16 @@ export const getDataSources = async (params?: PaginationParams): Promise<Paginat
   }
 };
 
+export const getAllDataSources = async (): Promise<DataSource[]> => {
+  try {
+    const response = await axiosApi.get(`/data-source/all`);
+    return response.data;
+  } catch (_error) {
+    console.error('Error fetching data sources:', _error);
+    throw _error;
+  }
+};
+
 export const getDataSource = async (id: string): Promise<DataSource> => {
   try {
     const response = await axiosApi.get(`/data-source/${id}`);
@@ -378,7 +388,7 @@ export const updateDataSource = async (id: string, data: any): Promise<DataSourc
 
 export const updateDataSourceStatus = async (id: string, data: any): Promise<DataSource> => {
   try {
-    const response = await axiosApi.patch(`/data-source/${id}/status`, data);
+    const response = await axiosApi.put(`/data-source/${id}/status`, data);
     return response.data;
   } catch (_error) {
     console.error('Error updating data source status:', _error);

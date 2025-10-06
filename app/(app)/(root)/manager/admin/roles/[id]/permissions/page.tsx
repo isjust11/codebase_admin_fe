@@ -64,7 +64,7 @@ export default function RolePermissionsPage() {
   useEffect(() => {
     if (permissions.length > 0) {
       const groups = permissions.reduce((acc: PermissionGroup[], permission) => {
-        const resource = permission.resource || 'Unknown';
+        const resource =( permission.resource ?? permission.code.split("_")[0]) || 'Unknown';
         const existingGroup = acc.find(group => group.resource === resource);
         
         if (existingGroup) {
