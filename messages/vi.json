@@ -65,7 +65,8 @@
     "updateSuccess": "Cập nhật thành công",
     "updateError": "Lỗi khi cập nhật",
     "createdAt": "Ngày tạo",
-    "uploadedImages": "Hình ảnh đã tải lên"
+    "uploadedImages": "Hình ảnh đã tải lên",
+    "Add dataSource": "Thêm nguồn dữ liệu"
     },
   "LocaleSwitcher": {
     "en": "English",
@@ -1019,7 +1020,6 @@
   "ArticlePage": {
     "title": "Danh sách bài viết",
     "addArticle": "Thêm bài viết",
-    "loading": "Đang tải dữ liệu...",
     "thumbnail": "Hình ảnh",
     "content": "Nội dung",
     "viewArticle": "Xem bài viết",
@@ -1045,6 +1045,7 @@
     "statusPlaceholder": "Chọn trạng thái",
     "category": "Danh mục bài viết",
     "categoryPlaceholder": "Chọn danh mục bài viết",
+    "dataSourcePlaceholder": "Chọn nguồn dữ liệu",
     "messages": {
       "deleteTitle": "Xóa bài viết",
       "deleteDescription": "Bạn có chắc chắn muốn xóa bài viết này không?",

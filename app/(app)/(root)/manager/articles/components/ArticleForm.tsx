@@ -22,6 +22,7 @@ import { z } from 'zod';
 import { Category } from '@/types/category';
 import { getAllDataSources, getCategoryByCode, getDataSources } from '@/services/manager-api';
 import { DataSource } from '@/types/data-source';
+import { Textarea } from '@/components/ui/textarea';
 
 const articleFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
@@ -31,7 +32,7 @@ const articleFormSchema = (t: any) => z.object({
   summary: z.string().min(3, t('validation.summaryMinLength')),
   statusId: z.string().refine(val => val.trim() !== '', t('validation.statusRequired')),
   categoryId: z.string().refine(val => val.trim() !== '', t('validation.categoryRequired')),
-  dataSourceId: z.number().nullable().optional(),
+  dataSourceId: z.string().optional(),
   thumbnailFile: z.instanceof(File).optional(),
   thumbnailUrl: z.string().optional(),
 });
@@ -61,15 +62,15 @@ const ArticleForm = () => {
       statusId: article.statusId || '',
       thumbnailFile: undefined,
       categoryId: '',
-      dataSourceId: (article as any).dataSourceId || null,
+      dataSourceId: (article as any).dataSourceId || '',
     } : {
       title: '',
       content: '',
       summary: '',
-      statusId: 'draft',
+      statusId: '',
       thumbnailFile: undefined,
       categoryId: '',
-      dataSourceId: null,
+      dataSourceId: '',
     });
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof articleForm>, string>>>({});
   const id = params.id?.toString();
@@ -118,7 +119,7 @@ const ArticleForm = () => {
         thumbnailFile: undefined,
         thumbnailUrl: article.thumbnail,
         categoryId: article.categoryId || '',
-        dataSourceId: (article as any).dataSourceId || null,
+        dataSourceId: (article as any).dataSourceId || '',
       });
     } catch (_error) {
       toast.error(t('messages.loadError'));
@@ -158,7 +159,8 @@ const ArticleForm = () => {
         createdBy: user?.id || '',
         statusId: formData.statusId,
         categoryId: formData.categoryId,
-        updatedBy: user?.id || '', 
+        updatedBy: user?.id || '',
+        dataSourceId: formData.dataSourceId,
         thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : thumbnail,
       };
 
@@ -214,7 +216,7 @@ const ArticleForm = () => {
   const handleSelectDataSourceChange = (value: string) => {
     setFormData(prev => ({
       ...prev,
-      dataSourceId: value ? parseInt(value) : null,
+      dataSourceId: value,
     }));
   };
 
@@ -320,61 +322,62 @@ const ArticleForm = () => {
                     <Select value={formData.statusId} onValueChange={(value) => handleSelectStatusChange(value)}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder={t('statusPlaceholder')} />
-                        {formErrors.statusId && (
-                          <div className="text-red-500 text-sm">{formErrors.statusId}</div>
-                        )}
                       </SelectTrigger>
                       <SelectContent className="w-full bg-white">
                         {
                           articleStatus?.length > 0 ? articleStatus.map((item) => (
-                            <SelectItem key={item.id} value={item.id} className='hover:bg-gray-100 
-                        dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 cursor-pointer'>
+                            <SelectItem key={item.id} value={item.id} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
                               <div className="flex items-center">
-                                <span className="text-sm text-gray-500">{item.name}</span>
+                                <div className="text-sm text-gray-500">{item.name}</div>
                               </div>
                             </SelectItem>
                           ))
                             :
-                            <div className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 p-2'
+                            <div className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 p-2 cursor-pointer'
                               onClick={() => navigateTo('/manager/categories?onCreate=true&code=' + AppCategoryCode.ArticleStatus.code)}>
                               <div className="flex items-center">
                                 <PlusIcon className="h-4 w-4 mr-2 text-gray-500" />
-                                <span className="text-sm text-gray-500">{tUtils('addCategory')}</span>
+                                <span className="text-sm text-gray-500">{tUtils('addStatus')}</span>
                               </div>
                             </div>
                         }
-
                       </SelectContent>
-
+                      {formErrors.statusId && (
+                        <div className="text-red-500 text-sm">{formErrors.statusId}</div>
+                      )}
                     </Select>
-                    {formErrors.statusId && (
-                      <div className="text-red-500 text-sm">{formErrors.statusId}</div>
-                    )}
+
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="dataSource">{t('dataSource')}</Label>
-                  <Select 
-                    value={formData.dataSourceId?.toString() || ''} 
+                  <Select
+                    value={formData.dataSourceId?.toString() || ''}
                     onValueChange={handleSelectDataSourceChange}
                     disabled={loadingDataSources}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
+                      <SelectValue placeholder={loadingDataSources ? t('loading') : t('dataSourcePlaceholder')} />
                     </SelectTrigger>
                     <SelectContent className="w-full bg-white">
-                      <SelectItem value="">{t('noDataSource')}</SelectItem>
-                      {dataSources.map((dataSource) => (
-                        <SelectItem key={dataSource.id} value={dataSource.id.toString()}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{dataSource.name}</span>
-                            {dataSource.title && (
-                              <span className="text-sm text-gray-500">{dataSource.title}</span>
-                            )}
+                      {dataSources.length > 0 ? (
+                        dataSources.map((item: DataSource) => (
+                          <SelectItem key={item.id} value={item.id.toString()} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
+                            <div className="flex items-center">
+                              <div className="text-sm text-gray-500">{item.name}</div>
+                            </div>
+                          </SelectItem>
+                        ))
+                      ) : (
+                        <div className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 p-2'
+                          onClick={() => navigateTo('/manager/data-sources?onCreate=true')}>
+                          <div className="flex items-center">
+                            <PlusIcon className="h-4 w-4 mr-2 text-gray-500" />
+                            <span className="text-sm text-gray-500">{tUtils('addDataSource')}</span>
                           </div>
-                        </SelectItem>
-                      ))}
+                        </div>
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
@@ -382,11 +385,11 @@ const ArticleForm = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="summary">{t('summary')}</Label>
-                  <Input
+                  <Textarea
                     id="summary"
                     name="summary"
                     placeholder={t('summaryPlaceholder')}
-                    type="text"
+                    rows={4}
                     value={formData.summary}
                     onChange={handleChange}
                     maxLength={500}

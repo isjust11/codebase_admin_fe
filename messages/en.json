@@ -75,7 +75,8 @@
     "clickSetMain": "Click to set main image",
     "clickDelete": "Click to delete image",
     "sortOrder": "Sort order",
-    "guide": "Guide"
+    "guide": "Guide",
+    "Add dataSource": "Add data source"
   },
   "LocaleSwitcher": {
     "en": "English",
@@ -658,7 +659,6 @@
   "FolkMedicinesPage": {
     "title": "Folk Medicine List",
     "add-folk-medicine": "Add folk medicine",
-    "loading": "Loading...",
     "thumbnail": "Thumbnail",
     "summary": "Summary",
     "category": "Category",
@@ -1021,6 +1021,7 @@
     "statusPlaceholder": "Select status",
     "category": "Category",
     "categoryPlaceholder": "Select category",
+    "dataSourcePlaceholder": "Select data source",
     "messages": {
       "deleteTitle": "Delete article",
       "deleteDescription": "Are you sure you want to delete this article?",
@@ -1051,8 +1052,7 @@
     },
     "dataSource": "Data source",
     "selectDataSource": "Select data source",
-    "noDataSource": "No data source",
-    "loading": "Loading..."
+    "noDataSource": "No data source"
   },
   "DataSourcePage": {
     "pageTitle": "Data Source List",
