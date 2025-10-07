@@ -35,7 +35,7 @@ const MediaThumbnail: React.FC<{ item: Media }> = ({ item }) => {
   if (item.mimeType.startsWith('image/') && !hasError) {
     return (
       <Image
-        src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
+        src={`${item.url}`}
         alt={item.originalName}
         width={item.width || 200}
         height={item.height || 200}
@@ -48,7 +48,7 @@ const MediaThumbnail: React.FC<{ item: Media }> = ({ item }) => {
   if (item.mimeType.startsWith('video/')) {
     return (
       <video
-        src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
+        src={`${item.url}`}
         controls
         className="object-cover w-full h-48 rounded"
       />
@@ -59,7 +59,7 @@ const MediaThumbnail: React.FC<{ item: Media }> = ({ item }) => {
     return (
       <div className="w-full h-48 flex items-center justify-center bg-muted rounded">
         <audio
-          src={`${process.env.NEXT_PUBLIC_API_URL}${item.url}`}
+          src={`${item.url}`}
           controls
         />
       </div>
@@ -70,6 +70,7 @@ const MediaThumbnail: React.FC<{ item: Media }> = ({ item }) => {
   return (
     <div className="w-full h-48 flex items-center justify-center bg-muted rounded">
       <ImageOff className="h-12 w-12 text-muted-foreground text-gray-300" />
+      {item.mimeType}
     </div>
   );
 };
@@ -222,12 +223,12 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
     setFileUploads(files => files.filter(file => file.preview !== previewUrl));
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (filename: string) => {
     if (window.confirm('Bạn có chắc chắn muốn xóa media này?')) {
       try {
-        await mediaApi.delete(id);
-        setMedias((prev) => prev.filter((item) => item.id !== id));
-        setSelectedItems((prev) => prev.filter((item) => item.id !== id));
+        await mediaApi.delete(filename);
+        setMedias((prev) => prev.filter((item) => item.filename !== filename));
+        setSelectedItems((prev) => prev.filter((item) => item.filename !== filename));
         toast.success('Xóa media thành công');
       } catch (_error) {
         toast.error('Có lỗi xảy ra');
@@ -237,9 +238,9 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
 
   const handleSelect = (item: Media) => {
     if (multiple) {
-      const isSelected = selectedItems.some((selected) => selected.id === item.id);
+      const isSelected = selectedItems.some((selected) => selected.filename === item.filename);
       const newSelected = isSelected
-        ? selectedItems.filter((selected) => selected.id !== item.id)
+        ? selectedItems.filter((selected) => selected.filename !== item.filename)
         : [...selectedItems, item];
       setSelectedItems(newSelected);
       if (onSelect) {
@@ -254,7 +255,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
   };
 
   const handlePreview = (item: Media) => {
-    const index = medias.findIndex((m) => m.id === item.id);
+    const index = medias.findIndex((m) => m.filename === item.filename);
     setImageError(false);
     setActualImageSize(null);
     setPreviewIndex(index);
@@ -321,7 +322,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
     const file = new File([blob], currentMedia.originalName, { type: 'image/png' });
 
     try {
-      await mediaApi.update(currentMedia.id, file);
+      await mediaApi.update(currentMedia.filename, file);
       await fetchMedia();
       setEditMode(false);
       setIsPreviewOpen(false);
@@ -333,7 +334,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
 
   const handleDeleteSelectedItems = async () => {
     setOpenDialog(false);
-    await mediaApi.deleteMultiple(selectedItems.map(item => item.id));
+    await mediaApi.deleteMultiple(selectedItems.map(item => item.filename));
     await fetchMedia();
     setSelectedItems([]);
     if (onSelect) {
@@ -563,11 +564,11 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
           className="grid grid-cols-4 md:grid-cols-3 lg:grid-cols-6 gap-4 overflow-y-scroll max-h-[60vh]"
         >
           {medias && medias.map((item) => {
-            const isSelected = selectedItems.some((selected) => selected.id === item.id);
+            const isSelected = selectedItems.some((selected) => selected.filename === item.filename);
             return (
               <div
                 onClick={() => handlePreview(item)}
-                key={item.id}
+                key={item.filename}
                 className={`relative group border rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${isSelected
                   ? 'ring-2 ring-blue-500/20 shadow-lg'
                   : 'border-border hover:border-blue-500/50'
@@ -617,7 +618,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                     className="h-8 w-8 bg-red-500/90 hover:bg-red-500"
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDelete(item.id);
+                      handleDelete(item.filename);
                     }}
                   >
                     <Trash2 className="h-4 w-4 text-white" />
@@ -678,7 +679,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
           </div>
 
           {editMode ? (
-            <ImageCrop src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url} />
+            <ImageCrop src={medias[previewIndex].url} />
           ) : (
             <>
               <div className="relative aspect-video object-cover">
@@ -686,10 +687,10 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                   <div className="flex justify-center items-center w-full h-full">
                     <div className="max-h-[80vh] overflow-y-auto">
                     <Image
-                      src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
+                      src={medias[previewIndex].url}
                       alt={medias[previewIndex].originalName}
-                      width={medias[previewIndex].width}
-                      height={medias[previewIndex].height}
+                      width={medias[previewIndex].width || 200}
+                      height={medias[previewIndex].height || 200}
                       className="object-contain"
                       onError={() => setImageError(true)}
                       onLoad={(e) => {
@@ -712,7 +713,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                     onError={() => setVideoError(true)}
                     className="w-full h-full object-contain"
                   >
-                    <source src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url} type={medias[previewIndex].mimeType} />
+                    <source src={medias[previewIndex].url} type={medias[previewIndex].mimeType} />
                     <track
                       src={medias[previewIndex].filename}
                       kind="subtitles"
@@ -724,7 +725,7 @@ export function MediaManager({ onSelect, selectedMedia, multiple = true }: Media
                 ) : medias && medias[previewIndex]?.mimeType.startsWith('audio/') && !audioError ? (
                   <div className="flex items-end justify-self-end w-full h-full">
                     <audio
-                      src={process.env.NEXT_PUBLIC_API_URL + medias[previewIndex].url}
+                      src={medias[previewIndex].url}
                       controls
                       onError={() => setAudioError(true)}
                       className="w-full"

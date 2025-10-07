@@ -65,18 +65,19 @@ const CreateAuthorPage = () => {
       if (formData.avatarFile) {
         const uploadResponse = await uploadFile(formData.avatarFile);
         formData.avatar = uploadResponse.url;
-        formData.avatar = formData.avatar.startsWith('http') ? formData.avatar.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : formData.avatar;
+        formData.avatarFile = undefined;
       }
       if (formData.coverImageFile) {
         const uploadResponse = await uploadFile(formData.coverImageFile);
         formData.coverImage = uploadResponse.url;
-        formData.coverImage = formData.coverImage.startsWith('http') ? formData.coverImage.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : formData.coverImage;
+        formData.coverImageFile = undefined;
       }
       if (formData.galleryImagesFile) {
         formData.galleryImages = await Promise.all(formData.galleryImagesFile.map(async (image) => {
           const uploadResponse = await uploadFile(image);
-          return uploadResponse.url.startsWith('http') ? uploadResponse.url.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : uploadResponse.url;
+          return uploadResponse.url;
         }));
+        formData.galleryImagesFile = undefined;
       }
       await createAuthor(formData)
       toast.success(tUtils('createSuccess'))

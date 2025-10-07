@@ -82,11 +82,17 @@ const CreateHerbalPage = () => {
         ) : (
           <Tabs defaultValue="images" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="info" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="info" 
+                className="flex items-center gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:border-blue-500" 
+              >
                 <Save className="w-4 h-4" />
                 {t('basicInfo')}
               </TabsTrigger>
-              <TabsTrigger value="images" className="flex items-center gap-2">
+              <TabsTrigger 
+                value="images" 
+                className="flex items-center gap-2 data-[state=active]:bg-blue-500 data-[state=active]:text-white data-[state=active]:border-blue-500"
+              >
                 <Image className="w-4 h-4" />
                 {t('imageManagement')}
               </TabsTrigger>

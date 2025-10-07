@@ -12,6 +12,8 @@ import { ArrowLeft, Save, ChevronDown, ChevronRight } from 'lucide-react'
 import { DataSource } from '@/types/data-source'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { getAllDataSources, getDataSources } from '@/services/manager-api'
+import { z } from 'zod'
+import { toast } from 'sonner'
 
 export interface AuthorFormData {
   name: string
@@ -49,6 +51,44 @@ export interface AuthorFormData {
   galleryImagesFile?: File[]
 }
 
+const authorFormSchema = (t: any) => z.object({
+  name: z.string().min(3, t('validation.nameMinLength'))
+    .refine(val => val.trim() !== '', t('validation.nameRequired')),
+  alias: z.string().optional(),
+  biography: z.string().min(10, t('validation.biographyMinLength'))
+    .refine(val => val.trim() !== '', t('validation.biographyRequired')),
+  career: z.string().optional(),
+  achievements: z.string().optional(),
+  contributions: z.string().optional(),
+  works: z.string().optional(),
+  philosophy: z.string().optional(),
+  legacy: z.string().optional(),
+  birthDate: z.date().optional(),
+  deathDate: z.date().optional(),
+  birthPlace: z.string().optional(),
+  deathPlace: z.string().optional(),
+  era: z.string().optional(),
+  dynasty: z.string().optional(),
+  specialty: z.string().optional(),
+  teacher: z.string().optional(),
+  students: z.string().optional(),
+  portrait: z.string().optional(),
+  avatar: z.string().optional(),
+  coverImage: z.string().optional(),
+  galleryImages: z.array(z.string()).optional(),
+  quotes: z.string().optional(),
+  anecdotes: z.string().optional(),
+  honors: z.string().optional(),
+  memorials: z.string().optional(),
+  references: z.string().optional(),
+  dataSourceId: z.number().nullable().optional(),
+  isActive: z.boolean().optional(),
+  avatarFile: z.instanceof(File).optional(),
+  portraitFile: z.instanceof(File).optional(),
+  coverImageFile: z.instanceof(File).optional(),
+  galleryImagesFile: z.array(z.instanceof(File)).optional(),
+});
+
 interface AuthorFormProps {
   formData: AuthorFormData
   onInputChange: (field: string, value: string | boolean | string[] | File | File[] | number | null) => void
@@ -59,7 +99,42 @@ interface AuthorFormProps {
 }
 
 const AuthorForm: React.FC<AuthorFormProps> = ({
-  formData,
+  formData = {
+    name: '',
+    alias: '',
+    biography: '',
+    career: '',
+    achievements: '',
+    contributions: '',
+    works: '',
+    philosophy: '',
+    legacy: '',
+    birthDate: new Date(),
+    deathDate: new Date(),
+    isActive: true,
+    avatar: '',
+    portrait: '',
+    coverImage: '',
+    galleryImages: [],
+    quotes: '',
+    anecdotes: '',
+    honors: '',
+    memorials: '',
+    references: '',
+    dataSourceId: null,
+    birthPlace: '',
+    deathPlace: '',
+    era: '',
+    dynasty: '',
+    specialty: '',
+    teacher: '',
+    students: '',
+    avatarFile: null,
+    portraitFile: null,
+    coverImageFile: null,
+    galleryImagesFile: [],
+    dataSource: null,
+  },
   onInputChange,
   onSubmit,
   onCancel,
@@ -67,12 +142,14 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
   isEdit = false
 }) => {
   const t = useTranslations('AuthorsPage')
+  const tUtils = useTranslations('Utils')
   const [isPersonalInfoOpen, setIsPersonalInfoOpen] = useState(false)
   const [isCareerInfoOpen, setIsCareerInfoOpen] = useState(false)
   const [isAdditionalInfoOpen, setIsAdditionalInfoOpen] = useState(false)
   const [dataSources, setDataSources] = useState<DataSource[]>([])
   const [loadingDataSources, setLoadingDataSources] = useState(false)
-
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof AuthorFormData, string>>>({})
+  const authorForm = authorFormSchema(t)
   const handleDateChange = (field: string, value: string) => {
     onInputChange(field, value)
   }
@@ -102,8 +179,74 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
     fetchDataSources()
   }, [])
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const result = await authorForm.safeParseAsync(formData)
+    console.log(result)
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
+      setFormErrors({
+        name: fieldErrors.name?.[0],
+        alias: fieldErrors.alias?.[0],
+        biography: fieldErrors.biography?.[0],
+        career: fieldErrors.career?.[0],
+        achievements: fieldErrors.achievements?.[0],
+        contributions: fieldErrors.contributions?.[0],
+        works: fieldErrors.works?.[0],
+        philosophy: fieldErrors.philosophy?.[0],
+        legacy: fieldErrors.legacy?.[0],
+        birthDate: fieldErrors.birthDate?.[0],
+        deathDate: fieldErrors.deathDate?.[0],
+        birthPlace: fieldErrors.birthPlace?.[0],
+        deathPlace: fieldErrors.deathPlace?.[0],
+        era: fieldErrors.era?.[0],
+        dynasty: fieldErrors.dynasty?.[0],
+        specialty: fieldErrors.specialty?.[0],
+        teacher: fieldErrors.teacher?.[0],
+        students: fieldErrors.students?.[0],
+        portrait: fieldErrors.portrait?.[0],
+        avatar: fieldErrors.avatar?.[0],
+        coverImage: fieldErrors.coverImage?.[0],
+        galleryImages: fieldErrors.galleryImages?.[0],
+        quotes: fieldErrors.quotes?.[0],
+        anecdotes: fieldErrors.anecdotes?.[0],
+        honors: fieldErrors.honors?.[0],
+        memorials: fieldErrors.memorials?.[0],
+        references: fieldErrors.references?.[0],
+        dataSourceId: fieldErrors.dataSourceId?.[0],
+        isActive: fieldErrors.isActive?.[0],
+        avatarFile: fieldErrors.avatarFile?.[0],
+        portraitFile: fieldErrors.portraitFile?.[0],
+        coverImageFile: fieldErrors.coverImageFile?.[0],
+        galleryImagesFile: fieldErrors.galleryImagesFile?.[0],
+      } as Partial<Record<keyof AuthorFormData, string>>);
+      toast.error(t('validation.validationError'))
+      return
+    }
+    setFormErrors({})
+    onSubmit(e)
+  }
+
+  const handleChangeTitle = (field: string, value: string) => {
+    onInputChange(field, value)
+    if (value.length < 3) {
+      setFormErrors(prev => ({ ...prev, [field]: t('validation.nameMinLength') }))
+    }else{
+      setFormErrors(prev => ({ ...prev, [field]: undefined }))
+    }
+  }
+
+  const handleChangeBiography = (field: string, value: string) => {
+    onInputChange(field, value)
+    if (value.length < 10) {
+      setFormErrors(prev => ({ ...prev, [field]: t('validation.biographyMinLength') }))
+    }else{
+      setFormErrors(prev => ({ ...prev, [field]: undefined }))
+    }
+  }
+
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cột trái - Phần ảnh (1/3) */}
         <div className="lg:col-span-1 space-y-6">
@@ -154,17 +297,6 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                 />
               </div>
             </div>
-
-            {/* Trạng thái */}
-            <div className="pt-4 border-t border-gray-200">
-              <Label htmlFor="isActive" className="text-sm font-medium">{t('isActive')}</Label>
-              <div className="flex items-center space-x-2 mt-2">
-                <Switch
-                  onChange={(checked: boolean) => onInputChange('isActive', checked)}
-                  label={formData.isActive ? t('active') : t('inactive')}
-                />
-              </div>
-            </div>
           </div>
         </div>
 
@@ -180,10 +312,12 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) => onInputChange('name', e.target.value)}
+                  onChange={(e) => handleChangeTitle('name', e.target.value)}
                   placeholder={t('enterName')}
-                  required
                 />
+                {formErrors.name && (
+                  <div className="text-red-500 text-sm">{formErrors.name}</div>
+                )}
               </div>
 
               {/* Bút danh */}
@@ -204,13 +338,26 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
               <Textarea
                 id="biography"
                 value={formData.biography}
-                onChange={(e) => onInputChange('biography', e.target.value)}
+                onChange={(e) => handleChangeBiography('biography', e.target.value)}
                 placeholder={t('enterBiography')}
                 rows={4}
-                required
+                
               />
+              {formErrors.biography && (
+                <div className="text-red-500 text-sm">{formErrors.biography}</div>
+              )}
             </div>
           </div>
+          {/* Trạng thái */}
+            <div className="pt-4 border-t border-gray-200">
+              <Label htmlFor="isActive" className="text-sm font-medium">{t('isActive')}</Label>
+              <div className="flex items-center space-x-2 mt-2">
+                <Switch
+                  onChange={(checked: boolean) => onInputChange('isActive', checked)}
+                  label={formData.isActive ? t('active') : t('inactive')}
+                />
+              </div>
+            </div>
 
           {/* Thông tin cá nhân - Có thể collapse */}
           <div className="bg-white border border-gray-200 rounded-lg">
@@ -503,10 +650,10 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                     <SelectTrigger>
                       <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
                     </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="">{t('noDataSource')}</SelectItem>
-                      {dataSources.map((dataSource) => (
-                        <SelectItem key={dataSource.id} value={dataSource.id.toString()}>
+                    <SelectContent className="w-full bg-white">
+                      {dataSources.length > 0 ?
+                      (dataSources.map((dataSource) => (
+                        <SelectItem key={dataSource.id} value={dataSource.id.toString()} className='hover:bg-gray-50'>
                           <div className="flex flex-col">
                             <span className="font-medium">{dataSource.name}</span>
                             {dataSource.title && (
@@ -514,21 +661,15 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                             )}
                           </div>
                         </SelectItem>
-                      ))}
+                      ))) :
+                      (
+                        <div className="flex flex-col items-start gap-2 justify-between p-4">
+                          <div>{t('noDataSource')}</div>
+                        </div>
+                      )
+                      }
                     </SelectContent>
                   </Select>
-                </div>
-
-                {/* nguồn dữ liệu tham khảo */}
-                <div className="space-y-2">
-                  <Label htmlFor="references">{t('references')}</Label>
-                  <Textarea
-                    id="references"
-                    value={formData.references}
-                    onChange={(e) => onInputChange('references', e.target.value)}
-                    placeholder={t('enterReferences')}
-                    rows={4}
-                  />
                 </div>
               </div>
             )}

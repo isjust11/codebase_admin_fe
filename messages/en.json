@@ -813,7 +813,22 @@
     "error":"Error",
     "confirmDeleteHerbal":"Are you sure you want to delete this herbal?",
     "backToList":"Back to list",
-    "editHerbal":"Edit herbal"
+    "editHerbal":"Edit herbal",
+    "validation": {
+      "titleRequired": "Herbal title is required",
+      "titleMinLength": "Herbal title must be at least 3 characters",
+      "contentRequired": "Herbal content is required",
+      "contentMinLength": "Herbal content must be at least 10 characters",
+      "validationError": "Please check the information again",
+      "ingredientsRequired": "Herbal ingredients is required",
+      "ingredientsMinLength": "Herbal ingredients must be at least 10 characters",
+      "preparationRequired": "Herbal preparation is required",
+      "preparationMinLength": "Herbal preparation must be at least 10 characters",
+      "usageRequired": "Herbal usage is required",
+      "usageMinLength": "Herbal usage must be at least 10 characters",
+      "notesRequired": "Herbal notes is required",
+      "notesMinLength": "Herbal notes must be at least 10 characters"
+    }
   },
   "AuthorsPage": {
     "basicInformation": "Basic information",
@@ -980,6 +995,13 @@
     "detailInfo":"Detail info",
     "additionalInfo":"Additional info",
     "noAuthor":"No author",
+    "validation": {
+      "nameRequired": "Author name is required",
+      "nameMinLength": "Author name must be at least 3 characters",
+      "biographyRequired": "Author biography is required",
+      "biographyMinLength": "Author biography must be at least 10 characters",
+      "validationError": "Please check the information again"
+    },
     "messages": {
       "errorLoadAuthors": "Error loading authors list",
       "deleteSuccess": "Author deleted successfully",

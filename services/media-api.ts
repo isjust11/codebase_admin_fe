@@ -91,9 +91,9 @@ export const mediaApi = {
     }
   },
 
-  update: async (id: number, data: UpdateMediaDto): Promise<Media> => {
+  update: async (filename: string, data: UpdateMediaDto): Promise<Media> => {
     try {
-      const response = await axiosApi.put(`/media/${id}`, data);
+      const response = await axiosApi.put(`/media/${filename}`, data);
       return response.data;
     } catch (_error) {
       console.error('Error updating media:', _error);
@@ -101,18 +101,18 @@ export const mediaApi = {
     }
   },
 
-  delete: async (id: number): Promise<void> => {
+  delete: async (filename: string): Promise<void> => {
     try {
-      await axiosApi.delete(`/media/${id}`);
+      await axiosApi.delete(`/media/${filename}`);
     } catch (_error) {
       console.error('Error deleting media:', _error);
       throw _error;
     }
   },
 
-  deleteMultiple: async (ids: number[]): Promise<void> => {
+  deleteMultiple: async (filenames: string[]): Promise<void> => {
     try {
-      await axiosApi.delete('/media', { data: ids });
+      await axiosApi.delete('/media', { data: filenames });
     } catch (_error) {
       console.error('Error deleting multiple media:', _error);
       throw _error;

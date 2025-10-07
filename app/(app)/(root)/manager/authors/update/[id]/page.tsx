@@ -130,23 +130,24 @@ const UpdateAuthorPage = () => {
       if(formData.portraitFile){
         const uploadResponse = await uploadFile(formData.portraitFile);
         updateData.portrait = uploadResponse.url;
-        updateData.portrait = updateData.portrait.startsWith('http') ? updateData.portrait.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : updateData.portrait;
+        updateData.portraitFile = undefined;
       }
       if (formData.avatarFile) {
         const uploadResponse = await uploadFile(formData.avatarFile);
         updateData.avatar = uploadResponse.url;
-        updateData.avatar = updateData.avatar.startsWith('http') ? updateData.avatar.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : updateData.avatar;
+        updateData.avatarFile = undefined;
       }
       if (formData.coverImageFile) {
         const uploadResponse = await uploadFile(formData.coverImageFile);
         updateData.coverImage = uploadResponse.url;
-        updateData.coverImage = updateData.coverImage.startsWith('http') ? updateData.coverImage.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : updateData.coverImage;
+        updateData.coverImageFile = undefined;
       }
       if (formData.galleryImagesFile) {
         updateData.galleryImages = await Promise.all(formData.galleryImagesFile.map(async (image) => {
           const uploadResponse = await uploadFile(image);
-          return uploadResponse.url.startsWith('http') ? uploadResponse.url.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : uploadResponse.url;
+          return uploadResponse.url;
         }));
+        updateData.galleryImagesFile = undefined;
       }
       await updateAuthor(authorId, updateData)
       toast.success(t('messages.updateSuccess'))

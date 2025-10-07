@@ -652,7 +652,6 @@
   "FolkMedicinesPage": {
     "title": "Danh sách bài thuốc dân gian",
     "add-folk-medicine": "Thêm bài thuốc mới",
-    "loading": "Đang tải dữ liệu...",
     "thumbnail": "Hình ảnh",
     "summary": "Tóm tắt",
     "category": "Danh mục",
@@ -820,8 +819,22 @@
     "guide": "Hướng dẫn",
     "noImage": "Không có hình ảnh",
     "backToList": "Quay lại danh sách",
-    "editHerbal": "Chỉnh sửa thảo dược"
-
+    "editHerbal": "Chỉnh sửa thảo dược",
+    "validation":{
+      "titleMinLength": "Tên thảo dược phải có ít nhất 3 ký tự",
+      "titleRequired": "Tên thảo dược không được để trống",
+      "contentRequired": "Nội dung thảo dược không được để trống",
+      "contentMinLength": "Nội dung thảo dược phải có ít nhất 10 ký tự",
+      "validationError": "Vui lòng kiểm tra lại thông tin",
+      "ingredientsRequired": "Thành phần thảo dược không được để trống",
+      "ingredientsMinLength": "Thành phần thảo dược phải có ít nhất 10 ký tự",
+      "preparationRequired": "Cách chế biến thảo dược không được để trống",
+      "preparationMinLength": "Cách chế biến thảo dược phải có ít nhất 10 ký tự",
+      "usageRequired": "Cách sử dụng thảo dược không được để trống",
+      "usageMinLength": "Cách sử dụng thảo dược phải có ít nhất 10 ký tự",
+      "notesRequired": "Ghi chú thảo dược không được để trống",
+      "notesMinLength": "Ghi chú thảo dược phải có ít nhất 10 ký tự"
+    }
   },
   "AuthorsPage": {
     "basicInformation": "Thông tin cơ bản",
@@ -1000,6 +1013,13 @@
     "detailInfo":"Thông tin chi tiết",
     "additionalInfo":"Thông tin bổ sung",
     "noAuthor":"Chưa có tác giả",
+    "validation": {
+      "nameRequired": "Tên tác giả không được để trống",
+      "nameMinLength": "Tên tác giả phải có ít nhất 3 ký tự",
+      "biographyRequired": "Tiểu sử tác giả không được để trống",
+      "biographyMinLength": "Tiểu sử tác giả phải có ít nhất 10 ký tự",
+      "validationError": "Vui lòng kiểm tra lại thông tin"
+    },
     "messages": {
       "errorLoadAuthors": "Lỗi khi tải danh sách tác giả",
       "deleteSuccess": "Tác giả đã được xóa thành công",

@@ -1,5 +1,6 @@
 import { Author } from "./author";
 import { Category } from "./category";
+import { DataSource } from "./data-source";
 
 export interface FolkMedicine {
   id: string;
@@ -18,7 +19,8 @@ export interface FolkMedicine {
   author?: Author;
   categoryId?: string;
   category?: Category;
-  dataSourceId?: number | null;
+  dataSourceId?: string | null;
+  dataSource?: DataSource;
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

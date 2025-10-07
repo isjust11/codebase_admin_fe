@@ -14,6 +14,8 @@ import { useTranslations } from 'next-intl';
 import { mergeImageUrl } from '@/lib/utils';
 import Switch from "@/components/form/switch/Switch";
 import { AppCategoryCode } from '@/constants';
+import { z } from 'zod';
+import { toast } from 'sonner';
 
 interface HerbalFormProps {
   initialData?: Partial<Herbal>;
@@ -22,6 +24,34 @@ interface HerbalFormProps {
   onCancel?: () => void;
   loading?: boolean;
 }
+
+const herbalFormSchema = (t: any) => z.object({
+  title: z.string().min(3, t('validation.titleMinLength'))
+    .refine(val => val.trim() !== '', t('validation.titleRequired')),
+  summary: z.string().optional(),
+  content: z.string().min(10, t('validation.contentMinLength'))
+    .refine(val => val.trim() !== '', t('validation.contentRequired')),
+  scientificName: z.string().optional(),
+  commonNames: z.string().optional(),
+  family: z.string().optional(),
+  partsUsed: z.string().optional(),
+  activeCompounds: z.string().optional(),
+  medicinalProperties: z.string().optional(),
+  preparationMethods: z.string().optional(),
+  dosage: z.string().optional(),
+  contraindications: z.string().optional(),
+  sideEffects: z.string().optional(),
+  thumbnail: z.string().optional(),
+  categoryId: z.string().optional(),
+  dataSourceId: z.number().nullable().optional(),
+  isActive: z.boolean().optional(),
+  id: z.string().optional(),
+  slug: z.string().optional(),
+  viewCount: z.number().optional(),
+  likeCount: z.number().optional(),
+  createdAt: z.date().optional(),
+  updatedAt: z.date().optional(),
+});
 
 const HerbalForm: React.FC<HerbalFormProps> = ({
   initialData,
@@ -35,8 +65,10 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
   const [loadingDataSources, setLoadingDataSources] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof Herbal, string>>>({});
   const t = useTranslations('Herbals')
   const tUtils = useTranslations('Utils')
+  const herbalForm = herbalFormSchema(t)
   const [formData, setFormData] = useState<Herbal>({
     title: '',
     summary: '',
@@ -128,7 +160,53 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
     }));
   };
 
+  const handleChangeTitle = (field: string, value: string) => {
+    handleInputChange(field, value);
+    if (value.length < 3) {
+      setFormErrors(prev => ({ ...prev, [field]: t('validation.titleMinLength') }));
+    } else {
+      setFormErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleChangeContent = (field: string, value: string) => {
+    handleInputChange(field, value);
+    if (value.length < 10) {
+      setFormErrors(prev => ({ ...prev, [field]: t('validation.contentMinLength') }));
+    } else {
+      setFormErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
   const handleSubmit = async () => {
+    const result = await herbalForm.safeParseAsync(formData);
+    console.log(result);
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
+      setFormErrors({
+        title: fieldErrors.title?.[0],
+        summary: fieldErrors.summary?.[0],
+        content: fieldErrors.content?.[0],
+        scientificName: fieldErrors.scientificName?.[0],
+        commonNames: fieldErrors.commonNames?.[0],
+        family: fieldErrors.family?.[0],
+        partsUsed: fieldErrors.partsUsed?.[0],
+        activeCompounds: fieldErrors.activeCompounds?.[0],
+        medicinalProperties: fieldErrors.medicinalProperties?.[0],
+        preparationMethods: fieldErrors.preparationMethods?.[0],
+        dosage: fieldErrors.dosage?.[0],
+        contraindications: fieldErrors.contraindications?.[0],
+        sideEffects: fieldErrors.sideEffects?.[0],
+        thumbnail: fieldErrors.thumbnail?.[0],
+        categoryId: fieldErrors.categoryId?.[0],
+        dataSourceId: fieldErrors.dataSourceId?.[0],
+        isActive: fieldErrors.isActive?.[0],
+      } as Partial<Record<keyof Herbal, string>>);
+      toast.error(t('validation.validationError'))
+      return;
+    }
+    setFormErrors({});
+    
     try {
       let thumbnail = formData.thumbnail || '';
 
@@ -165,16 +243,9 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
           <div className="transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl hover:border-brand-500">
             {previewUrl || formData.thumbnail ? (
               <div className="relative">
-                {previewUrl && (
+                {(previewUrl || formData.thumbnail) && (
                   <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-full h-64 object-cover rounded-xl"
-                  />
-                )}
-                {formData.thumbnail && (
-                  <img
-                    src={mergeImageUrl(formData.thumbnail)}
+                    src={mergeImageUrl(formData.thumbnail || '') || previewUrl || ''}
                     alt="Preview"
                     className="w-full h-64 object-cover rounded-xl"
                   />
@@ -253,23 +324,26 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => handleInputChange('title', e.target.value)}
+                onChange={(e) => handleChangeTitle('title', e.target.value)}
                 placeholder={t('title')}
               />
+              {formErrors.title && (
+                <div className="text-red-500 text-sm">{formErrors.title}</div>
+              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="categoryId">{t('category')}</Label>
               <Select value={formData.categoryId}
-               onValueChange={(value) => handleInputChange('categoryId', value)}>
+                onValueChange={(value) => handleInputChange('categoryId', value)}>
                 <SelectTrigger>
                   <SelectValue placeholder={t('category')} />
                 </SelectTrigger>
                 <SelectContent className='bg-white dark:bg-gray-900'>
                   {categories.map((category) => (
-                    <SelectItem 
-                    className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' 
-                    key={category.id} value={category.id.toString()}>
+                    <SelectItem
+                      className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800'
+                      key={category.id} value={category.id.toString()}>
                       {category.name}
                     </SelectItem>
                   ))}
@@ -405,11 +479,13 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
             <Textarea
               id="content"
               value={formData.content}
-              onChange={(e) => handleInputChange('content', e.target.value)}
+              onChange={(e) => handleChangeContent('content', e.target.value)}
               placeholder={t('content')}
               rows={10}
-              required
             />
+            {formErrors.content && (
+              <div className="text-red-500 text-sm">{formErrors.content}</div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -426,8 +502,8 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
 
           <div className="space-y-2">
             <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
-            <Select 
-              value={formData.dataSourceId?.toString() || ''} 
+            <Select
+              value={formData.dataSourceId?.toString() || ''}
               onValueChange={(value) => handleInputChange('dataSourceId', value ? parseInt(value) : null)}
               disabled={loadingDataSources}
             >
@@ -435,21 +511,29 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
               </SelectTrigger>
               <SelectContent className='bg-white dark:bg-gray-900'>
-                <SelectItem value="">{t('noDataSource')}</SelectItem>
-                {dataSources.map((dataSource) => (
-                  <SelectItem 
-                    className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800' 
-                    key={dataSource.id} 
-                    value={dataSource.id.toString()}
-                  >
-                    <div className="flex flex-col">
-                      <span className="font-medium">{dataSource.name}</span>
-                      {dataSource.title && (
-                        <span className="text-sm text-gray-500">{dataSource.title}</span>
-                      )}
-                    </div>
-                  </SelectItem>
-                ))}
+                {
+                  dataSources.length > 0 ?
+                    (
+                      dataSources.map((dataSource) => (
+                        <SelectItem
+                          className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800'
+                          key={dataSource.id}
+                          value={dataSource.id.toString()}
+                        >
+                          <div className="flex flex-col">
+                            <span className="font-medium">{dataSource.name}</span>
+                            {dataSource.title && (
+                              <span className="text-sm text-gray-500">{dataSource.title}</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))) :
+                    (
+                      <div className="flex flex-col items-start gap-2 justify-between p-4">
+                        <div>{t('noDataSource')}</div>
+                      </div>
+                    )
+                }
               </SelectContent>
             </Select>
           </div>

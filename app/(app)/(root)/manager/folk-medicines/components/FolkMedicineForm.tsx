@@ -22,11 +22,34 @@ import { DataSource } from '@/types/data-source';
 import { AppCategoryCode } from '@/constants';
 import Switch from '@/components/form/switch/Switch';
 import { useLoading } from '@/contexts/LoadingContext';
-import { getAllAuthors, getAuthorsByPage } from '@/services/author-api';
+import { getAllAuthors } from '@/services/author-api';
 import { Author } from '@/types/author';
 import { mergeImageUrl } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import Image from 'next/image';
+import { z } from 'zod';
+
+const folkMedicineFormSchema = (t: any) => z.object({
+  title: z.string().min(3, t('validation.titleMinLength'))
+    .refine(val => val.trim() !== '', t('validation.titleRequired')),
+  summary: z.string().optional(),
+  content: z.string().min(10, t('validation.contentMinLength'))
+    .refine(val => val.trim() !== '', t('validation.contentRequired')),
+  ingredients: z.string().optional(),
+  preparation: z.string().optional(),
+  usage: z.string().optional(),
+  notes: z.string().optional(),
+  thumbnail: z.string().optional(),
+  authorId: z.string().optional(),
+  categoryId: z.string().optional(),
+  dataSourceId: z.number().nullable().optional(),
+  isActive: z.boolean().optional(),
+  id: z.string().optional(),
+  slug: z.string().optional(),
+  viewCount: z.number().optional(),
+  likeCount: z.number().optional(),
+  createdAt: z.string().optional(),
+  updatedAt: z.string().optional(),
+});
 
 const FolkMedicineForm = () => {
   const t = useTranslations('FolkMedicinesPage');
@@ -45,6 +68,8 @@ const FolkMedicineForm = () => {
   const [authors, setAuthors] = useState<Author[]>([]);
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
   const [loadingDataSources, setLoadingDataSources] = useState(false);
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof FolkMedicine, string>>>({});
+  const folkMedicineForm = folkMedicineFormSchema(t);
   const [formData, setFormData] = useState<FolkMedicine>({
     id: '',
     slug: '',
@@ -160,6 +185,29 @@ const FolkMedicineForm = () => {
   }
 
   const handleSubmit = async () => {
+    const result = await folkMedicineForm.safeParseAsync(formData);
+    console.log(result);
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
+      setFormErrors({
+        title: fieldErrors.title?.[0],
+        summary: fieldErrors.summary?.[0],
+        content: fieldErrors.content?.[0],
+        ingredients: fieldErrors.ingredients?.[0],
+        preparation: fieldErrors.preparation?.[0],
+        usage: fieldErrors.usage?.[0],
+        notes: fieldErrors.notes?.[0],
+        thumbnail: fieldErrors.thumbnail?.[0],
+        authorId: fieldErrors.authorId?.[0],
+        categoryId: fieldErrors.categoryId?.[0],
+        dataSourceId: fieldErrors.dataSourceId?.[0],
+        isActive: fieldErrors.isActive?.[0],
+      } as Partial<Record<keyof FolkMedicine, string>>);
+      toast.error(t('validation.validationError'))
+      return;
+    }
+    setFormErrors({});
+    
     setLoading(true);
     try {
       let thumbnail = formData.thumbnail || '';
@@ -200,6 +248,24 @@ const FolkMedicineForm = () => {
       ...prev,
       [name]: value,
     }));
+  };
+
+  const handleChangeTitle = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (value.length < 3) {
+      setFormErrors(prev => ({ ...prev, [field]: t('validation.titleMinLength') }));
+    } else {
+      setFormErrors(prev => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  const handleChangeContent = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    if (value.length < 10) {
+      setFormErrors(prev => ({ ...prev, [field]: t('validation.contentMinLength') }));
+    } else {
+      setFormErrors(prev => ({ ...prev, [field]: undefined }));
+    }
   };
 
   const handleSelectChange = (field: keyof CreateFolkMedicineDto, value: any) => {
@@ -339,9 +405,11 @@ const FolkMedicineForm = () => {
                       placeholder={t('enterTitle')}
                       type="text"
                       value={formData.title}
-                      onChange={handleChange}
-                      required
+                      onChange={(e) => handleChangeTitle('title', e.target.value)}
                     />
+                    {formErrors.title && (
+                      <div className="text-red-500 text-sm">{formErrors.title}</div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -445,8 +513,8 @@ const FolkMedicineForm = () => {
                       <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
                     </SelectTrigger>
                     <SelectContent className="w-full bg-white">
-                      <SelectItem value="">{t('noDataSource')}</SelectItem>
-                      {dataSources.map((dataSource) => (
+                      {dataSources.length > 0 ?
+                      (dataSources.map((dataSource) => (
                         <SelectItem key={dataSource.id} value={dataSource.id.toString()}>
                           <div className="flex flex-col">
                             <span className="font-medium">{dataSource.name}</span>
@@ -455,7 +523,13 @@ const FolkMedicineForm = () => {
                             )}
                           </div>
                         </SelectItem>
-                      ))}
+                      ))) :
+                      (
+                        <div className="flex flex-col items-start gap-2 justify-between p-4">
+                          <div>{t('noDataSource')}</div>
+                        </div>
+                      )
+                      }
                     </SelectContent>
                   </Select>
                 </div>
@@ -483,9 +557,15 @@ const FolkMedicineForm = () => {
                       key={folkMedicine?.id || 'new'}
                       initialContent={folkMedicine?.content || ''}
                       placeholder={t('enterContent')}
-                      onContentChange={(content) => changeContent(content)}
+                      onContentChange={(content) => {
+                        changeContent(content);
+                        handleChangeContent('content', content);
+                      }}
                     />
                   </div>
+                  {formErrors.content && (
+                    <div className="text-red-500 text-sm">{formErrors.content}</div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
