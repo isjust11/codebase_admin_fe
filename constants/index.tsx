@@ -32,6 +32,10 @@ export const AppRoutes = {
     ArticlesCreate: '/manager/articles/create',
     ArticlesUpdate: '/manager/articles/update',
     ArticlesDetail: '/manager/articles',
+    StaticPages: '/manager/static-pages',
+    StaticPagesCreate: '/manager/static-pages/create',
+    StaticPagesUpdate: '/manager/static-pages/update',
+    StaticPagesDetail: '/manager/static-pages/details',
     Category:'/manager/category'
   }
 }
