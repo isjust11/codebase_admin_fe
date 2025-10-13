@@ -9,9 +9,8 @@ import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Action } from '@/types/actions';
-import { Loader2, Plus, PlusIcon, Save, X } from 'lucide-react';
+import { Plus, PlusIcon, Save, X } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { mergeImageUrl, unicodeToEmoji } from '@/lib/utils';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArticleDto } from '@/types/dto/ArticleDto';
 import { useLoading } from '@/contexts/LoadingContext';
@@ -20,7 +19,7 @@ import ImageUpload from '@/components/ui/ImageUpload';
 import { AppCategoryCode, AppRoutes } from '@/constants';
 import { z } from 'zod';
 import { Category } from '@/types/category';
-import { getAllDataSources, getCategoryByCode, getDataSources } from '@/services/manager-api';
+import { getAllDataSources, getCategoryByCode } from '@/services/manager-api';
 import { DataSource } from '@/types/data-source';
 import { Textarea } from '@/components/ui/textarea';
 
@@ -151,7 +150,7 @@ const ArticleForm = () => {
       // Upload image if there's a new file selected
       if (selectedFile) {
         const uploadResponse = await uploadFile(selectedFile);
-        thumbnail = uploadResponse.url;
+        thumbnail = uploadResponse.publicRelativePath;
       }
 
       const submitData = {

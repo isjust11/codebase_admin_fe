@@ -112,7 +112,7 @@ export default function ArticlesManagement() {
           thumbnail ? 
           <Image width={64}
             height={64}
-            src={thumbnail}
+            src={mergeImageUrl(thumbnail)}
             alt="article"
             className="w-16 h-16 object-cover rounded-md"
           /> :

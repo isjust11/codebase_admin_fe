@@ -46,7 +46,7 @@ export const mergeImageUrl = (relativeUrl: string): string => {
   }
   
   // Lấy API_URL từ biến môi trường
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+  const apiUrl = process.env.STORAGE_API_URL || 'http://localhost:3005';
   
   // Merge URL
   return `${apiUrl}${relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`}`;

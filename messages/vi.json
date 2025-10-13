@@ -66,7 +66,9 @@
     "updateError": "Lỗi khi cập nhật",
     "createdAt": "Ngày tạo",
     "uploadedImages": "Hình ảnh đã tải lên",
-    "Add dataSource": "Thêm nguồn dữ liệu"
+    "Add dataSource": "Thêm nguồn dữ liệu",
+    "addStatus":"Thêm trạng thái",
+    "addDataSource":"Thêm nguồn dữ liệu"
     },
   "LocaleSwitcher": {
     "en": "English",

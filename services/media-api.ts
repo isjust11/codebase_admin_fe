@@ -14,6 +14,7 @@ export interface Media {
   height: number;
   createdAt: Date;
   updatedAt: Date;
+  publicRelativePath: string;
 }
 
 export interface UploadMediaDto {
