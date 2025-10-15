@@ -710,6 +710,7 @@
     "selectDataSource": "Select data source",
     "noDataSource": "No data source",
     "loading": "Loading...",
+    "searchDataSource": "Search data source",
     "messages": {
       "error": "Error loading folk medicine list",
       "deleteSuccess": "Folk medicine deleted successfully",
@@ -721,6 +722,17 @@
       "notFound": "Folk medicine not found",
       "changeStatusSuccess": "Folk medicine status changed successfully",
       "changeStatusError": "Error changing folk medicine status"
+    },
+    "validation": {
+      "titleMinLength": "Folk medicine title must be at least 3 characters",
+      "titleRequired": "Folk medicine title is required",
+      "summaryRequired": "Folk medicine summary is required",
+      "summaryMinLength": "Folk medicine summary must be at least 10 characters",
+      "categoryRequired": "Folk medicine category is required",
+      "contentMinLength": "Folk medicine content must be at least 10 characters",
+      "contentRequired": "Folk medicine content is required",
+      "authorRequired": "Folk medicine author is required",
+      "validationError": "Please check the information again"
     }
   },
   "Herbals": {

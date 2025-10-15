@@ -12,7 +12,7 @@ import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor
 import { Action } from '@/types/actions';
 import { Loader2, Plus, Save, X } from 'lucide-react';
 import { useDropzone } from "react-dropzone";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/types/category';
 import { FolkMedicine, CreateFolkMedicineDto } from '@/types/folk-medicine';
@@ -27,6 +27,7 @@ import { Author } from '@/types/author';
 import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { z } from 'zod';
+import Select, { SelectOption } from '@/components/form/Select';
 
 const folkMedicineFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
@@ -39,9 +40,9 @@ const folkMedicineFormSchema = (t: any) => z.object({
   usage: z.string().optional(),
   notes: z.string().optional(),
   thumbnail: z.string().optional(),
-  authorId: z.string().optional(),
-  categoryId: z.string().optional(),
-  dataSourceId: z.number().nullable().optional(),
+  authorId: z.string().refine(val => val.trim() !== '', t('validation.authorRequired')),
+  categoryId: z.string().refine(val => val.trim() !== '', t('validation.categoryRequired')),
+  dataSourceId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
   id: z.string().optional(),
   slug: z.string().optional(),
@@ -67,6 +68,9 @@ const FolkMedicineForm = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [authors, setAuthors] = useState<Author[]>([]);
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
+  const [dataSourcesOptions, setDataSourcesOptions] = useState<SelectOption[]>([]);
+  const [categoriesOptions, setCategoriesOptions] = useState<SelectOption[]>([]);
+  const [authorsOptions, setAuthorsOptions] = useState<SelectOption[]>([]);
   const [loadingDataSources, setLoadingDataSources] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof FolkMedicine, string>>>({});
   const folkMedicineForm = folkMedicineFormSchema(t);
@@ -123,6 +127,17 @@ const FolkMedicineForm = () => {
         ]);
         setCategories(categoriesData || []);
         setAuthors(authorsData || []);
+        const categoriesOptions = categoriesData.map((category: Category) => ({
+          value: category.id.toString(),
+          label: category.name,
+        }));
+        setCategoriesOptions(categoriesOptions);
+        const authorsOptions = authorsData.map((author: Author) => ({
+          avatar: author.avatar,
+          value: author.id.toString(),
+          label: author.name,
+        }));
+        setAuthorsOptions(authorsOptions);
       } catch (error) {
         toast.error(t('messages.error'));
       }
@@ -137,6 +152,11 @@ const FolkMedicineForm = () => {
     try {
       const response = await getAllDataSources();
       setDataSources(response);
+      const options = response.map((dataSource: DataSource) => ({
+        value: dataSource.id.toString(),
+        label: dataSource.name,
+      }));
+      setDataSourcesOptions(options);
     } catch (error) {
       console.error('Error fetching data sources:', error);
     } finally {
@@ -207,7 +227,7 @@ const FolkMedicineForm = () => {
       return;
     }
     setFormErrors({});
-    
+
     setLoading(true);
     try {
       let thumbnail = formData.thumbnail || '';
@@ -220,9 +240,9 @@ const FolkMedicineForm = () => {
 
       const submitData = {
         ...formData,
-        authorId: formData.authorId || user?.id?.toString() || '',
+        authorId: formData.authorId || '',
         // Nếu là URL đầy đủ, chuyển về đường dẫn tương đối trước khi lưu
-        thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : thumbnail,
+        thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.STORAGE_API_URL || 'http://localhost:3005', '') : thumbnail,
       };
 
       if (isEditing) {
@@ -415,123 +435,60 @@ const FolkMedicineForm = () => {
                   <div className="space-y-2">
                     <Label htmlFor="categoryId">{t('category')}</Label>
                     <Select
-                      value={formData.category?.id.toString() || formData.categoryId}
-                      onValueChange={(value) => handleSelectChange('categoryId', value)}
-                    >
-                      <SelectTrigger className="w-full ">
-                        <SelectValue placeholder={t('selectCategory')} />
-                      </SelectTrigger>
-                      <SelectContent className="w-full bg-white">
+                      options={categoriesOptions}
+                      placeholder={t('selectCategory')}
+                      onChange={(values) => handleSelectChange('categoryId', Array.isArray(values) ? values : values)}
+                      value={formData.categoryId || ''}
+                      multiple={false}
+                    />
+                    {formErrors.categoryId && (
+                      <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
+                    )}
 
-                        {categories.length > 0 ?
-                          categories.map((category) => (
-
-                            <SelectItem key={category.id} value={category.id} className='hover:bg-gray-100 '>
-                              {category.name}
-                            </SelectItem>
-                          )) :
-                          (
-                            <div className="flex flex-col items-start gap-2 justify-between p-4">
-                              <div>Chưa có danh mục</div>
-                              <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
-                                handleCreateCategory();
-                              }}>
-                                {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tUtils('addCategory')}
-                              </span>
-                            </div>
-                          )
-                        }
-                      </SelectContent>
-                    </Select>
+                    {formErrors.categoryId && (
+                      <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
+                    )}
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
+                    <Label htmlFor="authorId">{t('author')}</Label>
+                    <Select
+                      options={authorsOptions}
+                      placeholder={t('selectAuthor')}
+                      onChange={(values) => handleSelectChange('authorId', Array.isArray(values) ? values : values)}
+                      value={formData.authorId || ''}
+                      multiple={false}
+                    />
+                    {formErrors.authorId && (
+                      <div className="text-red-500 text-sm">{formErrors.authorId}</div>
+                    )}
                     <div className="space-y-2">
-                      <Label htmlFor="authorId">{t('author')}</Label>
-                      <Select
-                        value={formData.author?.id.toString() || formData.authorId}
-                        onValueChange={(value) => handleSelectChange('authorId', value)}
-                      >
-                        <SelectTrigger className="w-full ">
-                          <SelectValue placeholder={t('selectAuthor')} />
-                        </SelectTrigger>
-                        <SelectContent className="w-full bg-white">
-
-                          {authors.length > 0 ?
-                            authors.map((author) => (
-
-                              <SelectItem key={author.id} value={author.id} className='hover:bg-gray-100 '>
-                                <span className='flex items-center gap-2'>
-                                  {author.avatar && (
-                                    <Image width={8} height={8}
-                                      src={mergeImageUrl(author.avatar || '')} alt={author.name} className="w-8 h-8
-                                    rounded-full
-                                    bg-gray-200 ring-1 ring-gray-300">
-                                    </Image>
-                                  )}
-                                  {author.name}</span>
-                              </SelectItem>
-                            )) :
-                            (
-                              <div className="flex flex-col items-start gap-2 justify-between p-4">
-                                <div>{tAuthor('noAuthor')}</div>
-                                <span className="text-gray-500 flex items-center gap-2 cursor-pointer text-sm" onClick={() => {
-                                  handleCreateAuthor();
-                                }}>
-                                  {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />} {tAuthor('addAuthor')}
-                                </span>
-                              </div>
-                            )
-                          }
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="isActive">{t('isActive')}</Label>
-                    <div className="flex items-center space-x-2">
-                      <Switch
-                        onChange={(checked: boolean) => handleSelectChange('isActive', checked)}
-                        defaultChecked={formData.isActive}
-                        label={formData.isActive ? t('active') : t('inactive')}
-                      />
+                      <Label htmlFor="isActive">{t('isActive')}</Label>
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          onChange={(checked: boolean) => handleSelectChange('isActive', checked)}
+                          defaultChecked={formData.isActive}
+                          label={formData.isActive ? t('active') : t('inactive')}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
-                  <Select 
-                    value={formData.dataSourceId?.toString() || ''} 
-                    onValueChange={(value) => handleSelectChange('dataSourceId', value ? parseInt(value) : null)}
-                    disabled={loadingDataSources}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
-                    </SelectTrigger>
-                    <SelectContent className="w-full bg-white">
-                      {dataSources.length > 0 ?
-                      (dataSources.map((dataSource) => (
-                        <SelectItem key={dataSource.id} value={dataSource.id.toString()}>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{dataSource.name}</span>
-                            {dataSource.title && (
-                              <span className="text-sm text-gray-500">{dataSource.title}</span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))) :
-                      (
-                        <div className="flex flex-col items-start gap-2 justify-between p-4">
-                          <div>{t('noDataSource')}</div>
-                        </div>
-                      )
-                      }
-                    </SelectContent>
-                  </Select>
+                  <Select
+                    options={dataSourcesOptions}
+                    placeholder={t('selectDataSource')}
+                    onChange={(values) => handleSelectChange('dataSourceId', Array.isArray(values) ? values : values)}
+                    value={formData.dataSourceId || ''}
+                    multiple={false}
+                    searchable={true}
+                    searchPlaceholder={t('searchDataSource')}
+                    emptyMessage={t('noDataSource')}
+                  />
                 </div>
 
                 <div className="space-y-2">

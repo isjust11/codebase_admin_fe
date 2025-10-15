@@ -705,6 +705,7 @@
     "selectDataSource": "Chọn nguồn dữ liệu",
     "noDataSource": "Không có nguồn dữ liệu",
     "loading": "Đang tải...",
+    "searchDataSource": "Tìm kiếm nguồn dữ liệu", 
     "messages": {
       "error": "Lỗi tải danh sách bài thuốc dân gian",
       "deleteSuccess": "Bài thuốc dân gian đã được xóa thành công",
@@ -716,6 +717,17 @@
       "notFound": "Không tìm thấy bài thuốc dân gian",
       "changeStatusSuccess": "Đổi trạng thái bài thuốc dân gian thành công",
       "changeStatusError": "Lỗi khi đổi trạng thái bài thuốc dân gian"
+    },
+    "validation": {
+      "titleMinLength": "Tên bài thuốc dân gian phải có ít nhất 3 ký tự",
+      "titleRequired": "Tên bài thuốc dân gian không được để trống",
+      "summaryRequired": "Tóm tắt bài thuốc dân gian không được để trống",
+      "summaryMinLength": "Tóm tắt bài thuốc dân gian phải có ít nhất 10 ký tự",
+      "categoryRequired": "Danh mục bài thuốc dân gian không được để trống",
+      "contentMinLength": "Nội dung bài thuốc dân gian phải có ít nhất 10 ký tự",
+      "contentRequired": "Nội dung bài thuốc dân gian không được để trống",
+      "authorRequired": "Tác giả bài thuốc dân gian không được để trống",
+      "validationError":"Vui lòng kiểm tra lại thông tin"
     }
   },
   "Herbals": {
