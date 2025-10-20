@@ -9,8 +9,7 @@ import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Action } from '@/types/actions';
-import { Plus, PlusIcon, Save, X } from 'lucide-react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Plus, Save, X } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { ArticleDto } from '@/types/dto/ArticleDto';
 import { useLoading } from '@/contexts/LoadingContext';
@@ -19,9 +18,14 @@ import ImageUpload from '@/components/ui/ImageUpload';
 import { AppCategoryCode, AppRoutes } from '@/constants';
 import { z } from 'zod';
 import { Category } from '@/types/category';
-import { getAllDataSources, getCategoryByCode } from '@/services/manager-api';
+import { getAllDataSources,
+          getArticleParentTypes,
+        getCategoryByCode
+   } from '@/services/manager-api';
 import { DataSource } from '@/types/data-source';
 import { Textarea } from '@/components/ui/textarea';
+import { CategoryType } from '@/types/category-type';
+import Select, { SelectOption } from '@/components/form/Select';
 
 const articleFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
@@ -34,6 +38,7 @@ const articleFormSchema = (t: any) => z.object({
   dataSourceId: z.string().optional(),
   thumbnailFile: z.instanceof(File).optional(),
   thumbnailUrl: z.string().optional(),
+  articleTypeId: z.string().optional(),
 });
 
 const ArticleForm = () => {
@@ -47,8 +52,9 @@ const ArticleForm = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [article, setArticle] = useState<ArticleDto>();
   const articleForm = articleFormSchema(t);
-  const [articleStatus, setArticleStatus] = useState<Category[]>([]);
-  const [articleType, setArticleType] = useState<Category[]>([]);
+  const [articleStatus, setArticleStatus] = useState<SelectOption[]>([]);
+  const [articleTypeOptions, setArticleTypeOptions] = useState<SelectOption[]>([]);
+  const [parentArticleTypeOptions, setParentArticleTypeOptions] = useState<SelectOption[]>([]);
   const [dataSources, setDataSources] = useState<DataSource[]>([]);
   const [loadingDataSources, setLoadingDataSources] = useState(false);
 
@@ -61,6 +67,7 @@ const ArticleForm = () => {
       statusId: article.statusId || '',
       thumbnailFile: undefined,
       categoryId: '',
+      articleTypeId: (article as any).articleTypeId || '',
       dataSourceId: (article as any).dataSourceId || '',
     } : {
       title: '',
@@ -70,6 +77,7 @@ const ArticleForm = () => {
       thumbnailFile: undefined,
       categoryId: '',
       dataSourceId: '',
+      articleTypeId: '',
     });
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof articleForm>, string>>>({});
   const id = params.id?.toString();
@@ -86,12 +94,32 @@ const ArticleForm = () => {
   }, []);
 
   const loadCategories = async () => {
-    const [articleStatus, articleType] = await Promise.all([
+    const [articleStatus, articleType, parentArticleType] = await Promise.all([
       getCategoryByCode(AppCategoryCode.ArticleStatus.code),
-      getCategoryByCode(AppCategoryCode.ArticleType.code)
+      getCategoryByCode(AppCategoryCode.ArticleType.code),
+      getArticleParentTypes()
     ]);
-    setArticleStatus(articleStatus);
-    setArticleType(articleType);
+    const articleOption = articleStatus.map((data: Category)=>{
+      return {
+        value: data.id.toString(),
+        label: data.name,
+      }
+    });
+    const articleTypeOption = articleType.map((data: Category)=>{
+      return {
+        value: data.id.toString(),
+        label: data.name,
+      }
+    });
+    const parentArticleTypeOption = parentArticleType.map((data: CategoryType)=>{
+      return {
+        value: data.id.toString(),
+        label: data.name,
+      }
+    });
+    setArticleStatus(articleOption);
+    setArticleTypeOptions(articleTypeOption);
+    setParentArticleTypeOptions(parentArticleTypeOption)
   }
 
   const loadDataSources = async () => {
@@ -119,6 +147,7 @@ const ArticleForm = () => {
         thumbnailUrl: article.thumbnail,
         categoryId: article.categoryId || '',
         dataSourceId: (article as any).dataSourceId || '',
+        articleTypeId: (article as any).articleTypeId || '',
       });
     } catch (_error) {
       toast.error(t('messages.loadError'));
@@ -138,6 +167,7 @@ const ArticleForm = () => {
         thumbnail: fieldErrors.thumbnail?.[0],
         status: fieldErrors.status?.[0],
         thumbnailFile: fieldErrors.thumbnailFile?.[0],
+        articleTypeId: fieldErrors.articleTypeId?.[0],
       } as Partial<Record<keyof z.infer<typeof articleForm>, string>>);
       toast.error(t('validation.validationError'));
       return;
@@ -287,98 +317,45 @@ const ArticleForm = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="category">{t('category')}</Label>
-                    <Select value={formData.categoryId} onValueChange={(value) => handleSelectCategoryChange(value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('categoryPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent className="w-full bg-white">
-                        {
-                          articleType?.length > 0 ? articleType.map((item) => (
-                            <SelectItem key={item.id} value={item.id} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
-                              <div className="flex items-center">
-                                <div className="text-sm text-gray-500">{item.name}</div>
-                              </div>
-                            </SelectItem>
-                          ))
-                            :
-                            <div className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 p-2 cursor-pointer'
-                              onClick={() => navigateTo('/manager/categories?onCreate=true&code=' + AppCategoryCode.ArticleType.code)}>
-                              <div className="flex items-center">
-                                <PlusIcon className="h-4 w-4 mr-2 text-gray-500" />
-                                <span className="text-sm text-gray-500">{tUtils('addCategory')}</span>
-                              </div>
-                            </div>
-                        }
-                      </SelectContent>
-                      {formErrors.categoryId && (
-                        <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
-                      )}
-                    </Select>
+                    <Select
+                      options={articleTypeOptions}
+                      placeholder={t('categoryPlaceholder')}
+                      onChange={(value) => handleSelectCategoryChange(value as string)}
+                      value={formData.articleTypeId || ''}
+                    />
+                    {formErrors.articleTypeId && (
+                      <div className="text-red-500 text-sm">{formErrors.articleTypeId}</div>
+                    )}
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="status">{t('status')}</Label>
-                    <Select value={formData.statusId} onValueChange={(value) => handleSelectStatusChange(value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder={t('statusPlaceholder')} />
-                      </SelectTrigger>
-                      <SelectContent className="w-full bg-white">
-                        {
-                          articleStatus?.length > 0 ? articleStatus.map((item) => (
-                            <SelectItem key={item.id} value={item.id} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
-                              <div className="flex items-center">
-                                <div className="text-sm text-gray-500">{item.name}</div>
-                              </div>
-                            </SelectItem>
-                          ))
-                            :
-                            <div className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 p-2 cursor-pointer'
-                              onClick={() => navigateTo('/manager/categories?onCreate=true&code=' + AppCategoryCode.ArticleStatus.code)}>
-                              <div className="flex items-center">
-                                <PlusIcon className="h-4 w-4 mr-2 text-gray-500" />
-                                <span className="text-sm text-gray-500">{tUtils('addStatus')}</span>
-                              </div>
-                            </div>
-                        }
-                      </SelectContent>
-                      {formErrors.statusId && (
-                        <div className="text-red-500 text-sm">{formErrors.statusId}</div>
-                      )}
-                    </Select>
-
+                    <Select
+                      options={articleStatus}
+                      placeholder={t('statusPlaceholder')}
+                      onChange={(value) => handleSelectStatusChange(value as string)}
+                      value={formData.statusId || ''}
+                    />
+                    {formErrors.statusId && (
+                      <div className="text-red-500 text-sm">{formErrors.statusId}</div>
+                    )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="dataSource">{t('dataSource')}</Label>
                   <Select
-                    value={formData.dataSourceId?.toString() || ''}
-                    onValueChange={handleSelectDataSourceChange}
+                    options={dataSources.map((data: DataSource)=>{
+                      return {
+                        value: data.id.toString(),
+                        label: data.name,
+                      }
+                    })}
+                    placeholder={t('selectDataSource')}
+                    onChange={(value) => handleSelectDataSourceChange(value as string)}
+                    value={formData.dataSourceId || ''}
                     disabled={loadingDataSources}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder={loadingDataSources ? t('loading') : t('dataSourcePlaceholder')} />
-                    </SelectTrigger>
-                    <SelectContent className="w-full bg-white">
-                      {dataSources.length > 0 ? (
-                        dataSources.map((item: DataSource) => (
-                          <SelectItem key={item.id} value={item.id.toString()} className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300'>
-                            <div className="flex items-center">
-                              <div className="text-sm text-gray-500">{item.name}</div>
-                            </div>
-                          </SelectItem>
-                        ))
-                      ) : (
-                        <div className='hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 p-2'
-                          onClick={() => navigateTo('/manager/data-sources?onCreate=true')}>
-                          <div className="flex items-center">
-                            <PlusIcon className="h-4 w-4 mr-2 text-gray-500" />
-                            <span className="text-sm text-gray-500">{tUtils('addDataSource')}</span>
-                          </div>
-                        </div>
-                      )}
-                    </SelectContent>
-                  </Select>
+                  />
                 </div>
 
 

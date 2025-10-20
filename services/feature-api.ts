@@ -1,11 +1,11 @@
 import axios from 'axios';
-import axiosApi from './base/api';
+import { axiosInstance } from '@/lib/axios';
 
 export const featureService = {
 
   async getFeatures() {
     try {
-      const response = await axiosApi.get(`feature`);
+      const response = await axiosInstance.get(`feature`);
       return response.data;
     } catch (error) {
       console.error('Error fetching features:', error);
@@ -16,7 +16,7 @@ export const featureService = {
 
   async createFeature(featureData: any) {
     try {
-      const response = await axiosApi.post(`feature`, featureData);
+      const response = await axiosInstance.post(`feature`, featureData);
       return response.data;
     } catch (error) {
       console.error('Error creating menu:', error);
@@ -26,7 +26,7 @@ export const featureService = {
   
   async updateFeature(id: number, featureData: any) {
     try {
-      const response = await axiosApi.put(`feature/${id}`, featureData);
+      const response = await axiosInstance.put(`feature/${id}`, featureData);
       return response.data;
     } catch (error) {
       console.error('Error updating menu:', error);
@@ -36,7 +36,7 @@ export const featureService = {
   
   async deleteFeature(id: number) {
     try {
-      await axiosApi.delete(`feature/${id}`);
+      await axiosInstance.delete(`feature/${id}`);
     } catch (error) {
       console.error('Error deleting feature:', error);
       throw error;

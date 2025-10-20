@@ -9,5 +9,6 @@ export interface ArticleDto {
     summary?: string;
     statusId?: string;
     categoryId?: string;
+    articleTypeId?: string;
   }
   

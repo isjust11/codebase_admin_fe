@@ -1,4 +1,4 @@
-import axiosApi from './base/api';
+import { axiosInstance } from '@/lib/axios';
 
 export interface Media {
   id: number;
@@ -56,7 +56,7 @@ export interface MediaResponse {
 export const mediaApi = {
   getAll: async (params?: MediaQueryParams): Promise<PaginatedResponse<Media>> =>{
     try {
-      const response = await axiosApi.get('/media', { params });
+      const response = await axiosInstance.get('/media', { params });
       return response.data;
 
     } catch (_error) {
@@ -67,7 +67,7 @@ export const mediaApi = {
 
   getById: async (id: number): Promise<Media> => {
     try {
-      const response = await axiosApi.get(`/media/${id}`);
+      const response = await axiosInstance.get(`/media/${id}`);
       return response.data;
     } catch (_error) {
       console.error('Error fetching media by id:', _error);
@@ -80,7 +80,7 @@ export const mediaApi = {
       const formData = new FormData();
       formData.append('file', file);
 
-      const response = await axiosApi.post('/media/upload', formData, {
+      const response = await axiosInstance.post('/media/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
@@ -94,7 +94,7 @@ export const mediaApi = {
 
   update: async (filename: string, data: UpdateMediaDto): Promise<Media> => {
     try {
-      const response = await axiosApi.put(`/media/${filename}`, data);
+      const response = await axiosInstance.put(`/media/${filename}`, data);
       return response.data;
     } catch (_error) {
       console.error('Error updating media:', _error);
@@ -104,7 +104,7 @@ export const mediaApi = {
 
   delete: async (filename: string): Promise<void> => {
     try {
-      await axiosApi.delete(`/media/${filename}`);
+      await axiosInstance.delete(`/media/${filename}`);
     } catch (_error) {
       console.error('Error deleting media:', _error);
       throw _error;
@@ -113,7 +113,7 @@ export const mediaApi = {
 
   deleteMultiple: async (filenames: string[]): Promise<void> => {
     try {
-      await axiosApi.delete('/media', { data: filenames });
+      await axiosInstance.delete('/media', { data: filenames });
     } catch (_error) {
       console.error('Error deleting multiple media:', _error);
       throw _error;
@@ -126,7 +126,7 @@ export const uploadFile = async (file: File): Promise<Media> => {
   formData.append('file', file);
 
   try {
-    const response = await axiosApi.post('/media/upload', formData, {
+    const response = await axiosInstance.post('/media/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },

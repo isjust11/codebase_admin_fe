@@ -1,4 +1,4 @@
-import axiosApi from './base/api';
+import { axiosInstance } from '@/lib/axios';
 
 export interface Product {
   id: number;
@@ -35,26 +35,26 @@ export const getAllProducts = async (filter: ProductFilter): Promise<ProductResp
     params.append('search', filter.search);
   }
 
-  const response = await axiosApi.get(`/products?${params.toString()}`);
+  const response = await axiosInstance.get(`/products?${params.toString()}`);
   return response.data;
 };
 
 export const getProductById = async (id: string): Promise<Product> => {
-  const response = await axiosApi.get(`/products/${id}`);
+  const response = await axiosInstance.get(`/products/${id}`);
   return response.data;
 };
 
 export const createProduct = async (product: Partial<Product>): Promise<Product> => {
-  const response = await axiosApi.post('/products', product);
+  const response = await axiosInstance.post('/products', product);
   return response.data;
 };
 
 export const updateProduct = async (id: number, product: Partial<Product>): Promise<Product> => {
-  const response = await axiosApi.patch(`/products/${id}`, product);
+  const response = await axiosInstance.patch(`/products/${id}`, product);
   return response.data;
 };
 
 export const deleteProduct = async (id: string): Promise<void> => {
-  await axiosApi.delete(`/products/${id}`);
+  await axiosInstance.delete(`/products/${id}`);
 };
 

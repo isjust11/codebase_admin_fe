@@ -1,4 +1,4 @@
-import { apiClient } from './api-client';
+import { axiosInstance } from '@/lib/axios';
 
 export interface ProductComplaint {
   id: number;
@@ -31,26 +31,26 @@ export const getAllProductComplaints = async (filter: ProductComplaintFilter): P
     params.append('search', filter.search);
   }
 
-  const response = await apiClient.get(`/product-complaints?${params.toString()}`);
+  const response = await axiosInstance.get(`/product-complaints?${params.toString()}`);
   return response.data;
 };
 
 export const getProductComplaintById = async (id: string): Promise<ProductComplaint> => {
-  const response = await apiClient.get(`/product-complaints/${id}`);
+  const response = await axiosInstance.get(`/product-complaints/${id}`);
   return response.data;
 };
 
 export const createProductComplaint = async (productComplaint: Partial<ProductComplaint>): Promise<ProductComplaint> => {
-  const response = await apiClient.post('/product-complaints', productComplaint);
+  const response = await axiosInstance.post('/product-complaints', productComplaint);
   return response.data;
 };
 
 export const updateProductComplaint = async (id: number, productComplaint: Partial<ProductComplaint>): Promise<ProductComplaint> => {
-  const response = await apiClient.patch(`/product-complaints/${id}`, productComplaint);
+  const response = await axiosInstance.patch(`/product-complaints/${id}`, productComplaint);
   return response.data;
 };
 
 export const deleteProductComplaint = async (id: string): Promise<void> => {
-  await apiClient.delete(`/product-complaints/${id}`);
+  await axiosInstance.delete(`/product-complaints/${id}`);
 };
 

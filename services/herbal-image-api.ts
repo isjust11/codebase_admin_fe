@@ -1,4 +1,4 @@
-import axiosApi from './base/api';
+import { axiosInstance } from '@/lib/axios';
 
 export interface HerbalImageDto {
   id?: number;
@@ -19,40 +19,40 @@ export interface SortOrderDto {
 }
 
 export const createHerbalImage = async (data: Omit<HerbalImageDto, 'id' | 'createdAt' | 'updatedAt'>): Promise<HerbalImageDto> => {
-  const response = await axiosApi.post('/herbal-images', data);
+  const response = await axiosInstance.post('/herbal-images', data);
   return response.data;
 };
 
 export const getHerbalImages = async (herbalId: string): Promise<HerbalImageDto[]> => {
-  const response = await axiosApi.get(`/herbal-images/herbal/${herbalId}`);
+  const response = await axiosInstance.get(`/herbal-images/herbal/${herbalId}`);
   return response.data;
 };
 
 export const getHerbalImage = async (id: string): Promise<HerbalImageDto> => {
-  const response = await axiosApi.get(`/herbal-images/${id}`);
+  const response = await axiosInstance.get(`/herbal-images/${id}`);
   return response.data;
 };
 
 export const updateHerbalImage = async (id: string, data: Partial<HerbalImageDto>): Promise<HerbalImageDto> => {
-  const response = await axiosApi.patch(`/herbal-images/${id}`, data);
+  const response = await axiosInstance.patch(`/herbal-images/${id}`, data);
   return response.data;
 };
 
 export const deleteHerbalImage = async (id: string): Promise<void> => {
-  await axiosApi.delete(`/herbal-images/${id}`);
+  await axiosInstance.delete(`/herbal-images/${id}`);
 };
 
 export const deleteHerbalImages = async (herbalId: string): Promise<void> => {
-  await axiosApi.delete(`/herbal-images/herbal/${herbalId}`);
+  await axiosInstance.delete(`/herbal-images/herbal/${herbalId}`);
 };
 
 export const updateHerbalImageSortOrder = async (images: SortOrderDto[]): Promise<void> => {
-  await axiosApi.post('/herbal-images/sort-order', images);
+  await axiosInstance.post('/herbal-images/sort-order', images);
 };
 
 export const getMainHerbalImage = async (herbalId: string): Promise<HerbalImageDto | null> => {
   try {
-    const response = await axiosApi.get(`/herbal-images/herbal/${herbalId}/main`);
+    const response = await axiosInstance.get(`/herbal-images/herbal/${herbalId}/main`);
     return response.data;
   } catch (error) {
     return null;
@@ -60,6 +60,6 @@ export const getMainHerbalImage = async (herbalId: string): Promise<HerbalImageD
 };
 
 export const getHerbalImagesByType = async (herbalId: string, type: string): Promise<HerbalImageDto[]> => {
-  const response = await axiosApi.get(`/herbal-images/herbal/${herbalId}/type/${type}`);
+  const response = await axiosInstance.get(`/herbal-images/herbal/${herbalId}/type/${type}`);
   return response.data;
 }; 

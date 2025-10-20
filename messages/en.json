@@ -653,7 +653,8 @@
     },
     "validation": {
       "codeMinLength": "Category type code must be at least 2 characters",
-      "nameMinLength": "Category type name must be at least 2 characters"
+      "nameMinLength": "Category type name must be at least 2 characters",
+      "categoryTypeIdRequired": "Category type is required"
     }
   },
   "FolkMedicinesPage": {
