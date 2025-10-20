@@ -1,5 +1,5 @@
 import { AppApi, AppConstants } from '@/constants';
-import axiosApi from './base/api';
+import { axiosInstance } from '@/lib/axios';
 import { CreatePermissionDto, CreateRoleDto, Permission, UpdatePermissionDto, UpdateRoleDto } from '@/types/permission';
 import { Role } from '@/types/role';
 import { User } from '@/types/user';
@@ -29,35 +29,35 @@ interface RefreshTokenResponse {
 }
 
 // Hàm refresh token
-export const refreshToken = async (): Promise<RefreshTokenResponse> => {
-  try {
-    const refreshToken = localStorage.getItem(AppConstants.RefreshToken);
-    if (!refreshToken) {
-      throw new Error('Không tìm thấy refresh token');
-    }
+// export const refreshToken = async (): Promise<RefreshTokenResponse> => {
+//   try {
+//     const refreshToken = localStorage.getItem(AppConstants.RefreshToken);
+//     if (!refreshToken) {
+//       throw new Error('Không tìm thấy refresh token');
+//     }
 
-    const response = await axiosApi.post(AppApi.Auth.RefreshToken, {
-      refreshToken,
-    });
+//     const response = await axiosInstance.post(AppApi.Auth.RefreshToken, {
+//       refreshToken,
+//     });
 
-    // Cập nhật token mới vào localStorage
-    localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);
-    localStorage.setItem(AppConstants.RefreshToken, response.data.refreshToken);
+//     // Cập nhật token mới vào localStorage
+//     localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);
+//     localStorage.setItem(AppConstants.RefreshToken, response.data.refreshToken);
 
-    return response.data;
-  } catch (_error) {
-    console.error('Lỗi refresh token:', _error);
-    // Nếu refresh token thất bại, đăng xuất người dùng
-    logout();
-    throw _error;
-  }
-};
+//     return response.data;
+//   } catch (_error) {
+//     console.error('Lỗi refresh token:', _error);
+//     // Nếu refresh token thất bại, đăng xuất người dùng
+//     logout();
+//     throw _error;
+//   }
+// };
 
 // đăng nhập người dùng
 export const login = async (data: LoginData): Promise<AuthResponse> => {
   try {
     console.log('run login', data);
-    const response = await axiosApi.post(AppApi.Auth.Login, data);
+    const response = await axiosInstance.post(AppApi.Auth.Login, data);
     // lưu trữ token vào localStorage
     localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);
     localStorage.setItem(AppConstants.RefreshToken, response.data.refreshToken);
@@ -72,7 +72,7 @@ export const login = async (data: LoginData): Promise<AuthResponse> => {
 // đăng ký tài khoản
 export const register = async (data: RegisterData): Promise<any> => {
   try {
-    const response = await axiosApi.post(AppApi.Auth.Register, data);
+    const response = await axiosInstance.post(AppApi.Auth.Register, data);
     return response.data;
   } catch (_error) {
     console.error('Lỗi đăng ký:', _error);
@@ -90,7 +90,7 @@ export const logout = (): void => {
 
 export const verifyEmail = async (token: string): Promise<AuthResponse> => {
   try {
-    const response = await axiosApi.get(`${AppApi.Auth.VerifyEmail}?token=${token}`);
+    const response = await axiosInstance.get(`${AppApi.Auth.VerifyEmail}?token=${token}`);
     return response.data;
   } catch (_error) {
     console.error('Lỗi xác thực email:', _error);
@@ -100,7 +100,7 @@ export const verifyEmail = async (token: string): Promise<AuthResponse> => {
 
 export const forgotPassword = async (username: string): Promise<any> => {
   try {
-    const response = await axiosApi.get(`${AppApi.Auth.ForgotPassword}?username=${username}`);
+    const response = await axiosInstance.get(`${AppApi.Auth.ForgotPassword}?username=${username}`);
     return response.data;
   } catch (_error) {
     console.error('Lỗi quên mật khẩu:', _error);
@@ -110,7 +110,7 @@ export const forgotPassword = async (username: string): Promise<any> => {
 
 export const verifyResetPassword = async (token: string, password: string): Promise<any> => {
   try {
-    const response = await axiosApi.post(`${AppApi.Auth.ResetPassword}`, { token, password });
+    const response = await axiosInstance.post(`${AppApi.Auth.ResetPassword}`, { token, password });
     return response.data;
   } catch (_error) {
     console.error('Lỗi xác thực mật khẩu:', _error);
@@ -120,7 +120,7 @@ export const verifyResetPassword = async (token: string, password: string): Prom
 
 export const resendEmail = async (email: string): Promise<AuthResponse> => {
   try {
-    const response = await axiosApi.post(`${AppApi.Auth.ResendEmail}`, { email });
+    const response = await axiosInstance.post(`${AppApi.Auth.ResendEmail}`, { email });
     return response.data;
   } catch (_error) {
     console.error('Lỗi gửi email xác thực:', _error);
@@ -131,7 +131,7 @@ export const resendEmail = async (email: string): Promise<AuthResponse> => {
 // kiểm tra token hợp lệ
 export const validateToken = async (token: string): Promise<boolean> => {
   try {
-    const response = await axiosApi.get(`${AppApi.Auth.ValidateToken}?token=${token}`);
+    const response = await axiosInstance.get(`${AppApi.Auth.ValidateToken}?token=${token}`);
     return response.status === 200;
   } catch (error) {
     return false;
@@ -151,7 +151,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
       // Nếu token không hợp lệ, thử refresh token
       try {
         console.log('run get refresh token');
-        await refreshToken();
+        // await refreshToken();
         return true;
       } catch (error) {
         // Nếu refresh token cũng thất bại, đăng xuất người dùng
@@ -192,14 +192,14 @@ export const getAuthToken = (): string | null => {
 
 // get profile
 export const getProfile = async (): Promise<AuthResponse> => {
-  const response = await axiosApi.get(`/auth/profile`);
+  const response = await axiosInstance.get(`/auth/profile`);
   return response.data;
 };
 // permission and role
 
 export const getRoles = async (params?: PaginationParams): Promise<PaginatedResponse<Role>> =>  {
   try{
-    const response = await axiosApi.get('/roles', {params});
+    const response = await axiosInstance.get('/roles', {params});
     return response.data;
   }catch(_error){
     console.error('Error fetching navigator:', _error);
@@ -209,37 +209,37 @@ export const getRoles = async (params?: PaginationParams): Promise<PaginatedResp
 
 
 export const getRole = async (id: string): Promise<Role> => {
-  const response = await axiosApi.get(`/roles/${id}`);
+  const response = await axiosInstance.get(`/roles/${id}`);
   return response.data;
 };
 
 export const createRole = async (data: CreateRoleDto): Promise<Role> => {
-  const response = await axiosApi.post('/roles', data);
+  const response = await axiosInstance.post('/roles', data);
   return response.data;
 };
 
 export const updateRole = async (id: string, data: UpdateRoleDto): Promise<Role> => {
-  const response = await axiosApi.put(`/roles/${id}`, data);
+  const response = await axiosInstance.put(`/roles/${id}`, data);
   return response.data;
 };
 
 export const deleteRole = async (id: string): Promise<void> => {
-  await axiosApi.delete(`/roles/${id}`);
+  await axiosInstance.delete(`/roles/${id}`);
 };  
 
 export const getFeaturesByRole = async (id: string): Promise<Feature[]> => {
-  const response = await axiosApi.get(`/roles/${id}/features`);
+  const response = await axiosInstance.get(`/roles/${id}/features`);
   return response.data;
 };
 
 export const findbyCode = async (code: string): Promise<Role> => {
-  const response = await axiosApi.get(`/roles/find/${code}`);
+  const response = await axiosInstance.get(`/roles/find/${code}`);
   return response.data;
 };
 
 export const getPermissions = async (params?: PaginationParams): Promise<PaginatedResponse<Permission>> =>  {
   try{
-    const response = await axiosApi.get('/permissions', {params});
+    const response = await axiosInstance.get('/permissions', {params});
     return response.data;
   }catch(_error){
     console.error('Error fetching permissions:', _error);
@@ -248,28 +248,28 @@ export const getPermissions = async (params?: PaginationParams): Promise<Paginat
 };
 
 export const getPermission = async (id: string): Promise<Permission> => {
-  const response = await axiosApi.get(`/permissions/${id}`);
+  const response = await axiosInstance.get(`/permissions/${id}`);
   return response.data;
 };
 
 export const createPermission = async (data: CreatePermissionDto): Promise<Permission> => {
-  const response = await axiosApi.post('/permissions', data);
+  const response = await axiosInstance.post('/permissions', data);
   return response.data;
 };
 
 export const updatePermission = async (id: string, data: UpdatePermissionDto): Promise<Permission> => {
-  const response = await axiosApi.put(`/permissions/${id}`, data);
+  const response = await axiosInstance.put(`/permissions/${id}`, data);
   return response.data;
 };
 
 export const deletePermission = async (id: string): Promise<void> => {
-  await axiosApi.delete(`/permissions/${id}`);
+  await axiosInstance.delete(`/permissions/${id}`);
 };
 
 // Thêm các API mới cho permission constants
 export const getPermissionResources = async () => {
   try {
-    const response = await axiosApi.get('/permissions/constants/resources');
+    const response = await axiosInstance.get('/permissions/constants/resources');
     return response.data;
   } catch (error) {
     console.error('Error fetching permission resources:', error);
@@ -279,7 +279,7 @@ export const getPermissionResources = async () => {
 
 export const getPermissionActions = async () => {
   try {
-    const response = await axiosApi.get('/permissions/constants/actions');
+    const response = await axiosInstance.get('/permissions/constants/actions');
     return response.data;
   } catch (error) {
     console.error('Error fetching permission actions:', error);
@@ -289,7 +289,7 @@ export const getPermissionActions = async () => {
 
 export const getPermissionTemplates = async () => {
   try {
-    const response = await axiosApi.get('/permissions/constants/templates');
+    const response = await axiosInstance.get('/permissions/constants/templates');
     return response.data;
   } catch (error) {
     console.error('Error fetching permission templates:', error);
@@ -299,7 +299,7 @@ export const getPermissionTemplates = async () => {
 
 export const getPermissionTemplateByResource = async (resource: string) => {
   try {
-    const response = await axiosApi.get(`/permissions/constants/templates/${resource}`);
+    const response = await axiosInstance.get(`/permissions/constants/templates/${resource}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching permission template:', error);
@@ -309,7 +309,7 @@ export const getPermissionTemplateByResource = async (resource: string) => {
 
 export const createPermissionFromTemplate = async (data: { resource: string; selectedActions: string[] }) => {
   try {
-    const response = await axiosApi.post('/permissions/create-from-template', data);
+    const response = await axiosInstance.post('/permissions/create-from-template', data);
     return response.data;
   } catch (error) {
     console.error('Error creating permission from template:', error);
@@ -319,7 +319,7 @@ export const createPermissionFromTemplate = async (data: { resource: string; sel
 
 export const getPermissionsByAction = async (action: string) => {
   try {
-    const response = await axiosApi.get(`/permissions/by-action/${action}`);
+    const response = await axiosInstance.get(`/permissions/by-action/${action}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching permissions by action:', error);
@@ -329,7 +329,7 @@ export const getPermissionsByAction = async (action: string) => {
 
 export const getPermissionsByResource = async (resource: string) => {
   try {
-    const response = await axiosApi.get(`/permissions/by-resource/${resource}`);
+    const response = await axiosInstance.get(`/permissions/by-resource/${resource}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching permissions by resource:', error);
@@ -339,7 +339,7 @@ export const getPermissionsByResource = async (resource: string) => {
 
 export const getPermissionsByActionAndResource = async (action: string, resource: string) => {
   try {
-    const response = await axiosApi.get(`/permissions/by-action-resource/${action}/${resource}`);
+    const response = await axiosInstance.get(`/permissions/by-action-resource/${action}/${resource}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching permissions by action and resource:', error);
@@ -349,7 +349,7 @@ export const getPermissionsByActionAndResource = async (action: string, resource
 
 export const getTokenInfo = async (token: string) => {
   try {
-    const response = await axiosApi.get(`/auth/token-info?token=${token}`);
+    const response = await axiosInstance.get(`/auth/token-info?token=${token}`);
     return response.data;
   } catch (error) {
     console.error('Error getting token info:', error);
@@ -358,50 +358,50 @@ export const getTokenInfo = async (token: string) => {
 }; 
 
 export const updateProfile = async (data: any): Promise<any> => {
-  const response = await axiosApi.patch(`/auth/profile`, data);
+  const response = await axiosInstance.patch(`/auth/profile`, data);
   return response.data;
 };
 
 export const updateAvatar = async (data: any): Promise<any> => {
-  const response = await axiosApi.post(`/auth/update-avatar`, data);
+  const response = await axiosInstance.post(`/auth/update-avatar`, data);
   return response.data;
 };
 
 export const updatePassword = async (data: any): Promise<any> => {
-  const response = await axiosApi.patch(`/auth/update-password`, data);
+  const response = await axiosInstance.patch(`/auth/update-password`, data);
   return response.data;
 };
 
 export const assignRoleFeatures = async (roleId: string, featureIds: string[]): Promise<any> => {
-  const response = await axiosApi.post(`/roles/${roleId}/features`, { featureIds });
+  const response = await axiosInstance.post(`/roles/${roleId}/features`, { featureIds });
   return response.data;
 };
 
 // New APIs for role-permission management
 export const getPermissionsByRole = async (roleId: string): Promise<Permission[]> => {
-  const response = await axiosApi.get(`/roles/${roleId}/permissions`);
+  const response = await axiosInstance.get(`/roles/${roleId}/permissions`);
   return response.data;
 };
 
 export const assignRolePermissions = async (roleId: string, permissionIds: string[]): Promise<any> => {
-  const response = await axiosApi.post(`/roles/${roleId}/permissions`, { permissionIds });
+  const response = await axiosInstance.post(`/roles/${roleId}/permissions`, { permissionIds });
   return response.data;
 };
 
 export const removeRolePermissions = async (roleId: string, permissionIds: string[]): Promise<any> => {
-  const response = await axiosApi.delete(`/roles/${roleId}/permissions`, { 
+  const response = await axiosInstance.delete(`/roles/${roleId}/permissions`, { 
     data: { permissionIds } 
   });
   return response.data;
 };
 
 export const getRolePermissionStats = async (roleId: string): Promise<any> => {
-  const response = await axiosApi.get(`/roles/${roleId}/permissions/stats`);
+  const response = await axiosInstance.get(`/roles/${roleId}/permissions/stats`);
   return response.data;
 };
 
 export const hasPermissionByCode = async (permission: string): Promise<boolean> => {
-  const response = await axiosApi.get(`/permissions/has-permission?permission=${permission}`);
+  const response = await axiosInstance.get(`/permissions/has-permission?permission=${permission}`);
   return response.status === 200;
 };
 

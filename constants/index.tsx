@@ -17,7 +17,7 @@ export const AppRoutes = {
     ForgotPassword: '/auth/forgot-password',
     ResetPassword: '/auth/reset-password',
     VerifyEmail: '/auth/verify-email',
-    RefreshToken: '/auth/refresh-token',
+    // RefreshToken: '/auth/refresh-token',
     ResendEmail: '/auth/resend-email',
     ValidateToken: '/auth/validate-token',
   },

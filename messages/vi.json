@@ -648,7 +648,8 @@
     },
     "validation": {
       "codeMinLength": "Mã loại danh mục phải có ít nhất 2 ký tự.",
-      "nameMinLength": "Tên loại danh mục phải có ít nhất 2 ký tự."
+      "nameMinLength": "Tên loại danh mục phải có ít nhất 2 ký tự.",
+      "categoryTypeIdRequired": "Yêu cầu chọn loại danh mục"
     }
   },
   "FolkMedicinesPage": {

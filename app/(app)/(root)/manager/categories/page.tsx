@@ -44,7 +44,7 @@ export default function CategoriesManagement() {
   const [selectedType, setSelectedType] = useState<CategoryType | null>(null);
   const [filterByType, setFilterByType] = useState<Category[]>([]);
   const { isOpen, openModal, closeModal } = useModal();
-  const { hasPermission,hasResourcePermission } = useAuth();
+  const { hasPermission, hasResourcePermission } = useAuth();
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const [dialogContent, setDialogContent] = useState<string>();
   const searchParams = useSearchParams();
@@ -139,7 +139,7 @@ export default function CategoriesManagement() {
       header: t('actions'),
       cell: ({ row }) => {
         const category = row.original as Category;
-       
+
         return (
           <div className="p-2 ">
             <DropdownMenu>
@@ -195,7 +195,7 @@ export default function CategoriesManagement() {
   useEffect(() => {
     if (queryOpen) {
       openModal();
-    } 
+    }
   }, [queryOpen]);
 
   const confirmDelete = async () => {
@@ -220,7 +220,13 @@ export default function CategoriesManagement() {
           setSelectedType(foundType);
         }
       }
-      setPageCount(categoriesData.totalPages);
+      if (selectedType != null) {
+        console.log("RUN CATEGORY ", selectedType)
+        handleChangeType(selectedType.id);
+      } else {
+        
+        setPageCount(categoriesData.totalPages);
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error(t('messages.loadError'));
@@ -287,6 +293,7 @@ export default function CategoriesManagement() {
     }
     const filters = categories.filter((category) => category.type.id === id)
     setFilterByType(filters);
+    setPageCount(filters.length);
     const foundType = categoryTypes.find(type => type.id === id);
     setSelectedType(foundType || null);
     console.log(foundType)
@@ -334,7 +341,7 @@ export default function CategoriesManagement() {
                 ))}
               </SelectContent>
             </Select>
-           
+
           </div>
           <DataTable
             columns={columns}

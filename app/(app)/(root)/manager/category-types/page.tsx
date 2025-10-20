@@ -269,6 +269,7 @@ export default function CategoryTypesManagement() {
     } catch (error) {
       toast.error(t('messages.deleteError'));
     } finally {
+      setIsOpenAlert(false)
       setLoading(false);
     }
   }

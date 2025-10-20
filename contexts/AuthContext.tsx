@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { login, register, logout, isAuthenticated, getCurrentUser, getFeature, getPermissionsStorage, hasPermissionByCode } from '@/services/auth-api';
+import { login, register, logout, isAuthenticated, getCurrentUser, getFeature, getPermissionsStorage } from '@/services/auth-api';
 import { useRouter } from 'next/navigation';
 import { User } from '@/types/user';
 import { Feature } from '@/types/feature';
