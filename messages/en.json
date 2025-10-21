@@ -1083,7 +1083,8 @@
       "statusRequired": "Status is required",
       "statusMinLength": "Status must be at least 3 characters",
       "validationError": "Please check the information again",
-      "categoryRequired": "Category is required"
+      "categoryRequired": "Category is required",
+      "articleTypeRequired": "Article type is required"
     },
     "dataSource": "Data source",
     "selectDataSource": "Select data source",

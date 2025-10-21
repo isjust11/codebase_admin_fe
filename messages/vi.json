@@ -1081,6 +1081,8 @@
     "category": "Danh mục bài viết",
     "categoryPlaceholder": "Chọn danh mục bài viết",
     "dataSourcePlaceholder": "Chọn nguồn dữ liệu",
+    "articleType": "Loại bài viết",
+    "selectArticleType": "Chọn loại bài viết",
     "messages": {
       "deleteTitle": "Xóa bài viết",
       "deleteDescription": "Bạn có chắc chắn muốn xóa bài viết này không?",
@@ -1107,7 +1109,8 @@
       "statusRequired": "Trạng thái bài viết không được để trống",
       "statusMinLength": "Trạng thái bài viết phải có ít nhất 3 ký tự",
       "validationError": "Vui lòng kiểm tra lại thông tin",
-      "categoryRequired": "Danh mục bài viết không được để trống"
+      "categoryRequired": "Danh mục bài viết không được để trống",
+      "articleTypeRequired": "Loại bài viết không được để trống"
     },
     "dataSource": "Nguồn dữ liệu",
     "selectDataSource": "Chọn nguồn dữ liệu",

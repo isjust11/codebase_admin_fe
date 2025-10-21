@@ -18,10 +18,12 @@ import ImageUpload from '@/components/ui/ImageUpload';
 import { AppCategoryCode, AppRoutes } from '@/constants';
 import { z } from 'zod';
 import { Category } from '@/types/category';
-import { getAllDataSources,
-          getArticleParentTypes,
-        getCategoryByCode
-   } from '@/services/manager-api';
+import {
+  getAllDataSources,
+  getArticleParentTypes,
+  getCategoryByCode,
+  getCategoryByParent
+} from '@/services/manager-api';
 import { DataSource } from '@/types/data-source';
 import { Textarea } from '@/components/ui/textarea';
 import { CategoryType } from '@/types/category-type';
@@ -38,7 +40,7 @@ const articleFormSchema = (t: any) => z.object({
   dataSourceId: z.string().optional(),
   thumbnailFile: z.instanceof(File).optional(),
   thumbnailUrl: z.string().optional(),
-  articleTypeId: z.string().optional(),
+  articleTypeId: z.string().refine(val => val.trim() !== '', t('validation.articleTypeRequired')),
 });
 
 const ArticleForm = () => {
@@ -94,32 +96,28 @@ const ArticleForm = () => {
   }, []);
 
   const loadCategories = async () => {
-    const [articleStatus, articleType, parentArticleType] = await Promise.all([
+    const [articleStatus, parentArticleType] = await Promise.all([
       getCategoryByCode(AppCategoryCode.ArticleStatus.code),
-      getCategoryByCode(AppCategoryCode.ArticleType.code),
       getArticleParentTypes()
     ]);
-    const articleOption = articleStatus.map((data: Category)=>{
+    const articleOption = articleStatus.map((data: Category) => {
       return {
         value: data.id.toString(),
         label: data.name,
       }
     });
-    const articleTypeOption = articleType.map((data: Category)=>{
-      return {
-        value: data.id.toString(),
-        label: data.name,
-      }
-    });
-    const parentArticleTypeOption = parentArticleType.map((data: CategoryType)=>{
+    const parentArticleTypeOption = parentArticleType.map((data: CategoryType) => {
       return {
         value: data.id.toString(),
         label: data.name,
       }
     });
     setArticleStatus(articleOption);
-    setArticleTypeOptions(articleTypeOption);
     setParentArticleTypeOptions(parentArticleTypeOption)
+
+    if(parentArticleTypeOption.length > 0) {
+      selectArticleTypeOptions(parentArticleTypeOption[0].value);
+    }
   }
 
   const loadDataSources = async () => {
@@ -132,6 +130,17 @@ const ArticleForm = () => {
     } finally {
       setLoadingDataSources(false);
     }
+  }
+
+  const selectArticleTypeOptions = async (parentArticleTypeParent: string) => {
+    const articleType = await getCategoryByParent(parentArticleTypeParent);
+    const articleTypeOption = articleType.map((data: Category) => {
+      return {
+        value: data.id.toString(),
+        label: data.name,
+      }
+    });
+    setArticleTypeOptions(articleTypeOption);
   }
 
   const loadArticle = async (id: string) => {
@@ -168,6 +177,7 @@ const ArticleForm = () => {
         status: fieldErrors.status?.[0],
         thumbnailFile: fieldErrors.thumbnailFile?.[0],
         articleTypeId: fieldErrors.articleTypeId?.[0],
+        categoryId: fieldErrors.categoryId?.[0],
       } as Partial<Record<keyof z.infer<typeof articleForm>, string>>);
       toast.error(t('validation.validationError'));
       return;
@@ -232,6 +242,17 @@ const ArticleForm = () => {
       statusId: value,
     }));
     setFormErrors(prev => ({ ...prev, statusId: undefined }));
+  };
+
+
+  const handleParentArticleTypeChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      articleTypeId: value,
+    }));
+    setFormErrors(prev => ({ ...prev, articleTypeId: undefined }));
+    // Load categories based on selected parent article type
+    selectArticleTypeOptions(value);
   };
 
   const handleSelectCategoryChange = (value: string) => {
@@ -316,18 +337,47 @@ const ArticleForm = () => {
 
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="category">{t('category')}</Label>
+                    <Label htmlFor="parent">{t('articleType')}</Label>
                     <Select
-                      options={articleTypeOptions}
-                      placeholder={t('categoryPlaceholder')}
-                      onChange={(value) => handleSelectCategoryChange(value as string)}
+                      options={parentArticleTypeOptions}
+                      placeholder={t('selectArticleType')}
+                      onChange={(value) => handleParentArticleTypeChange(value as string)}
                       value={formData.articleTypeId || ''}
                     />
                     {formErrors.articleTypeId && (
                       <div className="text-red-500 text-sm">{formErrors.articleTypeId}</div>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="category">{t('category')}</Label>
+                    <Select
+                      options={articleTypeOptions}
+                      placeholder={t('categoryPlaceholder')}
+                      onChange={(value) => handleSelectCategoryChange(value as string)}
+                      value={formData.categoryId || ''}
+                    />
+                    {formErrors.categoryId && (
+                      <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
+                    )}
+                  </div>
 
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="dataSource">{t('dataSource')}</Label>
+                    <Select
+                      options={dataSources.map((data: DataSource) => {
+                        return {
+                          value: data.id.toString(),
+                          label: data.name,
+                        }
+                      })}
+                      placeholder={t('selectDataSource')}
+                      onChange={(value) => handleSelectDataSourceChange(value as string)}
+                      value={formData.dataSourceId || ''}
+                      disabled={loadingDataSources}
+                    />
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="status">{t('status')}</Label>
                     <Select
@@ -342,21 +392,6 @@ const ArticleForm = () => {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="dataSource">{t('dataSource')}</Label>
-                  <Select
-                    options={dataSources.map((data: DataSource)=>{
-                      return {
-                        value: data.id.toString(),
-                        label: data.name,
-                      }
-                    })}
-                    placeholder={t('selectDataSource')}
-                    onChange={(value) => handleSelectDataSourceChange(value as string)}
-                    value={formData.dataSourceId || ''}
-                    disabled={loadingDataSources}
-                  />
-                </div>
 
 
                 <div className="space-y-2">

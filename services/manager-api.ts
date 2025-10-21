@@ -276,6 +276,16 @@ export const deleteCategoryType = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/category-types/${id}`);
 };
 
+export const getCategoryByParent = async (id: string): Promise<Category[]> => {
+  try {
+    const response = await axiosInstance.get(`/category-types/parent/${id}`);
+    return response.data.categories;
+  } catch (_error) {
+    console.error('Error fetching category type:', _error);
+    throw _error;
+  }
+};
+
 export const getCategoryByCode = async (code: string): Promise<Category[]> => {
   try {
     const response = await axiosInstance.get(`/category-types/code/${code}`);
@@ -288,7 +298,7 @@ export const getCategoryByCode = async (code: string): Promise<Category[]> => {
 
 export const getArticleParentTypes = async (): Promise<CategoryType[]> => {
   try {
-    const response = await axiosInstance.get(`/category-types/article-type`);
+    const response = await axiosInstance.get(`/category-types/article`);
     return response.data;
   } catch (_error) {
     console.error('Error fetching article parent types:', _error);
