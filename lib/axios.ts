@@ -7,9 +7,11 @@ export const axiosInstance = axios.create({
     'Content-Type': 'application/json',
   },
 });
-let retry = false;
-let retryCount = 0;
-const maxRetryCount = 3;
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: any) => void;
+  reject: (reason?: any) => void;
+}> = [];
 
 // Add a request interceptor
 axiosInstance.interceptors.request.use(
@@ -35,32 +37,88 @@ export const getAuthToken = (): string | null => {
   return null;
 };
 
+const processQueue = (error: any, token: string | null = null) => {
+  failedQueue.forEach(({ resolve, reject }) => {
+    if (error) {
+      reject(error);
+    } else {
+      resolve(token);
+    }
+  });
+  
+  failedQueue = [];
+};
+
 //handle refresh token
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401 && !error.config._retry) {
-      console.log('RUN refresh token');
-      error.config._retry = true;
-      const originalRequest = error.config;
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401) {
+      if(error.response?.data?.code === 'refresh_token_expired' 
+        || error.response?.data?.code === 'refresh_token_invalid') {
+        localStorage.removeItem(AppConstants.AccessToken);
+        localStorage.removeItem(AppConstants.RefreshToken);
+        window.location.href = '/login';
+        return Promise.reject(error);
+      }
+      if (isRefreshing) {
+        // Nếu đang refresh token, thêm request vào queue
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        }).then(token => {
+          originalRequest.headers.Authorization = `Bearer ${token}`;
+          return axiosInstance(originalRequest);
+        }).catch(err => {
+          return Promise.reject(err);
+        });
+      }
+      
+
+      isRefreshing = true;
+
       const refreshToken = localStorage.getItem(AppConstants.RefreshToken);
+      
       if (refreshToken) {
         try {
           const response = await axiosInstance.post(AppApi.Auth.RefreshToken, {
             refreshToken,
           });
-          localStorage.setItem(AppConstants.AccessToken, response.data.accessToken);
-          localStorage.setItem(AppConstants.RefreshToken, response.data.refreshToken);
+          
+          const { accessToken, refreshToken: newRefreshToken } = response.data;
+          localStorage.setItem(AppConstants.AccessToken, accessToken);
+          localStorage.setItem(AppConstants.RefreshToken, newRefreshToken);
+          
+          // Process queue với token mới
+          processQueue(null, accessToken);
+          
+          // Retry original request
+          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           return axiosInstance(originalRequest);
-        } catch (error) {
+        } catch (refreshError) {
+          // Refresh token failed, clear storage và redirect
           localStorage.removeItem(AppConstants.AccessToken);
           localStorage.removeItem(AppConstants.RefreshToken);
-          console.error('Lỗi refresh token:', error);
+          console.error('Lỗi refresh token:', refreshError);
+          
+          // Process queue với error
+          processQueue(refreshError, null);
+          
           window.location.href = '/login';
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
         }
+      } else {
+        // Không có refresh token
+        isRefreshing = false;
+        processQueue(error, null);
+        window.location.href = '/login';
+        return Promise.reject(error);
       }
-      return Promise.reject(error);
     }
+    
     return Promise.reject(error);
   }
 );
