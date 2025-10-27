@@ -57,7 +57,9 @@ axiosInstance.interceptors.response.use(
 
     if (error.response?.status === 401) {
       if(error.response?.data?.code === 'refresh_token_expired' 
-        || error.response?.data?.code === 'refresh_token_invalid') {
+        || error.response?.data?.code === 'refresh_token_invalid'
+        || error.response?.data?.code === 'token_invalid'
+      ) {
         localStorage.removeItem(AppConstants.AccessToken);
         localStorage.removeItem(AppConstants.RefreshToken);
         window.location.href = '/login';
