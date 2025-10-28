@@ -38,7 +38,7 @@ export default function CategoriesManagement() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [loading, setLoading] = useState(false);
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(20);
   const [pageCount, setPageCount] = useState(0);
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<CategoryType | null>(null);
@@ -200,11 +200,11 @@ export default function CategoriesManagement() {
 
   const confirmDelete = async () => {
     await deleteCategory(selectedCategory?.id || '');
-    await fetchData();
+    await fetchData(pageIndex, pageSize, search);
     setOpenDialog(false)
     toast.success(t('deleteSuccess'))
   }
-  const fetchData = async () => {
+  const fetchData = async (pageIndex: number, pageSize: number, search: string) => {
     setLoading(true);
     try {
       const [categoriesData, typesData] = await Promise.all([
@@ -236,15 +236,14 @@ export default function CategoriesManagement() {
   };
 
   useAsyncEffect(async () => {
-    await fetchData();
+    await fetchData(pageIndex, pageSize, search);
   }, [pageIndex, pageSize, search]);
-
-  const handleSizeChange = (size: number) => {
-    setPageSize(size);
-  };
 
   const handlePaginationChange = (newPageIndex: number, newPageSize: number) => {
     setPageIndex(newPageIndex);
+  };
+
+  const handleSizeChange = (newPageSize: number) => {
     setPageSize(newPageSize);
   };
 
@@ -275,7 +274,7 @@ export default function CategoriesManagement() {
       }
       closeModal();
       // Refresh data
-      await fetchData();
+      await fetchData(pageIndex, pageSize, search);
       setSelectedCategory(null);
     } catch (error) {
       toast.error(t('messages.saveError'));
@@ -301,7 +300,7 @@ export default function CategoriesManagement() {
 
   const handleChangeStatus = async (category: Category) => {
     await updateCategoryStatus(category.id, { isActive: !category.isActive });
-    await fetchData();
+    await fetchData(pageIndex, pageSize, search);
     toast.success(t('messages.updateSuccess'));
   };
 
@@ -348,8 +347,8 @@ export default function CategoriesManagement() {
             data={filterByType}
             pageCount={pageCount}
             onPaginationChange={handlePaginationChange}
-            onSearchChange={handleSearch}
             onSizeChange={handleSizeChange}
+            onSearchChange={handleSearch}
             manualPagination={true}
             getRowChildren={(row) => (row as any).children}
           />

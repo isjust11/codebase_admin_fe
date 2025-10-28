@@ -172,7 +172,7 @@ export const getFeaturePermissions = async (id: number): Promise<Permission[]> =
 // todo: api category 
 export const getCategories  = async (params?: PaginationParams): Promise<PaginatedResponse<Category>> =>{
   try {
-    const response = await axiosInstance.get(`/categories`);
+    const response = await axiosInstance.get(`/categories`, { params });
     return response.data;
   } catch (_error) {
     console.error('Error fetching categories:', _error);

@@ -32,7 +32,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
-  pageCount?: number
+  pageCount?: number;
+  pageSize?: number;
   onPaginationChange?: (pageIndex: number, pageSize: number) => void
   onSearchChange?: (search: string) => void
   manualPagination?: boolean
@@ -45,6 +46,7 @@ export function DataTable<TData, TValue>({
   columns,
   data,
   pageCount,
+  pageSize,
   onPaginationChange,
   onSearchChange,
   manualPagination = false,
@@ -57,7 +59,7 @@ export function DataTable<TData, TValue>({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
-  const [pageSize, setPageSize] = React.useState(10)
+  const [pageSizeState, setPageSizeState] = React.useState(pageSize || 10)
   const [pageIndex, setPageIndex] = React.useState(0)
   const [search, setSearch] = React.useState("")
   const [expandedRows, setExpandedRows] = React.useState<Record<string, boolean>>({})
@@ -108,16 +110,16 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       pagination: {
-        pageSize,
+        pageSize: pageSizeState,
         pageIndex,
       },
     },
     onPaginationChange: (updater) => {
       if (typeof updater === 'function') {
-        const newState = updater({ pageIndex, pageSize })
+        const newState = updater({ pageIndex, pageSize: pageSizeState })
         setPageIndex(newState.pageIndex)
         if (onPaginationChange) {
-          onPaginationChange(newState.pageIndex, pageSize)
+          onPaginationChange(newState.pageIndex, pageSizeState)
         }
       }
     },
@@ -267,9 +269,9 @@ export function DataTable<TData, TValue>({
             <div className="flex items-center space-x-2">
               <p className="text-sm font-medium dark:text-gray-400">{t('rowsPerPage')}</p>
               <Select
-                value={pageSize.toString()}
+                value={pageSizeState.toString()}
                 onValueChange={(value) => {
-                  setPageSize(Number(value))
+                  setPageSizeState(Number(value))
                   table.setPageIndex(0)
                   onSizeChange?.(Number(value))
                 }}
