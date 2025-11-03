@@ -1093,7 +1093,7 @@
   "DataSourcePage": {
     "pageTitle": "Data Source List",
     "title": "Data Source List",
-    "name": "Name",
+    "name": "Name source",
     "dataTitle": "Title",
     "description": "Description",
     "type": "Type",

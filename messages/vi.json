@@ -1120,10 +1120,10 @@
   "DataSourcePage": {
     "pageTitle": "Danh sách nguồn dữ liệu",
     "title": "Danh sách nguồn dữ liệu",
-    "name": "Tên",
+    "name": "Tên nguồn",
     "dataTitle": "Tiêu đề",
     "description": "Mô tả",
-    "type": "Loại",
+    "type": "Loại nguồn dữ liệu",
     "url": "URL",
     "author": "Tác giả",
     "publisher": "Nhà xuất bản",
