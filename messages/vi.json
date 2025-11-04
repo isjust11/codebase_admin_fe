@@ -1137,7 +1137,7 @@
     "openMenu": "Mở menu",
     "edit": "Chỉnh sửa",
     "delete": "Xóa",
-    "add": "Thêm",
+    "add": "Thêm nguồn",
     "update": "Cập nhật",
     "selectType": "Chọn loại",
     "all": "Tất cả",
@@ -1165,7 +1165,8 @@
     },
     "validation": {
       "nameMinLength": "Tên phải có ít nhất 1 ký tự",
-      "typeRequired": "Loại là bắt buộc"
+      "typeRequired": "Loại là bắt buộc",
+      "urlInvalid": "Đường dẫn không hợp lệ"
     }
   },
   "StaticPage": {

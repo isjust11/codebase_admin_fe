@@ -177,7 +177,7 @@ export function DataSourceForm({ initialData, onSubmit, onCancel, dataSourceType
                         name="type"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>{t('type')} *</FormLabel>
+                                <FormLabel>{t('type')} <span className="text-red-600">(*)</span></FormLabel>
                                 <Select value={field.value} onValueChange={field.onChange}>
                                     <FormControl>
                                         <SelectTrigger>

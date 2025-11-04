@@ -1138,7 +1138,8 @@
     },
     "validation": {
       "nameMinLength": "Name must be at least 1 character",
-      "typeRequired": "Type is required"
+      "typeRequired": "Type is required",
+      "urlInvalid": "Url invalid"
     }
   },
   "StaticPage": {
