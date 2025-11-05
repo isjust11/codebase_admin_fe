@@ -607,6 +607,7 @@
     "enterName": "Enter category name",
     "enterDescription": "Enter category description",
     "selectIcon": "Select icon",
+    "sortOrder":"Sort Order",
     "messages": {
       "loadError": "Error loading category list",
       "deleteSuccess": "Category deleted successfully",

@@ -78,7 +78,7 @@ export default function CategoriesManagement() {
         return (
           <Button
             variant="ghost"
-            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+            onClick={() => column.toggleSorting(column.getIsSorted() === "desc")}
           >
             {t('name')}
             {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
@@ -108,6 +108,20 @@ export default function CategoriesManagement() {
           <Badge variant="light" color={status === true ? 'success' : 'error'} >
             {status == true ? t('active') : t('inactive')}
           </Badge>
+        )
+      },
+    },
+    {
+      accessorKey:"sortOrder",
+      header: ({ column }) => {
+        return (
+          <Button
+            variant="ghost"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            {t('sortOrder')}
+            {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
+          </Button>
         )
       },
     },
@@ -275,7 +289,10 @@ export default function CategoriesManagement() {
       closeModal();
       // Refresh data
       await fetchData(pageIndex, pageSize, search);
-      setSelectedCategory(null);
+      if(selectedType){
+        handleChangeType(selectedType.id);
+      }
+      // setSelectedCategory(null);
     } catch (error) {
       toast.error(t('messages.saveError'));
     } finally {
@@ -292,7 +309,8 @@ export default function CategoriesManagement() {
     }
     const filters = categories.filter((category) => category.type.id === id)
     setFilterByType(filters);
-    setPageCount(filters.length);
+    const pageCount = Math.ceil(filters.length/ pageSize)
+    setPageCount(pageCount);
     const foundType = categoryTypes.find(type => type.id === id);
     setSelectedType(foundType || null);
     console.log(foundType)

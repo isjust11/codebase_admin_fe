@@ -598,6 +598,7 @@
     "enterName": "Nhập tên danh mục",
     "enterDescription": "Nhập mô tả danh mục",
     "selectIcon": "Chọn icon",
+    "sortOrder":"Thứ tự",
     "messages": {
       "loadError": "Có lỗi xảy ra khi tải danh sách danh mục",
       "deleteSuccess": "Danh mục đã được xóa thành công",
@@ -609,7 +610,8 @@
     },
     "validation": {
       "codeMinLength": "Mã danh mục phải có ít nhất 2 ký tự",
-      "nameMinLength": "Tên danh mục phải có ít nhất 2 ký tự"
+      "nameMinLength": "Tên danh mục phải có ít nhất 2 ký tự",
+      "categoryTypeIdRequired":"Yêu cầu chọn loại danh mục"
     }
   },
   "CategoryTypesPage": {

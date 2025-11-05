@@ -27,6 +27,10 @@ const formCategorySchema = (t: any) => z.object({
     }),
     icon: z.string().optional(),
     iconType: z.nativeEnum(IconType).optional(),
+    sortOrder: z.preprocess(
+        (value) => (value === '' || value === null ? undefined : value),
+        z.coerce.number().int().min(0).optional()
+    ),
     code: z.string().optional(),
 });
 
@@ -54,7 +58,8 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                 isActive: initialData.isActive || true,
                 icon: initialData.icon || "",
                 categoryTypeId: initialData.type.id,
-                iconType: initialData.iconType
+                iconType: initialData.iconType,
+                sortOrder: initialData.sortOrder
             }
             : {
                 name: "",
@@ -63,7 +68,8 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                 categoryTypeId: "",
                 icon: "",
                 code: "",
-                iconType: IconType.lucide
+                iconType: IconType.lucide,
+                sortOrder: 1
             },
     });
     if (selectedType) {
@@ -85,23 +91,51 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                             <FormControl>
                                 <Input className="input-focus" placeholder={t('enterName')} {...field} />
                             </FormControl>
-                            <FormMessage className="text-red-500"/>
+                            <FormMessage className="text-red-500" />
                         </FormItem>
                     )}
                 />
-                <FormField
-                    control={form.control}
-                    name="code"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('code')}</FormLabel>
-                            <FormControl>
-                                <Input className="input-focus" placeholder={t('enterCode')} {...field} />
-                            </FormControl>
-                            <FormMessage className="text-red-500"/>
-                        </FormItem>
-                    )}
-                />
+                <div className="flex items-start gap-2">
+                    <div className="basis-[70%]">
+                        <FormField
+                            control={form.control}
+                            name="code"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{t('code')}</FormLabel>
+                                    <FormControl>
+                                        <Input className="input-focus" placeholder={t('enterCode')} {...field} />
+                                    </FormControl>
+                                    <FormMessage className="text-red-500" />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                    <div className="basis-[30%]">
+                        <FormField
+                            control={form.control}
+                            name="sortOrder"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>{t('sortOrder')}</FormLabel>
+                                <FormControl>
+                                    <Input
+                                        type="number"
+                                        className="input-focus"
+                                        value={field.value ?? ''}
+                                        onChange={(e) => {
+                                            const next = e.target.value === '' ? undefined : e.target.valueAsNumber;
+                                            field.onChange(Number.isNaN(next as any) ? undefined : next);
+                                        }}
+                                    />
+                                </FormControl>
+                                    <FormMessage className="text-red-500" />
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+
+                </div>
                 <FormField
                     control={form.control}
                     name="description"
@@ -111,7 +145,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                             <FormControl>
                                 <Textarea className="input-focus" placeholder={t('enterDescription')} {...field} />
                             </FormControl>
-                            <FormMessage className="text-red-500"/>
+                            <FormMessage className="text-red-500" />
                         </FormItem>
                     )}
                 />
@@ -181,7 +215,7 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                                         <SmilePlus className="h-4 w-4 text-amber-300" />
                                     </Button>
                                 </div>
-                                <FormMessage className="text-red-500"/>
+                                <FormMessage className="text-red-500" />
                             </FormItem>
                         )}
                     />
@@ -199,13 +233,13 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                 </div>
             </form>
             <IconPickerModal
-                    isOpen={isIconPickerOpen}
-                    onClose={() => setIsIconPickerOpen(false)}
-                    onSelect={(icon, iconType) => {
-                        form.setValue("icon", icon);
-                        form.setValue("iconType", iconType)
-                    }}
-                />
+                isOpen={isIconPickerOpen}
+                onClose={() => setIsIconPickerOpen(false)}
+                onSelect={(icon, iconType) => {
+                    form.setValue("icon", icon);
+                    form.setValue("iconType", iconType)
+                }}
+            />
         </Form>
     );
 }
