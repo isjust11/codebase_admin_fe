@@ -15,7 +15,7 @@ import { useDropzone } from "react-dropzone";
 // import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/types/category';
-import { FolkMedicine, CreateFolkMedicineDto } from '@/types/folk-medicine';
+import { FolkMedicine, CreateFolkMedicineDto, FolkMedicineComponentDto } from '@/types/folk-medicine';
 import { useTranslations } from 'next-intl';
 import { getAllDataSources, getCategoryByCode, getDataSources } from '@/services/manager-api';
 import { DataSource } from '@/types/data-source';
@@ -28,6 +28,7 @@ import { mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { z } from 'zod';
 import Select, { SelectOption } from '@/components/form/Select';
+import { getAllHerbal } from '@/services/herbal-api';
 
 const folkMedicineFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
@@ -46,10 +47,15 @@ const folkMedicineFormSchema = (t: any) => z.object({
   isActive: z.boolean().optional(),
   id: z.string().optional(),
   slug: z.string().optional(),
-  viewCount: z.number().optional(),
-  likeCount: z.number().optional(),
   createdAt: z.string().optional(),
   updatedAt: z.string().optional(),
+  components: z.array(z.object({
+    herbalId: z.string().min(1),
+    quantity: z.number().nonnegative(),
+    unitCategoryId: z.string().optional(),
+    note: z.string().optional(),
+    sortOrder: z.number().optional(),
+  })).optional()
 });
 
 const FolkMedicineForm = () => {
@@ -71,14 +77,14 @@ const FolkMedicineForm = () => {
   const [dataSourcesOptions, setDataSourcesOptions] = useState<SelectOption[]>([]);
   const [categoriesOptions, setCategoriesOptions] = useState<SelectOption[]>([]);
   const [authorsOptions, setAuthorsOptions] = useState<SelectOption[]>([]);
+  const [herbalOptions, setHerbalOptions] = useState<SelectOption[]>([]);
+  const [unitOptions, setUnitOptions] = useState<SelectOption[]>([]);
   const [loadingDataSources, setLoadingDataSources] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof FolkMedicine, string>>>({});
   const folkMedicineForm = folkMedicineFormSchema(t);
   const [formData, setFormData] = useState<FolkMedicine>({
     id: '',
     slug: '',
-    viewCount: 0,
-    likeCount: 0,
     title: '',
     summary: '',
     content: '',
@@ -93,6 +99,7 @@ const FolkMedicineForm = () => {
     isActive: true,
     createdAt: '',
     updatedAt: '',
+    components: [],
   });
 
   const id = params.id?.toString();
@@ -121,9 +128,11 @@ const FolkMedicineForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoriesData, authorsData] = await Promise.all([
+        const [categoriesData, authorsData, herbalsData, unitCats] = await Promise.all([
           getCategoryByCode(AppCategoryCode.FolkMedicine.code),
-          getAllAuthors()
+          getAllAuthors(),
+          getAllHerbal(),
+          getCategoryByCode(AppCategoryCode.FoodUnit.code),
         ]);
         setCategories(categoriesData || []);
         setAuthors(authorsData || []);
@@ -138,6 +147,16 @@ const FolkMedicineForm = () => {
           label: author.name,
         }));
         setAuthorsOptions(authorsOptions);
+        const herOptions = (herbalsData || []).map((h: any) => ({
+          value: h.id?.toString?.() || '',
+          label: h.title,
+        }));
+        setHerbalOptions(herOptions);
+        const unitOpts = (unitCats || []).map((c: Category) => ({
+          value: c.id.toString(),
+          label: c.name,
+        }));
+        setUnitOptions(unitOpts);
       } catch (error) {
         toast.error(t('messages.error'));
       }
@@ -187,6 +206,13 @@ const FolkMedicineForm = () => {
         ...prev,
         ...data,
         dataSourceId: (data as any).dataSourceId || null,
+        components: (data as any)?.ingredientsDetail?.map((ing: any, index: number) => ({
+          herbalId: ing.herbal?.id?.toString?.() || ing.herbalId?.toString?.() || '',
+          quantity: Number(ing.quantity) || 0,
+          unitCategoryId: ing.unitCategory?.id?.toString?.() || ing.unitCategoryId?.toString?.(),
+          note: ing.note || '',
+          sortOrder: typeof ing.sortOrder === 'number' ? ing.sortOrder : index,
+        })) || [],
       }));
       if (data.thumbnail) {
         data.thumbnail = mergeImageUrl(data.thumbnail);
@@ -205,7 +231,13 @@ const FolkMedicineForm = () => {
   }
 
   const handleSubmit = async () => {
-    const result = await folkMedicineForm.safeParseAsync(formData);
+    const result = await folkMedicineForm.safeParseAsync({
+      ...formData,
+      components: formData.components?.map((c) => ({
+        ...c,
+        quantity: Number(c.quantity),
+      })),
+    });
     console.log(result);
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
@@ -241,6 +273,13 @@ const FolkMedicineForm = () => {
       const submitData = {
         ...formData,
         authorId: formData.authorId || '',
+        components: (formData.components || []).map((c, index) => ({
+          herbalId: c.herbalId,
+          quantity: Number(c.quantity),
+          unitCategoryId: c.unitCategoryId,
+          note: c.note,
+          sortOrder: typeof c.sortOrder === 'number' ? c.sortOrder : index,
+        } as FolkMedicineComponentDto)),
         // Nếu là URL đầy đủ, chuyển về đường dẫn tương đối trước khi lưu
         thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.STORAGE_API_URL || 'http://localhost:3005', '') : thumbnail,
       };
@@ -258,6 +297,36 @@ const FolkMedicineForm = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleComponentChange = (index: number, field: keyof FolkMedicineComponentDto, value: any) => {
+    setFormData(prev => {
+      const next = { ...(prev as any) };
+      const components = [...(next.components || [])];
+      const item = { ...(components[index] || {}) };
+      (item as any)[field] = field === 'quantity' ? Number(value) : value;
+      components[index] = item as FolkMedicineComponentDto;
+      next.components = components;
+      return next;
+    });
+  };
+
+  const addComponentRow = () => {
+    setFormData(prev => ({
+      ...prev,
+      components: [
+        ...(prev.components || []),
+        { herbalId: '', quantity: 0, unitCategoryId: undefined, note: '', sortOrder: (prev.components?.length || 0) } as FolkMedicineComponentDto,
+      ],
+    }));
+  };
+
+  const removeComponentRow = (index: number) => {
+    setFormData(prev => {
+      const next = { ...(prev as any) };
+      next.components = (next.components || []).filter((_: any, i: number) => i !== index);
+      return next;
+    });
   };
 
   const handleChange = (
@@ -526,6 +595,74 @@ const FolkMedicineForm = () => {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label>Thành phần (dược liệu + định lượng + đơn vị)</Label>
+                      <button
+                        type="button"
+                        onClick={addComponentRow}
+                        className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-2"
+                      >
+                        <Plus className="h-4 w-4" /> Thêm dòng
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      {(formData.components || []).map((comp, idx) => (
+                        <div key={idx} className="grid grid-cols-12 gap-2 items-end border rounded-md p-2">
+                          <div className="col-span-4">
+                            <Label>Dược liệu</Label>
+                            <Select
+                              options={herbalOptions}
+                              placeholder="Chọn dược liệu"
+                              value={comp.herbalId || ''}
+                              multiple={false}
+                              onChange={(val) => handleComponentChange(idx, 'herbalId', Array.isArray(val) ? '' : val)}
+                              searchable
+                              searchPlaceholder="Tìm dược liệu"
+                            />
+                          </div>
+                          <div className="col-span-3">
+                            <Label>Định lượng</Label>
+                            <Input
+                              type="number"
+                              step="0.001"
+                              value={comp.quantity ?? 0}
+                              onChange={(e) => handleComponentChange(idx, 'quantity', e.target.value)}
+                            />
+                          </div>
+                          <div className="col-span-3">
+                            <Label>Đơn vị</Label>
+                            <Select
+                              options={unitOptions}
+                              placeholder="Chọn đơn vị"
+                              value={comp.unitCategoryId || ''}
+                              multiple={false}
+                              onChange={(val) => handleComponentChange(idx, 'unitCategoryId', Array.isArray(val) ? '' : val)}
+                            />
+                          </div>
+                          <div className="col-span-2 flex gap-2 justify-end">
+                            <button
+                              type="button"
+                              onClick={() => removeComponentRow(idx)}
+                              className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 flex items-center gap-2"
+                              title="Xóa dòng"
+                            >
+                              <X className="h-4 w-4" /> Xóa
+                            </button>
+                          </div>
+                          <div className="col-span-12">
+                            <Label>Ghi chú</Label>
+                            <Input
+                              type="text"
+                              value={comp.note || ''}
+                              onChange={(e) => handleComponentChange(idx, 'note', e.target.value)}
+                              placeholder="Ghi chú cho thành phần (nếu có)"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="ingredients">{t('ingredients')}</Label>
                     <Textarea

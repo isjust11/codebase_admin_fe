@@ -13,8 +13,6 @@ export interface FolkMedicine {
   usage?: string;
   notes?: string;
   thumbnail?: string;
-  viewCount: number;
-  likeCount: number;
   authorId?: string;
   author?: Author;
   categoryId?: string;
@@ -24,6 +22,8 @@ export interface FolkMedicine {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
+  components?: FolkMedicineComponentDto[];
+  ingredientsDetail?: FolkMedicineIngredient[];
 }
 
 export interface CreateFolkMedicineDto {
@@ -39,8 +39,32 @@ export interface CreateFolkMedicineDto {
   categoryId?: string;
   dataSourceId?: number | null;
   isActive?: boolean;
+  components?: FolkMedicineComponentDto[];
 }
 
 export interface UpdateFolkMedicineDto extends Partial<CreateFolkMedicineDto> {
   id: number;
 } 
+
+export interface FolkMedicineComponentDto {
+  herbalId: string;
+  quantity: number;
+  unitCategoryId?: string;
+  note?: string;
+  sortOrder?: number;
+}
+
+export interface FolkMedicineIngredient {
+  id: number;
+  folkMedicineId: number;
+  herbalId: number;
+  quantity: number;
+  note?: string;
+  sortOrder: number;
+  unitCategoryId?: number;
+  herbal?: {
+    id: number;
+    title: string;
+  };
+  unitCategory?: Category;
+}

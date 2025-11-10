@@ -3,8 +3,13 @@ import { HerbalDto } from "@/types/dto/HerbalDto";
 import { Herbal } from "@/types/herbal";
 
 
-export const getAllHerbals = async (params: { page: number; size: number; search?: string }): Promise<PaginatedResponse<Herbal>> => {
+export const getHerbalByPage = async (params: { page: number; size: number; search?: string }): Promise<PaginatedResponse<Herbal>> => {
   const response = await axiosInstance.get('/herbals', { params });
+  return response.data;
+};
+
+export const getAllHerbal = async (): Promise<Herbal[]> => {
+  const response = await axiosInstance.get(`/herbals/all`);
   return response.data;
 };
 
