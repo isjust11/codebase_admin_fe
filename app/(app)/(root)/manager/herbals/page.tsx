@@ -5,7 +5,7 @@ import { ArrowDown, ArrowLeftRight, ArrowUp, BadgeInfo, ImageOff, MoreHorizontal
 import { useRouter } from 'next/navigation'
 import { useLoading } from '@/contexts/LoadingContext'
 import { DataTable } from '@/components/DataTable'
-import { deleteHerbal, getAllHerbals, updateHerbal } from '@/services/herbal-api'
+import { deleteHerbal, getHerbalByPage, updateHerbal } from '@/services/herbal-api'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
@@ -244,7 +244,7 @@ const HerbalsPage = () => {
   const [dialogContent, setDialogContent] = useState('')
   const fetchHerbals = async () => {
     try {
-      const response = await getAllHerbals({ page: pageIndex + 1, size: pageSize, search });
+      const response = await getHerbalByPage({ page: pageIndex + 1, size: pageSize, search });
       if (response && response.data) {
         setHerbals(response.data);
         setPageCount(response.totalPages);
