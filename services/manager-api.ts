@@ -289,7 +289,7 @@ export const getCategoryByParent = async (id: string): Promise<Category[]> => {
 export const getCategoryByCode = async (code: string): Promise<Category[]> => {
   try {
     const response = await axiosInstance.get(`/category-types/code/${code}`);
-    return response.data.categories;
+    return response?.data?.categories || [];
   } catch (_error) {
     console.error('Error fetching category type:', _error);
     throw _error;

@@ -231,7 +231,7 @@ export default function FolkMedicineDetailView() {
                       <div>
                         <span className="text-sm text-gray-600 block">{t('author')}</span>
                         <span className="text-sm font-medium text-gray-900">
-                          {folkMedicine.author || tUtils('unknown')}
+                          {folkMedicine.author?.name || tUtils('unknown')}
                         </span>
                       </div>
                     </div>
@@ -276,32 +276,6 @@ export default function FolkMedicineDetailView() {
                 </Card>
 
                 {/* Thống kê */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{t('statistics')}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <EyeIcon className="w-5 h-5 text-blue-600" />
-                        <span className="text-sm text-gray-700 font-medium">{t('viewCount')}</span>
-                      </div>
-                      <span className="text-lg font-bold text-blue-600">
-                        {folkMedicine.viewCount.toLocaleString()}
-                      </span>
-                    </div>
-
-                    <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        <ThumbsUp className="w-5 h-5 text-red-600" />
-                        <span className="text-sm text-gray-700 font-medium">{t('likeCount')}</span>
-                      </div>
-                      <span className="text-lg font-bold text-red-600">
-                        {folkMedicine.likeCount.toLocaleString()}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
 
                 {/* Thông tin URL */}
                 <Card>

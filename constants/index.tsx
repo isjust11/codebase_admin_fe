@@ -72,6 +72,10 @@ export const AppCategoryCode = {
     code: 'FoodUnit',
     name: 'Đơn vị món ăn',
   },
+  UnitOfMeasure:{
+    code:'UnitOfMeasure',
+    name:'Đơn vị tính'
+  },
   TableStatus:{
     code: 'TableStatus',
     name: 'Trạng thái bàn',

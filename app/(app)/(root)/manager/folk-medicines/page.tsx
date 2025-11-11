@@ -179,30 +179,6 @@ export default function FolkMedicinesManagement() {
       },
     },
     {
-      accessorKey: "viewCount",
-      header: t('viewCount'),
-      cell: ({ row }) => {
-        const viewCount = row.getValue("viewCount") as number
-        return (
-          <div className="text-sm text-blue-600 font-medium">
-            {viewCount.toLocaleString()}
-          </div>
-        )
-      },
-    },
-    {
-      accessorKey: "likeCount",
-      header: t('likeCount'),
-      cell: ({ row }) => {
-        const likeCount = row.getValue("likeCount") as number
-        return (
-          <div className="text-sm text-red-600 font-medium">
-            {likeCount.toLocaleString()}
-          </div>
-        )
-      },
-    },
-    {
       accessorKey: "isActive",
       header: t('isActive'),
       cell: ({ row }) => {

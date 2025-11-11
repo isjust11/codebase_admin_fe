@@ -17,7 +17,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Category } from '@/types/category';
 import { FolkMedicine, CreateFolkMedicineDto, FolkMedicineComponentDto } from '@/types/folk-medicine';
 import { useTranslations } from 'next-intl';
-import { getAllDataSources, getCategoryByCode, getDataSources } from '@/services/manager-api';
+import { getAllDataSources, getCategoryByCode } from '@/services/manager-api';
 import { DataSource } from '@/types/data-source';
 import { AppCategoryCode } from '@/constants';
 import Switch from '@/components/form/switch/Switch';
@@ -25,10 +25,10 @@ import { useLoading } from '@/contexts/LoadingContext';
 import { getAllAuthors } from '@/services/author-api';
 import { Author } from '@/types/author';
 import { mergeImageUrl } from '@/lib/utils';
-import Image from 'next/image';
 import { z } from 'zod';
 import Select, { SelectOption } from '@/components/form/Select';
 import { getAllHerbal } from '@/services/herbal-api';
+import TextArea from '@/components/form/input/TextArea';
 
 const folkMedicineFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
@@ -63,7 +63,6 @@ const FolkMedicineForm = () => {
   const [isPending, startTransition] = useTransition();
   const tAuthor = useTranslations('AuthorsPage');
   const tUtils = useTranslations('Utils');
-  const { user } = useAuth();
   const { navigateTo, back } = useLoading();
   const params = useParams();
   const [loading, setLoading] = useState(false);
@@ -132,7 +131,7 @@ const FolkMedicineForm = () => {
           getCategoryByCode(AppCategoryCode.FolkMedicine.code),
           getAllAuthors(),
           getAllHerbal(),
-          getCategoryByCode(AppCategoryCode.FoodUnit.code),
+          getCategoryByCode(AppCategoryCode.UnitOfMeasure.code),
         ]);
         setCategories(categoriesData || []);
         setAuthors(authorsData || []);
@@ -140,6 +139,7 @@ const FolkMedicineForm = () => {
           value: category.id.toString(),
           label: category.name,
         }));
+
         setCategoriesOptions(categoriesOptions);
         const authorsOptions = authorsData.map((author: Author) => ({
           avatar: author.avatar,
@@ -513,10 +513,6 @@ const FolkMedicineForm = () => {
                     {formErrors.categoryId && (
                       <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
                     )}
-
-                    {formErrors.categoryId && (
-                      <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
-                    )}
                   </div>
                 </div>
 
@@ -597,32 +593,32 @@ const FolkMedicineForm = () => {
                 <div className="grid grid-cols-1 gap-4">
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <Label>Thành phần (dược liệu + định lượng + đơn vị)</Label>
+                      <Label>{t('components')} <span className="text-gray-500 text-sm">({t('herbal')} + {t('quantity')} + {t('unit')})</span></Label>
                       <button
                         type="button"
                         onClick={addComponentRow}
                         className="px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 flex items-center gap-2"
                       >
-                        <Plus className="h-4 w-4" /> Thêm dòng
+                        <Plus className="h-4 w-4" /> <span className="text-white text-sm py-1">{t('addRow')}</span>
                       </button>
                     </div>
-                    <div className="space-y-2">
-                      {(formData.components || []).map((comp, idx) => (
+                    <div className="space-y-2 space-x-2">
+                      {formData.components && formData.components.length > 0 ? formData.components.map((comp, idx) => (
                         <div key={idx} className="grid grid-cols-12 gap-2 items-end border rounded-md p-2">
                           <div className="col-span-4">
-                            <Label>Dược liệu</Label>
+                            <Label className="mb-2">{t('herbal')} <span className="text-gray-500 text-sm">*</span></Label>
                             <Select
                               options={herbalOptions}
-                              placeholder="Chọn dược liệu"
+                              placeholder={t('selectHerbal')}
                               value={comp.herbalId || ''}
                               multiple={false}
                               onChange={(val) => handleComponentChange(idx, 'herbalId', Array.isArray(val) ? '' : val)}
                               searchable
-                              searchPlaceholder="Tìm dược liệu"
+                              searchPlaceholder={t('searchHerbal')}
                             />
                           </div>
-                          <div className="col-span-3">
-                            <Label>Định lượng</Label>
+                          <div className="col-span-3 space-x-2">
+                            <Label className="mb-2">{t('quantity')} <span className="text-gray-500 text-sm">*</span></Label>
                             <Input
                               type="number"
                               step="0.001"
@@ -630,51 +626,45 @@ const FolkMedicineForm = () => {
                               onChange={(e) => handleComponentChange(idx, 'quantity', e.target.value)}
                             />
                           </div>
-                          <div className="col-span-3">
-                            <Label>Đơn vị</Label>
+                          <div className="col-span-3 space-x-2">
+                            <Label className="mb-2">{t('unit')} <span className="text-gray-500 text-sm">*</span></Label>
                             <Select
                               options={unitOptions}
-                              placeholder="Chọn đơn vị"
+                              placeholder={t('selectUnit')}
                               value={comp.unitCategoryId || ''}
                               multiple={false}
                               onChange={(val) => handleComponentChange(idx, 'unitCategoryId', Array.isArray(val) ? '' : val)}
                             />
                           </div>
-                          <div className="col-span-2 flex gap-2 justify-end">
+                          <div className="flex gap-2 justify-center items-center">
+
                             <button
-                              type="button"
+                              title={t('deleteRow')}
                               onClick={() => removeComponentRow(idx)}
                               className="px-3 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 flex items-center gap-2"
-                              title="Xóa dòng"
                             >
-                              <X className="h-4 w-4" /> Xóa
+                              <X className="h-4 w-4 text-white" /> Xóa
                             </button>
                           </div>
                           <div className="col-span-12">
-                            <Label>Ghi chú</Label>
-                            <Input
-                              type="text"
+                            <Label className="mb-2">{t('note')} <span className="text-gray-500 text-sm">*</span></Label>
+                            <TextArea
                               value={comp.note || ''}
-                              onChange={(e) => handleComponentChange(idx, 'note', e.target.value)}
-                              placeholder="Ghi chú cho thành phần (nếu có)"
+                              onChange={(value) => handleComponentChange(idx, 'note', value)}
+                              placeholder={t('enterNote')}
+                              rows={3}
                             />
                           </div>
                         </div>
-                      ))}
+                      )):
+                      <div className="text-gray-500 text-sm text-center">
+                        <div className="flex items-center justify-center py-5 bg-gray-200 rounded-md">
+                          <span className="text-gray-500 text-sm">{tUtils('noData')}</span>
+                        </div>
+                      </div>
+                      }
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="ingredients">{t('ingredients')}</Label>
-                    <Textarea
-                      id="ingredients"
-                      name="ingredients"
-                      placeholder={t('enterIngredients')}
-                      value={formData.ingredients}
-                      onChange={handleChange}
-                      rows={3}
-                    />
-                  </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="preparation">{t('preparation')}</Label>
                     <Textarea
