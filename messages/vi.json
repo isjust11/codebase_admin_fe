@@ -750,6 +750,53 @@
       "validationError":"Vui lòng kiểm tra lại thông tin"
     }
   },
+  "DiseasesPage": {
+    "title": "Danh sách bệnh",
+    "addDisease": "Thêm bệnh",
+    "name": "Tên bệnh",
+    "slug": "Slug",
+    "description": "Mô tả",
+    "symptoms": "Triệu chứng",
+    "causes": "Nguyên nhân",
+    "prevention": "Phòng ngừa",
+    "status": "Trạng thái",
+    "createdAt": "Ngày tạo",
+    "updatedAt": "Ngày cập nhật",
+    "basicInfo": "Thông tin cơ bản",
+    "detailInformation": "Thông tin chi tiết",
+    "detailDisease": "Chi tiết bệnh",
+    "createDisease": "Tạo bệnh",
+    "updateDisease": "Cập nhật bệnh",
+    "relatedFolkMedicines": "Bài thuốc dân gian liên quan",
+    "noRelatedFolkMedicines": "Chưa có bài thuốc liên quan",
+    "enterName": "Nhập tên bệnh",
+    "enterSlug": "Nhập slug (tùy chọn)",
+    "enterDescription": "Nhập mô tả bệnh",
+    "enterSymptoms": "Nhập triệu chứng",
+    "enterCauses": "Nhập nguyên nhân",
+    "enterPrevention": "Nhập cách phòng ngừa",
+    "activate": "Kích hoạt",
+    "deactivate": "Ngưng kích hoạt",
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách bệnh",
+      "deleteTitle": "Xác nhận xóa",
+      "confirmDelete": "Bạn có chắc chắn muốn xóa bệnh {name}?",
+      "deleteSuccess": "Bệnh đã được xóa thành công",
+      "deleteError": "Có lỗi xảy ra khi xóa bệnh",
+      "toggleStatusSuccess": "Đổi trạng thái bệnh thành công",
+      "toggleStatusError": "Có lỗi xảy ra khi đổi trạng thái bệnh",
+      "createSuccess": "Bệnh đã được tạo thành công",
+      "createError": "Có lỗi xảy ra khi tạo bệnh",
+      "updateSuccess": "Bệnh đã được cập nhật thành công",
+      "updateError": "Có lỗi xảy ra khi cập nhật bệnh",
+      "notFound": "Không tìm thấy bệnh"
+    },
+    "validation": {
+      "nameRequired": "Tên bệnh không được để trống",
+      "nameMaxLength": "Tên bệnh không được vượt quá 255 ký tự",
+      "slugMaxLength": "Slug không được vượt quá 255 ký tự"
+    }
+  },
   "Herbals": {
     "title": "Danh sách thảo dược",
     "addHerbal": "Thêm thảo dược",

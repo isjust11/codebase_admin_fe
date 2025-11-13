@@ -761,6 +761,53 @@
       "validationError": "Please check the information again"
     }
   },
+  "DiseasesPage": {
+    "title": "Disease List",
+    "addDisease": "Add disease",
+    "name": "Disease name",
+    "slug": "Slug",
+    "description": "Description",
+    "symptoms": "Symptoms",
+    "causes": "Causes",
+    "prevention": "Prevention",
+    "status": "Status",
+    "createdAt": "Created at",
+    "updatedAt": "Updated at",
+    "basicInfo": "Basic information",
+    "detailInformation": "Detail information",
+    "detailDisease": "Disease detail",
+    "createDisease": "Create disease",
+    "updateDisease": "Update disease",
+    "relatedFolkMedicines": "Related folk medicines",
+    "noRelatedFolkMedicines": "No related folk medicines",
+    "enterName": "Enter disease name",
+    "enterSlug": "Enter slug (optional)",
+    "enterDescription": "Enter disease description",
+    "enterSymptoms": "Enter symptoms",
+    "enterCauses": "Enter causes",
+    "enterPrevention": "Enter prevention",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "messages": {
+      "loadError": "Error loading disease list",
+      "deleteTitle": "Confirm delete",
+      "confirmDelete": "Are you sure you want to delete disease {name}?",
+      "deleteSuccess": "Disease deleted successfully",
+      "deleteError": "Error deleting disease",
+      "toggleStatusSuccess": "Disease status updated successfully",
+      "toggleStatusError": "Error updating disease status",
+      "createSuccess": "Disease created successfully",
+      "createError": "Error creating disease",
+      "updateSuccess": "Disease updated successfully",
+      "updateError": "Error updating disease",
+      "notFound": "Disease not found"
+    },
+    "validation": {
+      "nameRequired": "Disease name is required",
+      "nameMaxLength": "Disease name must not exceed 255 characters",
+      "slugMaxLength": "Slug must not exceed 255 characters"
+    }
+  },
   "Herbals": {
     "title": "Herbals List",
     "addHerbal": "Add herbal",
