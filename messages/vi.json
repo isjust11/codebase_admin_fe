@@ -726,6 +726,9 @@
     "searchHerbal": "Tìm kiếm dược liệu",
     "selectUnit": "Chọn đơn vị",
     "searchUnit": "Tìm kiếm đơn vị",
+    "diseases": "Bệnh",
+    "selectDiseases": "Chọn bệnh",
+    "searchDiseases": "Tìm kiếm bệnh",
     "messages": {
       "error": "Lỗi tải danh sách bài thuốc dân gian",
       "deleteSuccess": "Bài thuốc dân gian đã được xóa thành công",

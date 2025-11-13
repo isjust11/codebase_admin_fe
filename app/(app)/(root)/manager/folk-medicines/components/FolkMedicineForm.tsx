@@ -18,6 +18,7 @@ import { Category } from '@/types/category';
 import { FolkMedicine, CreateFolkMedicineDto, FolkMedicineComponentDto } from '@/types/folk-medicine';
 import { useTranslations } from 'next-intl';
 import { getAllDataSources, getCategoryByCode } from '@/services/manager-api';
+import { getAllDiseases } from '@/services/disease-api';
 import { DataSource } from '@/types/data-source';
 import { AppCategoryCode } from '@/constants';
 import Switch from '@/components/form/switch/Switch';
@@ -29,6 +30,7 @@ import { z } from 'zod';
 import Select, { SelectOption } from '@/components/form/Select';
 import { getAllHerbal } from '@/services/herbal-api';
 import TextArea from '@/components/form/input/TextArea';
+import { Disease } from '@/types/disease';
 
 const folkMedicineFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
@@ -78,6 +80,7 @@ const FolkMedicineForm = () => {
   const [authorsOptions, setAuthorsOptions] = useState<SelectOption[]>([]);
   const [herbalOptions, setHerbalOptions] = useState<SelectOption[]>([]);
   const [unitOptions, setUnitOptions] = useState<SelectOption[]>([]);
+  const [diseasesOptions, setDiseasesOptions] = useState<SelectOption[]>([]);
   const [loadingDataSources, setLoadingDataSources] = useState(false);
   const [formErrors, setFormErrors] = useState<Partial<Record<keyof FolkMedicine, string>>>({});
   const folkMedicineForm = folkMedicineFormSchema(t);
@@ -99,6 +102,7 @@ const FolkMedicineForm = () => {
     createdAt: '',
     updatedAt: '',
     components: [],
+    diseases: [],
   });
 
   const id = params.id?.toString();
@@ -127,11 +131,12 @@ const FolkMedicineForm = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoriesData, authorsData, herbalsData, unitCats] = await Promise.all([
+        const [categoriesData, authorsData, herbalsData, unitCats, diseasesData] = await Promise.all([
           getCategoryByCode(AppCategoryCode.FolkMedicine.code),
           getAllAuthors(),
           getAllHerbal(),
           getCategoryByCode(AppCategoryCode.UnitOfMeasure.code),
+          getAllDiseases(),
         ]);
         setCategories(categoriesData || []);
         setAuthors(authorsData || []);
@@ -157,6 +162,11 @@ const FolkMedicineForm = () => {
           label: c.name,
         }));
         setUnitOptions(unitOpts);
+        const diseasesOpts = (diseasesData || []).map((d: Disease) => ({
+          value: d.id.toString(),
+          label: d.name,
+        }));
+        setDiseasesOptions(diseasesOpts);
       } catch (error) {
         toast.error(t('messages.error'));
       }
@@ -254,6 +264,7 @@ const FolkMedicineForm = () => {
         categoryId: fieldErrors.categoryId?.[0],
         dataSourceId: fieldErrors.dataSourceId?.[0],
         isActive: fieldErrors.isActive?.[0],
+        diseases: fieldErrors.diseases?.[0],
       } as Partial<Record<keyof FolkMedicine, string>>);
       toast.error(t('validation.validationError'))
       return;
@@ -541,7 +552,20 @@ const FolkMedicineForm = () => {
                     </div>
                   </div>
                 </div>
-
+                <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="diseases">{t('diseases')}</Label>
+                  <Select
+                    options={diseasesOptions}
+                    placeholder={t('selectDiseases')}
+                    onChange={(values) => handleSelectChange('diseases', Array.isArray(values) ? values : values)}
+                    value={formData.diseases?.map((disease: Disease) => disease.id) || []}
+                    multiple={true}
+                  />
+                  {formErrors.diseases && (
+                    <div className="text-red-500 text-sm">{formErrors.diseases}</div>
+                  )}
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
                   <Select
@@ -555,7 +579,7 @@ const FolkMedicineForm = () => {
                     emptyMessage={t('noDataSource')}
                   />
                 </div>
-
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="summary">{t('summary')}</Label>
                   <Textarea

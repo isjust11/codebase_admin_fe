@@ -8,6 +8,7 @@ import { Table } from '@/types/table';
 import { Feature } from '@/types/feature';
 import { Category } from '@/types/category';
 import { DataSource, DataSourceTypeOption } from '@/types/data-source';
+import { Disease } from '@/types/disease';
 
 
 // todo: api manager fooditem

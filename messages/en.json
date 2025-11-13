@@ -737,6 +737,9 @@
     "searchHerbal": "Search herbal",
     "selectUnit": "Select unit",
     "searchUnit": "Search unit",
+    "diseases": "Diseases",
+    "selectDiseases": "Select diseases",
+    "searchDiseases": "Search diseases",
     "messages": {
       "error": "Error loading folk medicine list",
       "deleteSuccess": "Folk medicine deleted successfully",

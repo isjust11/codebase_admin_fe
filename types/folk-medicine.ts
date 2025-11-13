@@ -1,6 +1,7 @@
 import { Author } from "./author";
 import { Category } from "./category";
 import { DataSource } from "./data-source";
+import { Disease } from "./disease";
 
 export interface FolkMedicine {
   id: string;
@@ -24,6 +25,7 @@ export interface FolkMedicine {
   updatedAt: string;
   components?: FolkMedicineComponentDto[];
   ingredientsDetail?: FolkMedicineIngredient[];
+  diseases?: Disease[];
 }
 
 export interface CreateFolkMedicineDto {
@@ -40,6 +42,7 @@ export interface CreateFolkMedicineDto {
   dataSourceId?: number | null;
   isActive?: boolean;
   components?: FolkMedicineComponentDto[];
+  diseases?: Disease[];
 }
 
 export interface UpdateFolkMedicineDto extends Partial<CreateFolkMedicineDto> {

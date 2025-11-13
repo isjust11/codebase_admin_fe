@@ -172,7 +172,7 @@ const DiseasesPage: React.FC = () => {
       },
     },
   ], [navigateTo, t, tUtils]);
-
+  
   const fetchDiseases = async () => {
     setIsLoading(true);
     try {
