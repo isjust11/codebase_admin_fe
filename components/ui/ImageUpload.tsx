@@ -1,56 +1,255 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { X } from 'lucide-react';
-import { Button } from './button';
-import { mergeImageUrl } from '@/lib/utils';
+import { ChevronLeft, ChevronRight, Plus, X } from "lucide-react";
+import { Button } from "./button";
+import { Dialog, DialogContent } from "./dialog";
+import { mergeImageUrl } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
-interface ImageUploadProps {
-  value?: string;
-  onChange: (value: File | null) => void;
+type BaseImageUploadProps = {
   label?: string;
   placeholder?: string;
   className?: string;
-}
+  maxImages?: number;
+};
 
-const ImageUpload = ({ 
-  value, 
-  onChange, 
-  label, 
-  placeholder = "Kéo & và thả file vào đây",
-  className = "" 
-}: ImageUploadProps) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [displayImage, setDisplayImage] = useState<string | null>(value || previewUrl || null);
+type SingleImageUploadProps = BaseImageUploadProps & {
+  value?: string;
+  multiple?: false;
+  onChange: (value: File | null) => void;
+};
 
-  const onDrop = (acceptedFiles: File[]) => {
-    if (acceptedFiles && acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setSelectedFile(file);
-      const fileUrl = URL.createObjectURL(file);
-      setPreviewUrl(fileUrl);
-      setDisplayImage(fileUrl);
-      // Tạm thời set URL preview, sau này sẽ upload và set URL thật
-      onChange(file);
+type MultipleImageUploadProps = BaseImageUploadProps & {
+  value?: string | string[];
+  multiple: true;
+  onChange: (value: File[] | null) => void;
+};
+
+type ImageUploadProps = SingleImageUploadProps | MultipleImageUploadProps;
+
+type ImageItem = {
+  id: string;
+  url: string;
+  origin: "remote" | "local";
+  file?: File;
+};
+
+const createInitialItems = (value?: string | string[]): ImageItem[] => {
+  if (!value) return [];
+  const items = Array.isArray(value) ? value : [value];
+
+  return items
+    .filter(Boolean)
+    .map((url, index) => ({
+      id: `remote-${index}-${url}`,
+      url: mergeImageUrl(url),
+      origin: "remote" as const,
+    }));
+};
+
+const ImageUpload = (props: ImageUploadProps) => {
+  const tUtils = useTranslations("Utils");
+  const tImage = useTranslations("ImageUpload");
+
+  const {
+    value,
+    onChange,
+    label,
+    placeholder: placeholderProp,
+    className = "",
+    maxImages = 10,
+  } = props;
+
+  const placeholder = placeholderProp ?? tUtils("dropFile");
+
+  const isMultiple = props.multiple === true;
+
+  const [remoteImages, setRemoteImages] = useState<ImageItem[]>(() =>
+    createInitialItems(value)
+  );
+  const [localImages, setLocalImages] = useState<ImageItem[]>([]);
+  const [galleryIndex, setGalleryIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    setRemoteImages(createInitialItems(value));
+  }, [value]);
+
+  const images = useMemo(() => {
+    if (isMultiple) {
+      return [...remoteImages, ...localImages];
+    }
+
+    return localImages.length > 0 ? localImages : remoteImages;
+  }, [isMultiple, localImages, remoteImages]);
+
+  const totalImages = isMultiple
+    ? remoteImages.length + localImages.length
+    : images.length;
+
+  const emitChange = (nextLocalImages: ImageItem[]) => {
+    const files = nextLocalImages
+      .map((item) => item.file)
+      .filter((file): file is File => Boolean(file));
+
+    if (!files.length) {
+      onChange(null as never);
+      return;
+    }
+
+    if (isMultiple) {
+      onChange(files as never);
+    } else {
+      onChange((files[0] ?? null) as never);
     }
   };
 
+  const handleDrop = (acceptedFiles: File[]) => {
+    if (!acceptedFiles.length) return;
+
+    if (isMultiple) {
+      const availableSlots = Math.max(maxImages - totalImages, 0);
+      if (!availableSlots) return;
+
+      const filesToAdd = acceptedFiles.slice(0, availableSlots);
+      const newItems = filesToAdd.map((file, index) => ({
+        id: `local-${file.name}-${Date.now()}-${index}`,
+        url: URL.createObjectURL(file),
+        origin: "local" as const,
+        file,
+      }));
+
+      setLocalImages((prev) => {
+        const updated = [...prev, ...newItems];
+        emitChange(updated);
+        return updated;
+      });
+
+      return;
+    }
+
+    const file = acceptedFiles[0];
+    const newItem: ImageItem = {
+      id: `local-${file.name}-${Date.now()}`,
+      url: URL.createObjectURL(file),
+      origin: "local",
+      file,
+    };
+
+    setLocalImages((prev) => {
+      prev.forEach((item) => {
+        if (item.origin === "local") {
+          URL.revokeObjectURL(item.url);
+        }
+      });
+      return [newItem];
+    });
+
+    emitChange([newItem]);
+  };
+
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
+    onDrop: handleDrop,
     accept: {
       "image/png": [],
       "image/jpeg": [],
       "image/webp": [],
       "image/svg+xml": [],
     },
+    multiple: isMultiple,
+    disabled: isMultiple && totalImages >= maxImages,
   });
 
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setPreviewUrl(null);
-    onChange(null);
-    setDisplayImage(null);
+  const handleRemoveImage = (image: ImageItem) => {
+    if (image.origin === "local") {
+      URL.revokeObjectURL(image.url);
+      setLocalImages((prev) => {
+        const next = prev.filter((item) => item.id !== image.id);
+        emitChange(next);
+        return next;
+      });
+    } else {
+      setRemoteImages((prev) => prev.filter((item) => item.id !== image.id));
+      if (!isMultiple) {
+        onChange(null as never);
+      }
+    }
+
+    if (galleryIndex !== null && images[galleryIndex]?.id === image.id) {
+      setGalleryIndex(null);
+    }
   };
+
+  const canAddMore = isMultiple ? totalImages < maxImages : true;
+
+  const renderDropContent = () => (
+    <div className="dz-message flex flex-col items-center m-0!">
+      <div className="mb-[22px] flex justify-center">
+        <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
+          <Plus className="h-8 w-8" />
+        </div>
+      </div>
+      <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
+        {isDragActive ? tUtils("dropFile") : placeholder}
+      </h4>
+      <span className="text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
+        {tUtils("dragAndDropFile")}
+      </span>
+      <span className="font-medium underline text-theme-sm text-brand-500">
+        {tUtils("selectImage")}
+      </span>
+    </div>
+  );
+
+  const renderEmptyState = () => (
+    <div
+      {...getRootProps()}
+      className={`dropzone rounded-xl border border-dashed border-gray-300 p-7 lg:p-10 cursor-pointer transition 
+        ${
+          isDragActive
+            ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
+            : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+        }`}
+      id="image-upload"
+    >
+      <input {...getInputProps()} />
+      {renderDropContent()}
+    </div>
+  );
+
+  const renderAddTile = () => (
+    <div
+      {...getRootProps()}
+      className="flex h-32 w-full flex-col items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-50 text-gray-500 dark:border-gray-700 dark:bg-gray-900 cursor-pointer hover:border-brand-500 transition"
+    >
+      <input {...getInputProps()} />
+      <Plus className="h-6 w-6 mb-2" />
+      <span className="text-sm font-medium">{tImage("addImage")}</span>
+    </div>
+  );
+
+  const showGallery = galleryIndex !== null && images[galleryIndex];
+
+  const handlePrev = () => {
+    if (!showGallery || galleryIndex === null) return;
+    setGalleryIndex(
+      galleryIndex === 0 ? images.length - 1 : (galleryIndex - 1 + images.length) % images.length
+    );
+  };
+
+  const handleNext = () => {
+    if (!showGallery || galleryIndex === null) return;
+    setGalleryIndex((galleryIndex + 1) % images.length);
+  };
+
+  useEffect(() => {
+    return () => {
+      localImages.forEach((image) => {
+        if (image.origin === "local") {
+          URL.revokeObjectURL(image.url);
+        }
+      });
+    };
+  }, [localImages]);
 
   return (
     <div className={`space-y-2 ${className}`}>
@@ -59,74 +258,103 @@ const ImageUpload = ({
           {label}
         </label>
       )}
-      
-      <div className="transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl hover:border-brand-500">
-        {displayImage ? (
-          <div className="relative">
-            <img
-              src={displayImage}
-              alt="Preview"
-              className="w-full h-64 object-cover rounded-xl"
-            />
-            <Button 
-              type="button"
-              title="Xóa hình ảnh"
-              onClick={handleRemoveImage}
-              className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+
+      {images.length === 0 ? (
+        renderEmptyState()
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {images.map((image, index) => (
+            <div
+              key={image.id}
+              className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700"
             >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div
-            {...getRootProps()}
-            className={`dropzone rounded-xl border-dashed border-gray-300 p-7 lg:p-10 cursor-pointer
-                ${isDragActive
-                ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
-                : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
-              }
-              `}
-            id="image-upload"
-          >
-            {/* Hidden Input */}
-            <input {...getInputProps()} />
-
-            <div className="dz-message flex flex-col items-center m-0!">
-              {/* Icon Container */}
-              <div className="mb-[22px] flex justify-center">
-                <div className="flex h-[68px] w-[68px]  items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                  <svg
-                    className="fill-current"
-                    width="29"
-                    height="28"
-                    viewBox="0 0 29 28"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      clipRule="evenodd"
-                      d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z"
-                    />
-                  </svg>
-                </div>
-              </div>
-
-              {/* Text Content */}
-              <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90">
-                {isDragActive ? "Thả file vào đây" : placeholder}
-              </h4>
-
-              <span className=" text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-                Kéo và thả file PNG, JPG, WebP, SVG vào đây
-              </span>
-
-              <span className="font-medium underline text-theme-sm text-brand-500">
-                Chọn ảnh
-              </span>
+              <button
+                type="button"
+                onClick={() => setGalleryIndex(index)}
+                className="block w-full h-32"
+              >
+                <img
+                  src={image.url}
+                  alt={tImage("imageAlt", { index: index + 1 })}
+                  className="w-full h-full object-cover"
+                />
+                <span className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition opacity-0 group-hover:opacity-100" />
+              </button>
+              <button
+                type="button"
+                title={tUtils("deleteImage")}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleRemoveImage(image);
+                }}
+                className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
-          </div>
-        )}
-      </div>
+          ))}
+
+          {canAddMore && renderAddTile()}
+        </div>
+      )}
+
+      {isMultiple && (
+        <div className="text-sm text-gray-500">
+          {tImage("countLabel", {
+            count: Math.min(totalImages, maxImages),
+            max: maxImages,
+          })}
+        </div>
+      )}
+
+      <Dialog
+        open={Boolean(showGallery)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setGalleryIndex(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-4xl w-full border-none bg-transparent shadow-none">
+          {showGallery && (
+            <div className="bg-white dark:bg-gray-900 rounded-2xl p-4">
+              <img
+                src={images[galleryIndex!].url}
+                alt={tImage("previewAlt")}
+                className="w-full max-h-[70vh] object-contain rounded-xl"
+              />
+              {images.length > 1 && (
+                <div className="flex items-center justify-between mt-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handlePrev}
+                    className="flex items-center gap-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    {tUtils("previous")}
+                  </Button>
+                  <span className="text-sm text-gray-500">
+                    {tImage("galleryPosition", {
+                      current: galleryIndex! + 1,
+                      total: images.length,
+                    })}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleNext}
+                    className="flex items-center gap-2"
+                  >
+                    {tUtils("next")}
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

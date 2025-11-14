@@ -70,6 +70,13 @@
     "addStatus":"Thêm trạng thái",
     "addDataSource":"Thêm nguồn dữ liệu"
     },
+  "ImageUpload": {
+    "addImage": "Thêm ảnh",
+    "imageAlt": "Hình ảnh {index}",
+    "previewAlt": "Hình ảnh phóng to",
+    "countLabel": "{count} / {max} ảnh",
+    "galleryPosition": "{current} / {total}"
+  },
   "LocaleSwitcher": {
     "en": "English",
     "vi": "Tiếng Việt"

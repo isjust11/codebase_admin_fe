@@ -78,6 +78,13 @@
     "guide": "Guide",
     "Add dataSource": "Add data source"
   },
+  "ImageUpload": {
+    "addImage": "Add image",
+    "imageAlt": "Image {index}",
+    "previewAlt": "Enlarged image",
+    "countLabel": "{count} / {max} images",
+    "galleryPosition": "{current} / {total}"
+  },
   "LocaleSwitcher": {
     "en": "English",
     "vi": "Tiếng Việt"

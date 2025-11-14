@@ -8,10 +8,12 @@ import Switch from '@/components/form/switch/Switch';
 import { Disease } from '@/types/disease';
 import { DiseaseDto } from '@/types/dto/DiseaseDto';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useTranslations } from 'next-intl';
+import ImageUpload from '@/components/ui/ImageUpload';
+import { uploadFile } from '@/services/media-api';
 
 const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
   z.object({
@@ -39,6 +41,8 @@ const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
 
 export interface DiseaseFormValues extends DiseaseDto {
   isActive: boolean;
+  thumbnailFile?: File | null;
+  thumbnailUrl?: string;
 }
 
 interface DiseaseFormProps {
@@ -59,6 +63,8 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   const t = useTranslations('DiseasesPage');
   const tUtils = useTranslations('Utils');
   const formSchema = diseaseFormSchema(t);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | undefined>(undefined);
 
   const form = useForm<DiseaseFormValues>({
     resolver: zodResolver(formSchema),
@@ -71,6 +77,8 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
           causes: initialData.causes ?? '',
           prevention: initialData.prevention ?? '',
           isActive: initialData.isActive ?? true,
+          thumbnailUrl: undefined,
+          thumbnailFile: undefined,
         }
       : {
           name: '',
@@ -80,11 +88,15 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
           causes: '',
           prevention: '',
           isActive: true,
+          thumbnailUrl: undefined,
+          thumbnailFile: undefined,
         },
   });
 
   useEffect(() => {
     if (initialData) {
+      // Load thumbnail from MultiImage API if needed
+      // For now, we'll just reset the form without thumbnail
       form.reset({
         name: initialData.name ?? '',
         slug: initialData.slug ?? '',
@@ -93,11 +105,45 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
         causes: initialData.causes ?? '',
         prevention: initialData.prevention ?? '',
         isActive: initialData.isActive ?? true,
+        thumbnailUrl: undefined,
+        thumbnailFile: undefined,
       });
     }
   }, [form, initialData]);
 
-  const handleSubmit = (values: DiseaseFormValues) => {
+  const handleFileChange = (file: File | null) => {
+    setSelectedFile(file);
+    if (file) {
+      const fileUrl = URL.createObjectURL(file);
+      setThumbnailUrl(fileUrl);
+      form.setValue('thumbnailFile', file);
+    } else {
+      setThumbnailUrl(undefined);
+      form.setValue('thumbnailFile', null);
+    }
+  };
+
+  const handleSubmit = async (values: DiseaseFormValues) => {
+    let finalThumbnailUrl = thumbnailUrl;
+
+    // Upload image if there's a new file selected
+    if (selectedFile) {
+      try {
+        const uploadResponse = await uploadFile(selectedFile);
+        finalThumbnailUrl = uploadResponse.publicRelativePath;
+        // Remove API URL prefix if present
+        if (finalThumbnailUrl.startsWith('http')) {
+          finalThumbnailUrl = finalThumbnailUrl.replace(
+            process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+            ''
+          );
+        }
+      } catch (error) {
+        console.error('Error uploading image:', error);
+        // Continue with form submission even if image upload fails
+      }
+    }
+
     const payload: DiseaseDto = {
       name: values.name.trim(),
       slug: values.slug?.trim() || undefined,
@@ -108,12 +154,35 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
       isActive: values.isActive,
     };
 
+    // Note: thumbnailUrl will be handled separately via MultiImage API if needed
+    // For now, we just upload the file but don't include it in DiseaseDto
+    // You may need to create/update MultiImage separately after disease is created/updated
+
     onSubmit(payload);
   };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="thumbnailUrl"
+          render={() => (
+            <FormItem>
+              <FormLabel>{t('thumbnail') || 'Hình ảnh'}</FormLabel>
+              <FormControl>
+                <ImageUpload
+                multiple={false}
+                  value={thumbnailUrl}
+                  onChange={handleFileChange}
+                  placeholder={t('uploadImage') || 'Kéo & thả file vào đây'}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
             control={form.control}
