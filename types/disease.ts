@@ -7,6 +7,7 @@ export interface Disease {
   causes?: string;
   prevention?: string;
   isActive: boolean;
+  thumbnailUrl?: string;
   createdAt: string;
   updatedAt: string;
   folkMedicines?: Array<{

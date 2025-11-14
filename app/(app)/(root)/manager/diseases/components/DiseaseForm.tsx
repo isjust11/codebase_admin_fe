@@ -41,8 +41,6 @@ const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
 
 export interface DiseaseFormValues extends DiseaseDto {
   isActive: boolean;
-  thumbnailFile?: File | null;
-  thumbnailUrl?: string;
 }
 
 interface DiseaseFormProps {
@@ -52,6 +50,12 @@ interface DiseaseFormProps {
   loading?: boolean;
   submitLabel?: string;
 }
+
+const getInitialImageUrls = (disease?: Disease | null) => {
+  const url =
+    disease && (disease as Disease & { thumbnailUrl?: string }).thumbnailUrl;
+  return url ? [url] : [];
+};
 
 export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   initialData,
@@ -63,8 +67,8 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   const t = useTranslations('DiseasesPage');
   const tUtils = useTranslations('Utils');
   const formSchema = diseaseFormSchema(t);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [thumbnailUrl, setThumbnailUrl] = useState<string | undefined>(undefined);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [initialImages, setInitialImages] = useState<string[]>(getInitialImageUrls(initialData));
 
   const form = useForm<DiseaseFormValues>({
     resolver: zodResolver(formSchema),
@@ -77,8 +81,6 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
           causes: initialData.causes ?? '',
           prevention: initialData.prevention ?? '',
           isActive: initialData.isActive ?? true,
-          thumbnailUrl: undefined,
-          thumbnailFile: undefined,
         }
       : {
           name: '',
@@ -88,8 +90,6 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
           causes: '',
           prevention: '',
           isActive: true,
-          thumbnailUrl: undefined,
-          thumbnailFile: undefined,
         },
   });
 
@@ -105,42 +105,41 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
         causes: initialData.causes ?? '',
         prevention: initialData.prevention ?? '',
         isActive: initialData.isActive ?? true,
-        thumbnailUrl: undefined,
-        thumbnailFile: undefined,
       });
+      setInitialImages(getInitialImageUrls(initialData));
+      setSelectedFiles([]);
     }
   }, [form, initialData]);
 
-  const handleFileChange = (file: File | null) => {
-    setSelectedFile(file);
-    if (file) {
-      const fileUrl = URL.createObjectURL(file);
-      setThumbnailUrl(fileUrl);
-      form.setValue('thumbnailFile', file);
-    } else {
-      setThumbnailUrl(undefined);
-      form.setValue('thumbnailFile', null);
+  const handleFileChange = (files: File[] | null) => {
+    const nextFiles = files ?? [];
+    setSelectedFiles(nextFiles);
+    if (nextFiles.length) {
+      setInitialImages([]);
     }
   };
 
   const handleSubmit = async (values: DiseaseFormValues) => {
-    let finalThumbnailUrl = thumbnailUrl;
+    let uploadedImagePaths: string[] = [];
 
-    // Upload image if there's a new file selected
-    if (selectedFile) {
+    if (selectedFiles.length) {
       try {
-        const uploadResponse = await uploadFile(selectedFile);
-        finalThumbnailUrl = uploadResponse.publicRelativePath;
-        // Remove API URL prefix if present
-        if (finalThumbnailUrl.startsWith('http')) {
-          finalThumbnailUrl = finalThumbnailUrl.replace(
-            process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
-            ''
-          );
-        }
+        const uploads = await Promise.all(
+          selectedFiles.map(async (file) => {
+            const uploadResponse = await uploadFile(file);
+            let path = uploadResponse.publicRelativePath;
+            if (path.startsWith('http')) {
+              path = path.replace(
+                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+                ''
+              );
+            }
+            return path;
+          })
+        );
+        uploadedImagePaths = uploads;
       } catch (error) {
-        console.error('Error uploading image:', error);
-        // Continue with form submission even if image upload fails
+        console.error('Error uploading images:', error);
       }
     }
 
@@ -154,9 +153,7 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
       isActive: values.isActive,
     };
 
-    // Note: thumbnailUrl will be handled separately via MultiImage API if needed
-    // For now, we just upload the file but don't include it in DiseaseDto
-    // You may need to create/update MultiImage separately after disease is created/updated
+    // TODO: Handle uploadedImagePaths with MultiImage API if needed.
 
     onSubmit(payload);
   };
@@ -164,24 +161,17 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="thumbnailUrl"
-          render={() => (
-            <FormItem>
-              <FormLabel>{t('thumbnail') || 'Hình ảnh'}</FormLabel>
-              <FormControl>
-                <ImageUpload
-                multiple={false}
-                  value={thumbnailUrl}
-                  onChange={handleFileChange}
-                  placeholder={t('uploadImage') || 'Kéo & thả file vào đây'}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        <FormItem>
+          <FormLabel>{t('thumbnail') || 'Hình ảnh'}</FormLabel>
+          <FormControl>
+            <ImageUpload
+              multiple
+              value={initialImages}
+              onChange={handleFileChange}
+              placeholder={t('uploadImage') || 'Kéo & thả file vào đây'}
+            />
+          </FormControl>
+        </FormItem>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <FormField
