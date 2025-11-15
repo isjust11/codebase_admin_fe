@@ -22,6 +22,7 @@ import { Author } from '@/types/author';
 import { Category } from '@/types/category';
 import { DataSource } from '@/types/data-source';
 import { AppCategoryCode } from '@/constants';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 
 const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
   z.object({
@@ -81,7 +82,7 @@ const getInitialImageUrls = (disease?: Disease | null) => {
   const url =
     disease && (disease as Disease & { thumbnailUrl?: string }).thumbnailUrl;
   return url ? [url] : [];
-};
+};  
 
 export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   initialData,
@@ -237,18 +238,19 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
 
     const payload: DiseaseDto = {
       name: values.name.trim(),
-      slug: values.slug?.trim() || undefined,
+      slug: values.slug?.trim() || '',
       summary: (values as any).summary?.trim() ? (values as any).summary.trim() : undefined,
-      description: values.description?.trim() ? values.description.trim() : undefined,
-      symptoms: values.symptoms?.trim() ? values.symptoms.trim() : undefined,
-      causes: values.causes?.trim() ? values.causes.trim() : undefined,
+      description: values.description?.trim() ? values.description.trim() : '',
+      symptoms: values.symptoms?.trim() ? values.symptoms.trim() : '',
+      causes: values.causes?.trim() ? values.causes.trim() : '',
       prevention: values.prevention?.trim() ? values.prevention.trim() : undefined,
       treatment: (values as any).treatment?.trim() ? (values as any).treatment.trim() : undefined,
-      authorId: (values as any).authorId ? parseInt((values as any).authorId) : undefined,
-      categoryId: (values as any).categoryId ? parseInt((values as any).categoryId) : undefined,
-      dataSourceId: (values as any).dataSourceId ? parseInt((values as any).dataSourceId) : undefined,
-      videoUrl: (values as any).videoUrl?.trim() ? (values as any).videoUrl.trim() : undefined,
+      authorId: (values as any).authorId ? (values as any).authorId : '',
+      categoryId: (values as any).categoryId ? (values as any).categoryId : '',
+      dataSourceId: (values as any).dataSourceId ? (values as any).dataSourceId : '',
+      videoUrl: (values as any).videoUrl?.trim() ? (values as any).videoUrl.trim() : '',
       isActive: values.isActive,
+      imagePaths: uploadedImagePaths,
     };
 
     // TODO: Handle uploadedImagePaths with MultiImage API if needed.
@@ -324,7 +326,14 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
             <FormItem>
               <FormLabel>{t('description')}</FormLabel>
               <FormControl>
-                <Textarea rows={4} placeholder={t('enterDescription')} {...field} />
+                <SimpleEditor
+                      key={initialData?.id || 'new'}
+                      initialContent={initialData?.description || ''}
+                      placeholder={t('enterDescription')}
+                      onContentChange={(content) => {
+                        field.onChange(content);
+                      }}
+                    />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -339,7 +348,14 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
               <FormItem>
                 <FormLabel>{t('symptoms')}</FormLabel>
                 <FormControl>
-                  <Textarea rows={4} placeholder={t('enterSymptoms')} {...field} />
+                  <SimpleEditor
+                      key={initialData?.id || 'new'}
+                      initialContent={initialData?.symptoms || ''}
+                      placeholder={t('enterSymptoms')}
+                      onContentChange={(content) => {
+                        field.onChange(content);
+                      }}
+                    />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -353,7 +369,14 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
               <FormItem>
                 <FormLabel>{t('causes')}</FormLabel>
                 <FormControl>
-                  <Textarea rows={4} placeholder={t('enterCauses')} {...field} />
+                  <SimpleEditor
+                      key={initialData?.id || 'new'}
+                      initialContent={initialData?.causes || ''}
+                      placeholder={t('enterCauses')}
+                      onContentChange={(content) => {
+                        field.onChange(content);
+                      }}
+                    />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -368,7 +391,14 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
             <FormItem>
               <FormLabel>{t('prevention')}</FormLabel>
               <FormControl>
-                <Textarea rows={4} placeholder={t('enterPrevention')} {...field} />
+                <SimpleEditor
+                      key={initialData?.id || 'new'}
+                      initialContent={initialData?.prevention || ''}
+                      placeholder={t('enterPrevention')}
+                      onContentChange={(content) => {
+                        field.onChange(content);
+                      }}
+                    />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -382,7 +412,14 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
             <FormItem>
               <FormLabel>{t('treatment') || 'Phương pháp điều trị'}</FormLabel>
               <FormControl>
-                <Textarea rows={4} placeholder={t('enterTreatment') || 'Nhập phương pháp điều trị'} {...field} />
+                <SimpleEditor
+                      key={initialData?.id || 'new'}
+                      initialContent={initialData?.treatment || ''}
+                      placeholder={t('enterTreatment')}
+                      onContentChange={(content) => {
+                        field.onChange(content);
+                      }}
+                    />
               </FormControl>
               <FormMessage />
             </FormItem>

@@ -12,5 +12,6 @@ export interface DiseaseDto {
   dataSourceId?: number;
   videoUrl?: string;
   isActive?: boolean;
+  imagePaths?: string[];
 }
 

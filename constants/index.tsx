@@ -52,10 +52,7 @@ export const AppApi = {
   },
 }
 export const AppCategoryCode = {
-  Disease:{
-    code: 'Disease',
-    name: 'Bệnh',
-  },
+ 
   FeatureType:{
     code: 'FeatureType',
     name: 'Menu chức năng',
@@ -107,5 +104,9 @@ export const AppCategoryCode = {
   Herbal:{
     code: 'Herbal',
     name: 'Dược liệu dân gian',
+  },
+  Disease:{
+    code: 'Disease',
+    name: 'Bệnh',
   },
 }
