@@ -14,6 +14,14 @@ import * as z from 'zod';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
 import { uploadFile } from '@/services/media-api';
+import Select, { SelectOption } from '@/components/form/Select';
+import { getAllAuthors } from '@/services/author-api';
+import { getAllDataSources } from '@/services/manager-api';
+import { getCategoryByCode } from '@/services/manager-api';
+import { Author } from '@/types/author';
+import { Category } from '@/types/category';
+import { DataSource } from '@/types/data-source';
+import { AppCategoryCode } from '@/constants';
 
 const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
   z.object({
@@ -32,14 +40,32 @@ const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
       .max(255, { message: t('validation.slugMaxLength') })
       .optional()
       .or(z.literal('')),
+    summary: z.string().optional().or(z.literal('')),
     description: z.string().optional().or(z.literal('')),
     symptoms: z.string().optional().or(z.literal('')),
     causes: z.string().optional().or(z.literal('')),
     prevention: z.string().optional().or(z.literal('')),
+    treatment: z.string().optional().or(z.literal('')),
+    authorId: z.string().optional().or(z.literal('')),
+    categoryId: z.string().optional().or(z.literal('')),
+    dataSourceId: z.string().optional().or(z.literal('')),
+    videoUrl: z.string().optional().or(z.literal('')),
     isActive: z.boolean().default(true),
   });
 
-export interface DiseaseFormValues extends DiseaseDto {
+export interface DiseaseFormValues {
+  name: string;
+  slug?: string;
+  summary?: string;
+  description?: string;
+  symptoms?: string;
+  causes?: string;
+  prevention?: string;
+  treatment?: string;
+  authorId?: string;
+  categoryId?: string;
+  dataSourceId?: string;
+  videoUrl?: string;
   isActive: boolean;
 }
 
@@ -69,6 +95,10 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   const formSchema = diseaseFormSchema(t);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [initialImages, setInitialImages] = useState<string[]>(getInitialImageUrls(initialData));
+  const [authorsOptions, setAuthorsOptions] = useState<SelectOption[]>([]);
+  const [categoriesOptions, setCategoriesOptions] = useState<SelectOption[]>([]);
+  const [dataSourcesOptions, setDataSourcesOptions] = useState<SelectOption[]>([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
 
   const form = useForm<DiseaseFormValues>({
     resolver: zodResolver(formSchema),
@@ -76,22 +106,78 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
       ? {
           name: initialData.name ?? '',
           slug: initialData.slug ?? '',
+          summary: (initialData as any).summary ?? '',
           description: initialData.description ?? '',
           symptoms: initialData.symptoms ?? '',
           causes: initialData.causes ?? '',
           prevention: initialData.prevention ?? '',
+          treatment: (initialData as any).treatment ?? '',
+          authorId: (initialData as any).authorId?.toString() ?? '',
+          categoryId: (initialData as any).categoryId?.toString() ?? '',
+          dataSourceId: (initialData as any).dataSourceId?.toString() ?? '',
+          videoUrl: (initialData as any).videoUrl ?? '',
           isActive: initialData.isActive ?? true,
         }
       : {
           name: '',
           slug: '',
+          summary: '',
           description: '',
           symptoms: '',
           causes: '',
           prevention: '',
+          treatment: '',
+          authorId: '',
+          categoryId: '',
+          dataSourceId: '',
+          videoUrl: '',
           isActive: true,
         },
   });
+
+  useEffect(() => {
+    const fetchOptions = async () => {
+      setLoadingOptions(true);
+      try {
+        const [authorsData, dataSourcesData] = await Promise.all([
+          getAllAuthors(),
+          getAllDataSources(),
+        ]);
+
+        const authorsOpts = (authorsData || []).map((author: Author) => ({
+          avatar: author.avatar,
+          value: author.id.toString(),
+          label: author.name,
+        }));
+        setAuthorsOptions(authorsOpts);
+
+        const dataSourcesOpts = (dataSourcesData || []).map((ds: DataSource) => ({
+          value: ds.id.toString(),
+          label: ds.name,
+        }));
+        setDataSourcesOptions(dataSourcesOpts);
+
+        // Try to get categories for disease, if category code exists
+        try {
+          const categoriesData = await getCategoryByCode(AppCategoryCode.Disease.code);
+          const categoriesOpts = (categoriesData || []).map((cat: Category) => ({
+            value: cat.id.toString(),
+            label: cat.name,
+          }));
+          setCategoriesOptions(categoriesOpts);
+        } catch (error) {
+          // Category code might not exist, that's okay
+          console.log('Disease category not found, skipping');
+        }
+      } catch (error) {
+        console.error('Error fetching options:', error);
+      } finally {
+        setLoadingOptions(false);
+      }
+    };
+
+    fetchOptions();
+  }, []);
 
   useEffect(() => {
     if (initialData) {
@@ -100,10 +186,16 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
       form.reset({
         name: initialData.name ?? '',
         slug: initialData.slug ?? '',
+        summary: (initialData as any).summary ?? '',
         description: initialData.description ?? '',
         symptoms: initialData.symptoms ?? '',
         causes: initialData.causes ?? '',
         prevention: initialData.prevention ?? '',
+        treatment: (initialData as any).treatment ?? '',
+        authorId: (initialData as any).authorId?.toString() ?? '',
+        categoryId: (initialData as any).categoryId?.toString() ?? '',
+        dataSourceId: (initialData as any).dataSourceId?.toString() ?? '',
+        videoUrl: (initialData as any).videoUrl ?? '',
         isActive: initialData.isActive ?? true,
       });
       setInitialImages(getInitialImageUrls(initialData));
@@ -146,10 +238,16 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
     const payload: DiseaseDto = {
       name: values.name.trim(),
       slug: values.slug?.trim() || undefined,
+      summary: (values as any).summary?.trim() ? (values as any).summary.trim() : undefined,
       description: values.description?.trim() ? values.description.trim() : undefined,
       symptoms: values.symptoms?.trim() ? values.symptoms.trim() : undefined,
       causes: values.causes?.trim() ? values.causes.trim() : undefined,
       prevention: values.prevention?.trim() ? values.prevention.trim() : undefined,
+      treatment: (values as any).treatment?.trim() ? (values as any).treatment.trim() : undefined,
+      authorId: (values as any).authorId ? parseInt((values as any).authorId) : undefined,
+      categoryId: (values as any).categoryId ? parseInt((values as any).categoryId) : undefined,
+      dataSourceId: (values as any).dataSourceId ? parseInt((values as any).dataSourceId) : undefined,
+      videoUrl: (values as any).videoUrl?.trim() ? (values as any).videoUrl.trim() : undefined,
       isActive: values.isActive,
     };
 
@@ -207,6 +305,20 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
 
         <FormField
           control={form.control}
+          name="summary"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('summary') || 'Tóm tắt'}</FormLabel>
+              <FormControl>
+                <Textarea rows={3} placeholder={t('enterSummary') || 'Nhập tóm tắt'} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
@@ -257,6 +369,99 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
               <FormLabel>{t('prevention')}</FormLabel>
               <FormControl>
                 <Textarea rows={4} placeholder={t('enterPrevention')} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="treatment"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('treatment') || 'Phương pháp điều trị'}</FormLabel>
+              <FormControl>
+                <Textarea rows={4} placeholder={t('enterTreatment') || 'Nhập phương pháp điều trị'} {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <FormField
+            control={form.control}
+            name="authorId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('author') || 'Tác giả'}</FormLabel>
+                <FormControl>
+                  <Select
+                    options={authorsOptions}
+                    placeholder={t('selectAuthor') || 'Chọn tác giả'}
+                    value={field.value || ''}
+                    onChange={(value) => field.onChange(Array.isArray(value) ? value[0] : value)}
+                    searchable
+                    disabled={loadingOptions}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="categoryId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('category') || 'Danh mục'}</FormLabel>
+                <FormControl>
+                  <Select
+                    options={categoriesOptions}
+                    placeholder={t('selectCategory') || 'Chọn danh mục'}
+                    value={field.value || ''}
+                    onChange={(value) => field.onChange(Array.isArray(value) ? value[0] : value)}
+                    searchable
+                    disabled={loadingOptions}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="dataSourceId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{t('dataSource') || 'Nguồn dữ liệu'}</FormLabel>
+                <FormControl>
+                  <Select
+                    options={dataSourcesOptions}
+                    placeholder={t('selectDataSource') || 'Chọn nguồn dữ liệu'}
+                    value={field.value || ''}
+                    onChange={(value) => field.onChange(Array.isArray(value) ? value[0] : value || '')}
+                    searchable
+                    disabled={loadingOptions}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <FormField
+          control={form.control}
+          name="videoUrl"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>{t('videoUrl') || 'URL Video'}</FormLabel>
+              <FormControl>
+                <Input placeholder={t('enterVideoUrl') || 'Nhập URL video'} {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
