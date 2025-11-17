@@ -79,10 +79,18 @@ interface DiseaseFormProps {
 }
 
 const getInitialImageUrls = (disease?: Disease | null) => {
+  if (!disease) return [];
+
+  if (disease.imagePaths && disease.imagePaths.length > 0) {
+    return disease.imagePaths;
+  }
+
   const url =
-    disease && (disease as Disease & { thumbnailUrl?: string }).thumbnailUrl;
+    (disease as Disease & { thumbnailUrl?: string }).thumbnailUrl ||
+    disease.thumbnail;
+
   return url ? [url] : [];
-};  
+};
 
 export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   initialData,

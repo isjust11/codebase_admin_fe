@@ -13,6 +13,7 @@ import { Disease } from '@/types/disease';
 import { getDiseaseById } from '@/services/disease-api';
 import { useLoading } from '@/contexts/LoadingContext';
 import { Action } from '@/types/actions';
+import { mergeImageUrl } from '@/lib/utils';
 
 const DiseaseDetailPage: React.FC = () => {
   const t = useTranslations('DiseasesPage');
@@ -127,34 +128,61 @@ const DiseaseDetailPage: React.FC = () => {
           </div>
         </ComponentCard>
 
+        <ComponentCard title={t('diseaseImages')}>
+          {disease.imagePaths && disease.imagePaths.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {disease.imagePaths.map((imagePath, index) => (
+                <div
+                  key={`${imagePath}-${index}`}
+                  className="rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-transparent"
+                >
+                  <img
+                    src={mergeImageUrl(imagePath)}
+                    alt={`${disease.name} - ${t('diseaseImages')} ${index + 1}`}
+                    className="w-full h-48 object-cover"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              {t('noDiseaseImages')}
+            </p>
+          )}
+        </ComponentCard>
+
         <ComponentCard title={t('detailInformation')}>
           <div className="space-y-6">
             <section>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('description')}</h3>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {disease.description || tUtils('noData')}
-              </p>
+                <div 
+                  className="text-gray-700 leading-relaxed whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: disease.description || tUtils('noData') }}
+                />  
             </section>
 
             <section>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('symptoms')}</h3>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {disease.symptoms || tUtils('noData')}
-              </p>
+              <div 
+                className="text-gray-700 leading-relaxed whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: disease.symptoms || tUtils('noData') }}
+              />  
             </section>
 
             <section>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('causes')}</h3>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {disease.causes || tUtils('noData')}
-              </p>
+              <div 
+                className="text-gray-700 leading-relaxed whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: disease.causes || tUtils('noData') }}
+              />  
             </section>
 
             <section>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">{t('prevention')}</h3>
-              <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                {disease.prevention || tUtils('noData')}
-              </p>
+              <div 
+                className="text-gray-700 leading-relaxed whitespace-pre-wrap"
+                dangerouslySetInnerHTML={{ __html: disease.prevention || tUtils('noData') }}
+              />  
             </section>
           </div>
         </ComponentCard>

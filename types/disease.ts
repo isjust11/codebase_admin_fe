@@ -34,6 +34,7 @@ export interface Disease {
     title: string;
     slug?: string;
   }>;
+  imagePaths?: string[];
 }
 
 export type DiseaseStatus = 'active' | 'inactive';

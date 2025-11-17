@@ -775,6 +775,8 @@
     "basicInfo": "Thông tin cơ bản",
     "detailInformation": "Thông tin chi tiết",
     "detailDisease": "Chi tiết bệnh",
+    "diseaseImages": "Hình ảnh bệnh",
+    "noDiseaseImages": "Chưa có hình ảnh",
     "createDisease": "Tạo bệnh",
     "updateDisease": "Cập nhật bệnh",
     "relatedFolkMedicines": "Bài thuốc dân gian liên quan",

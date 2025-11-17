@@ -786,6 +786,8 @@
     "basicInfo": "Basic information",
     "detailInformation": "Detail information",
     "detailDisease": "Disease detail",
+    "diseaseImages": "Disease images",
+    "noDiseaseImages": "No images available",
     "createDisease": "Create disease",
     "updateDisease": "Update disease",
     "relatedFolkMedicines": "Related folk medicines",
