@@ -45,7 +45,6 @@ const Select: React.FC<SelectProps> = ({
   );
   const selectRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
-
   // Use controlled value if provided
   const currentValues = value !== undefined 
     ? (Array.isArray(value) ? value : value ? [value] : [])
@@ -153,11 +152,11 @@ const Select: React.FC<SelectProps> = ({
           <div className="flex-1">
             {multiple && currentValues.length > 0 ? (
               <div className="flex flex-wrap gap-1">
-                {currentValues.slice(0, 3).map(value => {
+                {currentValues.slice(0, 3).map((value, index) => {
                   const option = options.find(opt => opt.value === value);
                   return (
                     <span
-                      key={value}
+                      key={`${value ?? "option"}-${index}`}
                       className="inline-flex items-center gap-1 bg-brand-100 text-brand-800 px-2 py-1 rounded text-xs"
                     >
                       {option?.label || value}

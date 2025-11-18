@@ -370,7 +370,7 @@ const FolkMedicineForm = () => {
 
   const handleSelectChange = (field: keyof CreateFolkMedicineDto, value: any) => {
     setFormData(prev => ({
-      ...prev,
+      ...prev,  
       [field]: value,
     }));
   };
@@ -556,10 +556,14 @@ const FolkMedicineForm = () => {
                 <div className="space-y-2">
                   <Label htmlFor="diseases">{t('diseases')}</Label>
                   <Select
+                    key={formData.id || 'new'}
                     options={diseasesOptions}
                     placeholder={t('selectDiseases')}
                     onChange={(values) => handleSelectChange('diseases', Array.isArray(values) ? values : values)}
-                    value={formData.diseases?.map((disease: Disease) => disease.id) || []}
+                    value={formData.diseases?.map((disease: any  ) =>{
+                      console.log( "disease:", disease);
+                      return disease.toString();
+                    }) || []}
                     multiple={true}
                   />
                   {formErrors.diseases && (

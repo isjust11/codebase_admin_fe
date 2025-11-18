@@ -83,27 +83,13 @@ const DiseasesPage: React.FC = () => {
       accessorKey: 'description',
       header: t('description'),
       cell: ({ row }) => {
-        const description = row.getValue('description') as string | undefined;
+        const description = row.getValue('description') as string;
         return (
-          <span className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">
-            {description || tUtils('noData')}
+          <span className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2"> <div 
+                  className="text-gray-700 leading-relaxed whitespace-pre-wrap"
+                  dangerouslySetInnerHTML={{ __html: description || tUtils('noData') }}
+                />  
           </span>
-        );
-      },
-    },
-    {
-      accessorKey: 'isActive',
-      header: t('status'),
-      cell: ({ row }) => {
-        const isActive = row.getValue('isActive') as boolean;
-        return (
-          <Badge
-            className={isActive ? 'ring-green-400' : 'ring-red-400'}
-            variant="light"
-            color={isActive ? 'success' : 'error'}
-          >
-            {isActive ? tUtils('active') : tUtils('inactive')}
-          </Badge>
         );
       },
     },
