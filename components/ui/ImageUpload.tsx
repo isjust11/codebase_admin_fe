@@ -103,6 +103,12 @@ const ImageUpload = (props: ImageUploadProps) => {
     }
   };
 
+  // Fix: Call onChange in useEffect to avoid updating parent during render
+  useEffect(() => {
+    emitChange(localImages);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [localImages]);
+
   const handleDrop = (acceptedFiles: File[]) => {
     if (!acceptedFiles.length) return;
 
@@ -118,12 +124,7 @@ const ImageUpload = (props: ImageUploadProps) => {
         file,
       }));
 
-      setLocalImages((prev) => {
-        const updated = [...prev, ...newItems];
-        emitChange(updated);
-        return updated;
-      });
-
+      setLocalImages((prev) => [...prev, ...newItems]);
       return;
     }
 
@@ -143,8 +144,6 @@ const ImageUpload = (props: ImageUploadProps) => {
       });
       return [newItem];
     });
-
-    emitChange([newItem]);
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -162,11 +161,7 @@ const ImageUpload = (props: ImageUploadProps) => {
   const handleRemoveImage = (image: ImageItem) => {
     if (image.origin === "local") {
       URL.revokeObjectURL(image.url);
-      setLocalImages((prev) => {
-        const next = prev.filter((item) => item.id !== image.id);
-        emitChange(next);
-        return next;
-      });
+      setLocalImages((prev) => prev.filter((item) => item.id !== image.id));
     } else {
       setRemoteImages((prev) => prev.filter((item) => item.id !== image.id));
       if (!isMultiple) {
@@ -204,10 +199,9 @@ const ImageUpload = (props: ImageUploadProps) => {
     <div
       {...getRootProps()}
       className={`dropzone rounded-xl border border-dashed border-gray-300 p-7 lg:p-10 cursor-pointer transition 
-        ${
-          isDragActive
-            ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
-            : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
+        ${isDragActive
+          ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
+          : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
         }`}
       id="image-upload"
     >
