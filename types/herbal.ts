@@ -7,9 +7,7 @@ export interface Herbal {
     summary?: string;
     content: string;
     scientificName?: string;
-    commonNames?: string;
-    family?: string;
-    partsUsed?: string;
+    partsUsedId?: string;
     activeCompounds?: string;
     medicinalProperties?: string;
     preparationMethods?: string;

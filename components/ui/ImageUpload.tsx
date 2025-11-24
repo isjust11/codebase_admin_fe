@@ -255,42 +255,65 @@ const ImageUpload = (props: ImageUploadProps) => {
 
       {images.length === 0 ? (
         renderEmptyState()
-      ) : (
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {images.map((image, index) => (
-            <div
-              key={image.id}
-              className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700"
-            >
-              <button
-                type="button"
-                onClick={() => setGalleryIndex(index)}
-                className="block w-full h-32"
+      ) : isMultiple ? (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {images.map((image, index) => (
+              <div
+                key={image.id}
+                className="relative group rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700"
               >
-                <img
-                  src={image.url}
-                  alt={tImage("imageAlt", { index: index + 1 })}
-                  className="w-full h-full object-cover"
-                />
-                <span className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition opacity-0 group-hover:opacity-100" />
-              </button>
-              <button
-                type="button"
-                title={tUtils("deleteImage")}
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleRemoveImage(image);
-                }}
-                className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
+                <button
+                  type="button"
+                  onClick={() => setGalleryIndex(index)}
+                  className="block w-full h-32"
+                >
+                  <img
+                    src={image.url}
+                    alt={tImage("imageAlt", { index: index + 1 })}
+                    className="w-full h-full object-cover"
+                  />
+                  <span className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition opacity-0 group-hover:opacity-100" />
+                </button>
+                <button
+                  type="button"
+                  title={tUtils("deleteImage")}
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    handleRemoveImage(image);
+                  }}
+                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
 
-          {canAddMore && renderAddTile()}
-        </div>
-      )}
+            {canAddMore && renderAddTile()}
+          </div>
+        </>) : (<>
+          <div className="relative">
+            {images.length > 0 && (
+              <img
+                src={images[0].url}
+                alt="Preview"
+                className="w-full h-64 object-cover rounded-xl"
+              />
+            )}
+
+            <button
+              type="button"
+              title={tUtils('deleteImage')}
+              onClick={(event) => {
+                event.stopPropagation();
+                handleRemoveImage(images[0]);
+              }}
+              className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+        </>)}
 
       {isMultiple && (
         <div className="text-sm text-gray-500">

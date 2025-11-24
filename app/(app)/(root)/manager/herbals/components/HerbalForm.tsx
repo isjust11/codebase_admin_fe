@@ -2,20 +2,19 @@ import React, { useState, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { getAllDataSources, getCategories, getCategoryByCode, getDataSources } from '@/services/manager-api';
+import { getAllDataSources, getCategoryByCode } from '@/services/manager-api';
 import { DataSource } from '@/types/data-source';
 import { Category } from '@/types/category';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useDropzone } from 'react-dropzone';
 import { Herbal } from '@/types/herbal';
 import { uploadFile } from '@/services/media-api';
-import { X } from 'lucide-react';
 import { useTranslations } from 'next-intl';
-import { mergeImageUrl } from '@/lib/utils';
 import Switch from "@/components/form/switch/Switch";
 import { AppCategoryCode } from '@/constants';
 import { z } from 'zod';
 import { toast } from 'sonner';
+import ImageUpload from '@/components/ui/ImageUpload';
+import Select, { SelectOption } from '@/components/form/Select';
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 
 interface HerbalFormProps {
   initialData?: Partial<Herbal>;
@@ -42,13 +41,10 @@ const herbalFormSchema = (t: any) => z.object({
   contraindications: z.string().optional(),
   sideEffects: z.string().optional(),
   thumbnail: z.string().optional(),
-  categoryId: z.string().optional(),
-  dataSourceId: z.number().nullable().optional(),
+  categoryId: z.string().refine(val => val.trim() !== '', t('validation.categoryRequired')).optional(),
+  dataSourceId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
   id: z.string().optional(),
-  slug: z.string().optional(),
-  viewCount: z.number().optional(),
-  likeCount: z.number().optional(),
   createdAt: z.date().optional(),
   updatedAt: z.date().optional(),
 });
@@ -60,8 +56,9 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
   onCancel,
   loading = false
 }) => {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [dataSources, setDataSources] = useState<DataSource[]>([]);
+  const [categoriesOptions, setCategoriesOptions] = useState<SelectOption[]>([]);
+  const [partsUsedOptions, setPartsUsedOptions] = useState<SelectOption[]>([]);
+  const [dataSourcesOptions, setDataSourcesOptions] = useState<SelectOption[]>([]);
   const [loadingDataSources, setLoadingDataSources] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -74,9 +71,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
     summary: '',
     content: '',
     scientificName: '',
-    commonNames: '',
-    family: '',
-    partsUsed: '',
+    partsUsedId: '',
     activeCompounds: '',
     medicinalProperties: '',
     preparationMethods: '',
@@ -96,43 +91,44 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
     ...initialData
   });
 
-  const onDrop = (acceptedFiles: File[]) => {
-    if (acceptedFiles && acceptedFiles.length > 0) {
-      const file = acceptedFiles[0];
-      setSelectedFile(file);
-      const fileUrl = URL.createObjectURL(file);
-      setPreviewUrl(fileUrl);
+  useEffect(() => {
+    fetchCategories();
+    loadDataSources();
+    fetchPartsUsed();
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const data = await getCategoryByCode(AppCategoryCode.Herbal.code);
+      setCategoriesOptions(data.map((category: Category) => ({
+        value: category.id.toString(),
+        label: category.name,
+      })));
+    } catch (error) {
+      console.error('Lỗi khi tải danh mục:', error);
     }
   };
 
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    onDrop,
-    accept: {
-      "image/png": [],
-      "image/jpeg": [],
-      "image/webp": [],
-      "image/svg+xml": [],
-    },
-  });
-
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const data = await getCategoryByCode(AppCategoryCode.Herbal.code);
-        setCategories(data || []);
-      } catch (error) {
-        console.error('Lỗi khi tải danh mục:', error);
-      }
-    };
-    fetchCategories();
-    loadDataSources();
-  }, []);
+  const fetchPartsUsed = async () => {
+    try {
+      const data = await getCategoryByCode(AppCategoryCode.PartsUsed.code);
+      setPartsUsedOptions(data.map((category: Category) => ({
+        value: category.id.toString(),
+        label: category.name,
+      })));
+    } catch (error) {
+      console.error('Error fetching parts used:', error);
+    }
+  };
 
   const loadDataSources = async () => {
     setLoadingDataSources(true);
     try {
       const response = await getAllDataSources();
-      setDataSources(response);
+      setDataSourcesOptions(response.map((dataSource: DataSource) => ({
+        value: dataSource.id.toString(),
+        label: dataSource.name,
+      })));
     } catch (error) {
       console.error('Error fetching data sources:', error);
     } finally {
@@ -159,9 +155,8 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
       [field]: value
     }));
   };
-
   const handleChangeTitle = (field: string, value: string) => {
-    handleInputChange(field, value);
+    setFormData(prev => ({ ...prev, [field]: value }));
     if (value.length < 3) {
       setFormErrors(prev => ({ ...prev, [field]: t('validation.titleMinLength') }));
     } else {
@@ -178,9 +173,16 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
     }
   };
 
+  const handleFileChange = (value: File | null) => {
+    if (value instanceof File) {
+      setSelectedFile(value);
+    } else {
+      setSelectedFile(null);
+    }
+  };
+
   const handleSubmit = async () => {
     const result = await herbalForm.safeParseAsync(formData);
-    console.log(result);
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
       setFormErrors({
@@ -206,19 +208,19 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
       return;
     }
     setFormErrors({});
-    
+
     try {
       let thumbnail = formData.thumbnail || '';
 
       // Upload image if there's a new file selected
       if (selectedFile) {
         const uploadResponse = await uploadFile(selectedFile);
-        thumbnail = uploadResponse.url;
+        thumbnail = uploadResponse.publicRelativePath;
       }
 
       const submitData = {
         ...formData,
-        thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : thumbnail,
+        thumbnail: thumbnail,
       };
 
       await onSubmit(submitData);
@@ -241,75 +243,13 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
       <div className="w-3/10">
         <div className="space-y-2">
           <div className="transition border border-gray-300 border-dashed cursor-pointer dark:hover:border-brand-500 dark:border-gray-700 rounded-xl hover:border-brand-500">
-            {previewUrl || formData.thumbnail ? (
-              <div className="relative">
-                {(previewUrl || formData.thumbnail) && (
-                  <img
-                    src={mergeImageUrl(formData.thumbnail || '') || previewUrl || ''}
-                    alt="Preview"
-                    className="w-full h-64 object-cover rounded-xl"
-                  />
-                )}
-
-                <button
-                  type="button"
-                  title={tUtils('deleteImage')}
-                  onClick={() => {
-                    setSelectedFile(null);
-                    setPreviewUrl(null);
-                    setFormData(prev => ({ ...prev, thumbnail: '' }));
-                  }}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-            ) : (
-              <div
-                {...getRootProps()}
-                className={`dropzone rounded-xl border-dashed border-gray-300 p-7 lg:p-10
-                    ${isDragActive
-                    ? "border-brand-500 bg-gray-100 dark:bg-gray-800"
-                    : "border-gray-300 bg-gray-50 dark:border-gray-700 dark:bg-gray-900"
-                  }
-                  `}
-              >
-                <input {...getInputProps()} />
-
-                <div className="dz-message flex flex-col items-center m-0!">
-                  {/* Icon Container */}
-                  <div className="mb-[22px] flex justify-center">
-                    <div className="flex h-[68px] w-[68px] items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-gray-800 dark:text-gray-400">
-                      <svg
-                        className="fill-current"
-                        width="29"
-                        height="28"
-                        viewBox="0 0 29 28"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          clipRule="evenodd"
-                          d="M14.5019 3.91699C14.2852 3.91699 14.0899 4.00891 13.953 4.15589L8.57363 9.53186C8.28065 9.82466 8.2805 10.2995 8.5733 10.5925C8.8661 10.8855 9.34097 10.8857 9.63396 10.5929L13.7519 6.47752V18.667C13.7519 19.0812 14.0877 19.417 14.5019 19.417C14.9161 19.417 15.2519 19.0812 15.2519 18.667V6.48234L19.3653 10.5929C19.6583 10.8857 20.1332 10.8855 20.426 10.5925C20.7188 10.2995 20.7186 9.82463 20.4256 9.53184L15.0838 4.19378C14.9463 4.02488 14.7367 3.91699 14.5019 3.91699ZM5.91626 18.667C5.91626 18.2528 5.58047 17.917 5.16626 17.917C4.75205 17.917 4.41626 18.2528 4.41626 18.667V21.8337C4.41626 23.0763 5.42362 24.0837 6.66626 24.0837H22.3339C23.5766 24.0837 24.5839 23.0763 24.5839 21.8337V18.667C24.5839 18.2528 24.2482 17.917 23.8339 17.917C23.4197 17.917 23.0839 18.2528 23.0839 18.667V21.8337C23.0839 22.2479 22.7482 22.5837 22.3339 22.5837H6.66626C6.25205 22.5837 5.91626 22.2479 5.91626 21.8337V18.667Z"
-                        />
-                      </svg>
-                    </div>
-                  </div>
-
-                  {/* Text Content */}
-                  <h4 className="mb-3 font-semibold text-gray-800 text-theme-xl dark:text-white/90 text-center">
-                    {isDragActive ? tUtils('dropFileHere') : tUtils('dragAndDropFile')}
-                  </h4>
-
-                  <span className=" text-center mb-5 block w-full max-w-[290px] text-sm text-gray-700 dark:text-gray-400">
-                    {tUtils('dragAndDropFile')}
-                  </span>
-
-                  <span className="font-medium underline text-theme-sm text-brand-500">
-                    {tUtils('selectImage')}
-                  </span>
-                </div>
-              </div>
+            <ImageUpload
+              multiple={false}
+              value={formData.thumbnail}
+              onChange={(value: File | null) => handleFileChange(value)}
+            />
+            {formErrors.thumbnail && (
+              <div className="text-red-500 text-sm">{formErrors.thumbnail}</div>
             )}
           </div>
         </div>
@@ -320,7 +260,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
         <form className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="title">{t('title')} *</Label>
+              <Label htmlFor="title">{t('title')} <span className="text-red-500">(*)</span></Label>
               <Input
                 id="title"
                 value={formData.title}
@@ -331,28 +271,6 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 <div className="text-red-500 text-sm">{formErrors.title}</div>
               )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="categoryId">{t('category')}</Label>
-              <Select value={formData.categoryId}
-                onValueChange={(value) => handleInputChange('categoryId', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t('category')} />
-                </SelectTrigger>
-                <SelectContent className='bg-white dark:bg-gray-900'>
-                  {categories.map((category) => (
-                    <SelectItem
-                      className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800'
-                      key={category.id} value={category.id.toString()}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="scientificName">{t('scientificName')}</Label>
               <Input
@@ -362,36 +280,27 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 placeholder={t('scientificName')}
               />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="commonNames">{t('commonNames')}</Label>
-              <Input
-                id="commonNames"
-                value={formData.commonNames}
-                onChange={(e) => handleInputChange('commonNames', e.target.value)}
-                placeholder={t('commonNames')}
-              />
-            </div>
           </div>
 
+
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="family">{t('family')}</Label>
-              <Input
-                id="family"
-                value={formData.family}
-                onChange={(e) => handleInputChange('family', e.target.value)}
-                placeholder={t('family')}
+          <div className="space-y-2">
+              <Label htmlFor="categoryId">{t('category')} <span className="text-red-500">(*)</span></Label>
+              <Select
+                options={categoriesOptions}
+                placeholder={tUtils('selectCategory')}
+                value={formData.categoryId || ''}
+                onChange={(value) => handleInputChange('categoryId', value as string)}
               />
             </div>
-
             <div className="space-y-2">
-              <Label htmlFor="partsUsed">{t('partsUsed')}</Label>
-              <Input
-                id="partsUsed"
-                value={formData.partsUsed}
-                onChange={(e) => handleInputChange('partsUsed', e.target.value)}
-                placeholder={t('partsUsed')}
+              <Label htmlFor="partsUsedId">{t('partsUsed')}</Label>
+              <Select
+                multiple={true}
+                options={categoriesOptions}
+                placeholder={tUtils('selectCategory')}
+                value={formData.partsUsedId || ''}
+                onChange={(value) => handleInputChange('partsUsedId', value as string)}
               />
             </div>
           </div>
@@ -475,13 +384,12 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="content">{t('content')} *</Label>
-            <Textarea
-              id="content"
-              value={formData.content}
-              onChange={(e) => handleChangeContent('content', e.target.value)}
+            <Label htmlFor="content">{t('content')} <span className="text-red-500">(*)</span></Label>
+            <SimpleEditor
+              key={formData.id || 'new'}
+              initialContent={formData.content}
+              onContentChange={(content) => handleChangeContent('content', content)}
               placeholder={t('content')}
-              rows={10}
             />
             {formErrors.content && (
               <div className="text-red-500 text-sm">{formErrors.content}</div>
@@ -503,39 +411,14 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
           <div className="space-y-2">
             <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
             <Select
+              options={dataSourcesOptions}
+              placeholder={t('selectDataSource')}
               value={formData.dataSourceId?.toString() || ''}
-              onValueChange={(value) => handleInputChange('dataSourceId', value ? parseInt(value) : null)}
-              disabled={loadingDataSources}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
-              </SelectTrigger>
-              <SelectContent className='bg-white dark:bg-gray-900'>
-                {
-                  dataSources.length > 0 ?
-                    (
-                      dataSources.map((dataSource) => (
-                        <SelectItem
-                          className='bg-white dark:bg-gray-900 hover:bg-gray-100 dark:hover:bg-gray-800'
-                          key={dataSource.id}
-                          value={dataSource.id.toString()}
-                        >
-                          <div className="flex flex-col">
-                            <span className="font-medium">{dataSource.name}</span>
-                            {dataSource.title && (
-                              <span className="text-sm text-gray-500">{dataSource.title}</span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))) :
-                    (
-                      <div className="flex flex-col items-start gap-2 justify-between p-4">
-                        <div>{t('noDataSource')}</div>
-                      </div>
-                    )
-                }
-              </SelectContent>
-            </Select>
+              onChange={(value) => handleInputChange('dataSourceId', value as string)}
+            />  
+            {formErrors.dataSourceId && (
+              <div className="text-red-500 text-sm">{formErrors.dataSourceId}</div>
+            )}
           </div>
         </form>
       </div>

@@ -79,7 +79,8 @@
     "Add dataSource": "Add data source",
     "uploading": "Uploading...",
     "uploadError": "Upload error",
-    "uploadSuccess": "Upload success"
+    "uploadSuccess": "Upload success",
+    "selectCategory": "Select category"
   },
   "ImageUpload": {
     "addImage": "Add image",
@@ -836,7 +837,7 @@
     }
   },
   "Herbals": {
-    "title": "Herbals List",
+    "title": "Herbal name",
     "addHerbal": "Add herbal",
     "loading": "Loading...",
     "thumbnail": "Thumbnail",
@@ -939,7 +940,8 @@
       "usageRequired": "Herbal usage is required",
       "usageMinLength": "Herbal usage must be at least 10 characters",
       "notesRequired": "Herbal notes is required",
-      "notesMinLength": "Herbal notes must be at least 10 characters"
+      "notesMinLength": "Herbal notes must be at least 10 characters",
+      "categoryRequired": "Herbal category is required"
     }
   },
   "AuthorsPage": {

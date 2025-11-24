@@ -20,6 +20,7 @@ const UpdateHerbalPage = () => {
   const [loading, setLoading] = useState(false)
   const [herbal, setHerbal] = useState<Herbal | null>(null)
   const [initialLoading, setInitialLoading] = useState(true)
+  const [activeTab, setActiveTab] = useState('info')
   const t = useTranslations('Herbals')
   const tUtils = useTranslations('Utils')
   const herbalId = params.id as string
@@ -102,7 +103,7 @@ const UpdateHerbalPage = () => {
   }
 
   return (
-    <div>
+    <div className='h-full'>
       <PageBreadcrumb 
         pageTitle={t('updateHerbal')} 
         items={[
@@ -112,13 +113,13 @@ const UpdateHerbalPage = () => {
       />
       
       <div className="space-y-6">
-        <Tabs defaultValue="info" className="w-full">
+        <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="info" className="flex items-center gap-2">
+            <TabsTrigger value="info" className={`flex items-center py-1 gap-2 ${activeTab === 'info' ? 'bg-blue-500 text-white border-blue-500' : ''}`}>
               <Save className="w-4 h-4" />
               {t('basicInfo')}
             </TabsTrigger>
-            <TabsTrigger value="images" className="flex items-center gap-2">
+            <TabsTrigger value="images" className={`flex items-center py-1 gap-2 ${activeTab === 'images' ? 'bg-blue-500 text-white border-blue-500' : ''}`}>
               <Image className="w-4 h-4" />
               {t('imageManagement')}
             </TabsTrigger>

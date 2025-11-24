@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTranslations } from 'next-intl'
 import ImageUpload from '@/components/ui/ImageUpload'
-import MultipleImageUpload from '@/components/ui/MultipleImageUpload'
 import Switch from '@/components/form/switch/Switch'
 import { ArrowLeft, Save, ChevronDown, ChevronRight } from 'lucide-react'
 import { DataSource } from '@/types/data-source'
@@ -158,7 +157,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
     onInputChange(field, value)
   }
 
-  const handleMultipleImageChange = (field: string, value: File[]) => {
+  const handleMultipleImageChange = (field: string, value: File[] | null) => {
     onInputChange(field, value)
   }
 
@@ -288,12 +287,11 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
               {/* Bộ sưu tập hình ảnh */}
               <div className="space-y-2">
                 <Label htmlFor="galleryImages" className="text-sm font-medium">{t('galleryImages')}</Label>
-                <MultipleImageUpload
+                <ImageUpload
+                  multiple={true}
                   value={formData.galleryImages}
-                  onChange={(value) => onInputChange('galleryImages', value)}
-                  onFileChange={(files) => handleMultipleImageChange('galleryImagesFile', files)}
+                  onChange={(value: File[] | null) => handleMultipleImageChange('galleryImagesFile', value)}
                   placeholder={t('uploadGalleryImages')}
-                  maxImages={10}
                 />
               </div>
             </div>

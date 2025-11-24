@@ -36,7 +36,7 @@ export const AppRoutes = {
     StaticPagesCreate: '/manager/static-pages/create',
     StaticPagesUpdate: '/manager/static-pages/update',
     StaticPagesDetail: '/manager/static-pages/details',
-    Category:'/manager/category'
+    Category: '/manager/category'
   }
 }
 export const AppApi = {
@@ -52,61 +52,65 @@ export const AppApi = {
   },
 }
 export const AppCategoryCode = {
- 
-  FeatureType:{
+
+  FeatureType: {
     code: 'FeatureType',
     name: 'Menu chức năng',
   },
-  FoodCategory:{
+  FoodCategory: {
     code: 'FoodCategory',
     name: 'Danh mục món ăn',
   },
-  FoodType:{
+  FoodType: {
     code: 'FoodType',
     name: 'Loại món ăn',
   },
-  FoodStatus:{
+  FoodStatus: {
     code: 'FoodStatus',
     name: 'Trạng thái món ăn',
   },
-  FoodUnit:{
+  FoodUnit: {
     code: 'FoodUnit',
     name: 'Đơn vị món ăn',
   },
-  UnitOfMeasure:{
-    code:'UnitOfMeasure',
-    name:'Đơn vị tính'
+  UnitOfMeasure: {
+    code: 'UnitOfMeasure',
+    name: 'Đơn vị tính'
   },
-  TableStatus:{
+  TableStatus: {
     code: 'TableStatus',
     name: 'Trạng thái bàn',
   },
-  TableArea:{
+  TableArea: {
     code: 'TableArea',
     name: 'Khu vực bàn',
   },
-  FolkMedicine:{
+  FolkMedicine: {
     code: 'FolkMedicine',
     name: 'Dược liệu dân gian',
   },
-  FEATURE_MENU:{
+  FEATURE_MENU: {
     code: 'FEATURE_MENU',
     name: 'Menu chức năng',
   },
-  ArticleStatus:{
+  ArticleStatus: {
     code: 'ArticleStatus',
     name: 'Trạng thái bài viết',
   },
-  ArticleType:{
+  ArticleType: {
     code: 'ArticleType',
     name: 'Loại bài viết',
-  }, 
-  Herbal:{
+  },
+  Herbal: {
     code: 'Herbal',
     name: 'Dược liệu dân gian',
   },
-  Disease:{
+  Disease: {
     code: 'Disease',
     name: 'Bệnh',
+  },
+  PartsUsed: {
+    code: 'PartsUsed',
+    name: 'Phần sử dụng',
   },
 }
