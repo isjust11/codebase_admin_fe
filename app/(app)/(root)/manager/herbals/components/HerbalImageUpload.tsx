@@ -31,7 +31,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
         // Create herbal image record
         const imageData = {
           herbalId: herbalId,
-          url: uploadResponse.url.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', ''),
+          url: uploadResponse.url.replace(process.env.STORAGE_API_URL || '', ''),
           type: 'other' as const,
           sortOrder: images.length + 1,
           isActive: true

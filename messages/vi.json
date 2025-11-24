@@ -68,7 +68,10 @@
     "uploadedImages": "Hình ảnh đã tải lên",
     "Add dataSource": "Thêm nguồn dữ liệu",
     "addStatus":"Thêm trạng thái",
-    "addDataSource":"Thêm nguồn dữ liệu"
+    "addDataSource":"Thêm nguồn dữ liệu",
+    "uploading": "Đang tải lên...",
+    "uploadError": "Lỗi khi tải lên",
+    "uploadSuccess": "Tải lên thành công"
     },
   "ImageUpload": {
     "addImage": "Thêm ảnh",

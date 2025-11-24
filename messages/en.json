@@ -76,7 +76,10 @@
     "clickDelete": "Click to delete image",
     "sortOrder": "Sort order",
     "guide": "Guide",
-    "Add dataSource": "Add data source"
+    "Add dataSource": "Add data source",
+    "uploading": "Uploading...",
+    "uploadError": "Upload error",
+    "uploadSuccess": "Upload success"
   },
   "ImageUpload": {
     "addImage": "Add image",
