@@ -75,7 +75,11 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
     if (selectedType) {
         form.setValue("categoryTypeId", selectedType.id);
     }
-    const handleSubmit = (values: z.infer<typeof formSchema>) => {
+    const handleSubmit = async (values: z.infer<typeof formSchema>) => {
+        const result = await formSchema.safeParseAsync(values);
+        if (!result.success) {
+            return;
+        }
         onSubmit(values);
     };
 
@@ -118,17 +122,17 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>{t('sortOrder')}</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="number"
-                                        className="input-focus"
-                                        value={field.value ?? ''}
-                                        onChange={(e) => {
-                                            const next = e.target.value === '' ? undefined : e.target.valueAsNumber;
-                                            field.onChange(Number.isNaN(next as any) ? undefined : next);
-                                        }}
-                                    />
-                                </FormControl>
+                                    <FormControl>
+                                        <Input
+                                            type="number"
+                                            className="input-focus"
+                                            value={field.value ?? ''}
+                                            onChange={(e) => {
+                                                const next = e.target.value === '' ? undefined : e.target.valueAsNumber;
+                                                field.onChange(Number.isNaN(next as any) ? undefined : next);
+                                            }}
+                                        />
+                                    </FormControl>
                                     <FormMessage className="text-red-500" />
                                 </FormItem>
                             )}
