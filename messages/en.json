@@ -627,6 +627,11 @@
       "createSuccess": "Category created successfully",
       "updateSuccess": "Category updated successfully",
       "confirmDelete":"Are you sure you want to delete this category?"
+    },
+    "validation": {
+      "categoryTypeIdRequired": "Category type is required",
+      "nameMinLength": "Category name must be at least 2 characters",
+      "validationError": "Please check the information again"
     }
   },
   "CategoryTypesPage": {

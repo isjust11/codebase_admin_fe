@@ -166,7 +166,6 @@ const ArticleForm = () => {
 
   const handleSubmit = async () => {
     const result = await articleForm.safeParseAsync(formData);
-    console.log(result);
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
       setFormErrors({

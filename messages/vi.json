@@ -622,7 +622,8 @@
     "validation": {
       "codeMinLength": "Mã danh mục phải có ít nhất 2 ký tự",
       "nameMinLength": "Tên danh mục phải có ít nhất 2 ký tự",
-      "categoryTypeIdRequired": "Yêu cầu chọn loại danh mục"
+      "categoryTypeIdRequired": "Yêu cầu chọn loại danh mục",
+      "validationError": "Vui lòng kiểm tra lại thông tin"
     }
   },
   "CategoryTypesPage": {

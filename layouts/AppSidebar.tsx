@@ -30,7 +30,7 @@ type NavItem = {
 
 const AppSidebar: React.FC = () => {
   const { user, feature } = useAuth();
-  const { isLoading,navigateTo } = useLoading();
+  const { isLoading, navigateTo } = useLoading();
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
   const [menuTypes, setMenuTypes] = useState<Category[]>();
@@ -75,7 +75,7 @@ const AppSidebar: React.FC = () => {
                 setIsDataLoading(false);
                 return;
               }
-            } catch (_e) {}
+            } catch (_e) { }
           }
         }
 
@@ -127,7 +127,7 @@ const AppSidebar: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (typeof window === "undefined" ) {
+    if (typeof window === "undefined") {
       return;
     }
     if (features && features.length > 0) {
