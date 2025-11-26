@@ -292,16 +292,22 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
                 value={formData.categoryId || ''}
                 onChange={(value) => handleInputChange('categoryId', value as string)}
               />
+              {formErrors.categoryId && (
+                <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="partsUsedId">{t('partsUsed')}</Label>
               <Select
                 multiple={true}
-                options={categoriesOptions}
-                placeholder={tUtils('selectCategory')}
+                options={partsUsedOptions}
+                placeholder={t('selectPartsUsed')}
                 value={formData.partsUsedId || ''}
                 onChange={(value) => handleInputChange('partsUsedId', value as string)}
               />
+              {formErrors.partsUsedId && (
+                <div className="text-red-500 text-sm">{formErrors.partsUsedId}</div>
+              )}
             </div>
           </div>
 

@@ -9,6 +9,7 @@ import { uploadFile } from '@/services/media-api';
 import { createHerbalImage, getHerbalImages, deleteHerbalImage, updateHerbalImage, HerbalImageDto } from '@/services/herbal-image-api';
 import Image from 'next/image';
 import { useTranslations } from 'next-intl'
+import { mergeImageUrl } from '@/lib/utils';
 interface HerbalImageUploadProps {
   herbalId: string;
 }
@@ -31,7 +32,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
         // Create herbal image record
         const imageData = {
           herbalId: herbalId,
-          url: uploadResponse.url.replace(process.env.STORAGE_API_URL || '', ''),
+          url: uploadResponse.publicRelativePath,
           type: 'other' as const,
           sortOrder: images.length + 1,
           isActive: true
@@ -84,10 +85,10 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
     try {
       await deleteHerbalImage(imageId);
       setImages(prev => prev.filter(img => img.id?.toString() !== imageId));
-      toast.success(tUtils('deleteSuccess'));
+      toast.success(tUtils('deleteFileSuccess'));
     } catch (error) {
-      console.error(tUtils('errorDeletingImage'), error);
-      toast.error(tUtils('errorDeletingImage'));
+      console.error(tUtils('deleteFileError'), error);
+      toast.error(tUtils('deleteFileError'));
     }
   };
 
@@ -95,7 +96,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
     try {
       // Set all images to other type first
       const updatePromises = images.map(img => 
-        updateHerbalImage(img.id!.toString(), { type: 'other' })
+        updateHerbalImage(img.id!, { type: 'other' })
       );
       await Promise.all(updatePromises);
 
@@ -187,7 +188,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
                     <Image
                       width={100}
                       height={100}
-                      src={`${process.env.NEXT_PUBLIC_API_URL}${image.url}`}
+                      src={mergeImageUrl(image.url)}
                       alt={image.alt || `Hình ảnh ${index + 1}`}
                       className="w-full h-full object-cover rounded-lg"
                     />
@@ -197,7 +198,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
                         <Button
                           size="sm"
                           variant="secondary"
-                          onClick={() => handleSetMainImage(image.id!.toString())}
+                          onClick={() => handleSetMainImage(image.id!)}
                           className="bg-white text-gray-800 hover:bg-gray-100"
                         >
                           {image.type === 'main' ? t('main') : t('setMain')}
@@ -205,7 +206,7 @@ const HerbalImageUpload: React.FC<HerbalImageUploadProps> = ({ herbalId }) => {
                         <Button
                           size="sm"
                           variant="destructive"
-                          onClick={() => handleDeleteImage(image.id!.toString())}
+                          onClick={() => handleDeleteImage(image.id!)}
                           className="bg-red-500 hover:bg-red-600"
                         >
                           <X className="w-4 h-4" />

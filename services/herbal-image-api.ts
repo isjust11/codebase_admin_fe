@@ -1,7 +1,7 @@
 import { axiosInstance } from '@/lib/axios';
 
 export interface HerbalImageDto {
-  id?: number;
+  id?: string;
   herbalId: string;
   url: string;
   type: 'main' | 'detail' | 'part' | 'growth' | 'processing' | 'usage' | 'other';

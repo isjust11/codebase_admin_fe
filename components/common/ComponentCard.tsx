@@ -27,9 +27,9 @@ const ComponentCard: React.FC<ComponentCardProps> = ({
       {/* Card Header */}
       <div className="px-6 py-3 flex items-center gap-2 justify-between">
         <div>
-          <h3 className="text-2xl font-bold text-gray-800 dark:text-white/90">
+          <h5 className="text-lg font-bold text-gray-800 dark:text-white/90">
             {title}
-          </h3>
+          </h5>
           {desc && (
             // <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               desc

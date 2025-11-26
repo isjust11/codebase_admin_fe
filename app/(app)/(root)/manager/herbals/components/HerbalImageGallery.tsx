@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Image as ImageIcon, ZoomIn, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { getHerbalImages, HerbalImageDto } from '@/services/herbal-image-api'
 import { useTranslations } from 'next-intl'
+import { mergeImageUrl } from '@/lib/utils'
 interface HerbalImageGalleryProps {
   herbalId: string
   showMainImageOnly?: boolean
@@ -135,7 +136,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
               >
                 <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
                   <img
-                    src={`${process.env.NEXT_PUBLIC_API_URL}${image.url}`}
+                    src={mergeImageUrl(image.url)}
                     alt={image.alt || 'Herbal image'}
                     className="w-full h-full object-cover transition-transform group-hover:scale-105"
                   />
@@ -201,7 +202,7 @@ const HerbalImageGallery: React.FC<HerbalImageGalleryProps> = ({
             {/* Image */}
             <div className="flex items-center justify-center">
               <img
-                src={`${process.env.NEXT_PUBLIC_API_URL}${selectedImage.url}`}
+                src={mergeImageUrl(selectedImage.url)}
                 alt={selectedImage.alt || 'Herbal image'}
                 className="max-w-full max-h-full object-contain rounded-lg"
               />
