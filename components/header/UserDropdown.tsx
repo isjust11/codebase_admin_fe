@@ -7,10 +7,11 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { AppRoutes } from "@/constants";
 import { useLoading } from "@/contexts/LoadingContext";
+import { mergeImageUrl } from "@/lib/utils";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
-  const { user, logout  } = useAuth();
+  const { user, logout } = useAuth();
   const { navigateTo } = useLoading();
   const [open, setOpen] = useState(false);
   function toggleDropdown(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -51,10 +52,10 @@ export default function UserDropdown() {
               <Image
                 width={44}
                 height={44}
-                src={user?.picture || ""}
+                src={mergeImageUrl(user?.picture || "")}
                 alt="User"
               />
-            ):(
+            ) : (
               <Avatar className="w-11 h-11 bg-gray-200 rounded-full ring-1 ring-gray-300">
                 <AvatarFallback>{getInitials()}</AvatarFallback>
               </Avatar>

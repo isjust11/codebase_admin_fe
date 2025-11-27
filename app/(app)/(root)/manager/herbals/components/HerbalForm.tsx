@@ -257,7 +257,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
 
       {/* Phần thông tin - chiếm 7/10 */}
       <div className="w-7/10">
-        <form className="space-y-6">
+        <div className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="title">{t('title')} <span className="text-red-500">(*)</span></Label>
@@ -284,7 +284,7 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
 
 
           <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
+            <div className="space-y-2">
               <Label htmlFor="categoryId">{t('category')} <span className="text-red-500">(*)</span></Label>
               <Select
                 options={categoriesOptions}
@@ -421,12 +421,12 @@ const HerbalForm: React.FC<HerbalFormProps> = ({
               placeholder={t('selectDataSource')}
               value={formData.dataSourceId?.toString() || ''}
               onChange={(value) => handleInputChange('dataSourceId', value as string)}
-            />  
+            />
             {formErrors.dataSourceId && (
               <div className="text-red-500 text-sm">{formErrors.dataSourceId}</div>
             )}
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

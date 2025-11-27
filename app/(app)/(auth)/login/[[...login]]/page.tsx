@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { forgotPassword, login } from '@/services/auth-api';
+import { forgotPassword, login, register } from '@/services/auth-api';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 import { Label } from '@/components/ui/label';
@@ -69,12 +69,12 @@ export default function LoginPage() {
   const handleForgotPassword = async () => {
     try {
       const username = form.getValues('username')
-      if(username){
+      if (username) {
         setIsForgotPasswordLoading(true);
         const response = await forgotPassword(form.getValues('username'));
         toast.success(response.message);
-      }else{
-        toast.error(t('messages.requiredUserOrEmail'))  
+      } else {
+        toast.error(t('messages.requiredUserOrEmail'))
       }
     } catch (_error) {
       toast.error(t('messages.emailError'));
@@ -176,7 +176,7 @@ export default function LoginPage() {
                     <FormControl>
                       <Input className='input-focus' placeholder={t('usernamePlaceholder')} {...field} />
                     </FormControl>
-                    <FormMessage className='text-red-500'/>
+                    <FormMessage className='text-red-500' />
                   </FormItem>
                 )}
               />
@@ -195,7 +195,7 @@ export default function LoginPage() {
                         {...field}
                       />
                     </FormControl>
-                    <FormMessage className='text-red-500'/>
+                    <FormMessage className='text-red-500' />
                   </FormItem>
                 )}
               />
@@ -216,7 +216,7 @@ export default function LoginPage() {
                 </p>
               </div>
               <Button
-                type="submit"
+                onClick={form.handleSubmit(onSubmit)}
                 className="w-full py-5 text-sm font-normal text-white transition-colors bg-fuchsia-700 rounded-lg hover:bg-fuchsia-600 dark:bg-fuchsia-400 dark:hover:bg-fuchsia-500"
                 disabled={isLoading}
               >
