@@ -18,24 +18,25 @@ import { Action } from '@/types/actions'
 const AuthorDetailPage = () => {
   const t = useTranslations('AuthorsPage')
   const tUtils = useTranslations('Utils')
-  const router = useRouter()
   const { navigateTo } = useLoading()
   const params = useParams()
   const authorId = params.id as string
   
   const [author, setAuthor] = useState<Author | null>(null)
   const [loading, setLoading] = useState(true)
-  const [showDetails, setShowDetails] = useState(false)
-  const [showAdditionalInfo, setShowAdditionalInfo] = useState(false)
+  const [showDetails, setShowDetails] = useState(true)
+  const [showAdditionalInfo, setShowAdditionalInfo] = useState(true)
 
   const lstButton:Action[] = [
     {
       title: tUtils('back'),
+      className: 'text-gray-600 hover:bg-gray-100 bg-gray-400',
       icon: <ArrowLeft className="w-4 h-4" />,
       onClick: () => navigateTo('/manager/authors')
     },
     {
       title: tUtils('edit'),
+      className: 'text-blue-500 hover:bg-blue-100 bg-blue-200',
       icon: <Edit className="w-4 h-4" />,
       onClick: () => navigateTo(`/manager/authors/update/${authorId}`)
     }
@@ -57,17 +58,6 @@ const AuthorDetailPage = () => {
       fetchAuthor()
     }
   }, [authorId])
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-          <p className="mt-4">{tUtils('loading')}</p>
-        </div>
-      </div>
-    )
-  }
 
   if (!author) {
     return (
@@ -150,7 +140,7 @@ const AuthorDetailPage = () => {
                   <div>
                     <span className="font-medium text-gray-900">{t('birthDate')}:</span>
                     <span className="ml-2 text-gray-600">
-                      {new Date(author.birthDate).toLocaleDateString('vi-VN')}
+                      {author.birthDate}
                     </span>
                   </div>
                 )}
@@ -158,7 +148,7 @@ const AuthorDetailPage = () => {
                   <div>
                     <span className="font-medium text-gray-900">{t('deathDate')}:</span>
                     <span className="ml-2 text-gray-600">
-                      {new Date(author.deathDate).toLocaleDateString('vi-VN')}
+                      {author.deathDate}
                     </span>
                   </div>
                 )}
@@ -230,28 +220,28 @@ const AuthorDetailPage = () => {
               {author.biography && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-900 mb-2">{t('biography')}</h4>
-                  <p className="text-gray-700 leading-relaxed">{author.biography}</p>
+                  <p className="text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: author.biography }} />
                 </div>
               )}
 
               {author.career && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-900 mb-2">{t('career')}</h4>
-                  <p className="text-gray-700 leading-relaxed">{author.career}</p>
+                  <p className="text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: author.career }} />
                 </div>
               )}
 
               {author.achievements && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-900 mb-2">{t('achievements')}</h4>
-                  <p className="text-gray-700 leading-relaxed">{author.achievements}</p>
+                  <p className="text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: author.achievements }} />
                 </div>
               )}
 
               {author.contributions && (
                 <div className="mb-6">
                   <h4 className="font-semibold text-gray-900 mb-2">{t('contributions')}</h4>
-                  <p className="text-gray-700 leading-relaxed">{author.contributions}</p>
+                  <p className="text-gray-700 leading-relaxed" dangerouslySetInnerHTML={{ __html: author.contributions }} />
                 </div>
               )}
 

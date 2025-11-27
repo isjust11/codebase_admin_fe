@@ -1,7 +1,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Switch from '@/components/form/switch/Switch';
@@ -23,6 +22,8 @@ import { Category } from '@/types/category';
 import { DataSource } from '@/types/data-source';
 import { AppCategoryCode } from '@/constants';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 
 const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
   z.object({
@@ -38,9 +39,7 @@ const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
       }),
     slug: z
       .string()
-      .max(255, { message: t('validation.slugMaxLength') })
-      .optional()
-      .or(z.literal('')),
+      .optional(),
     summary: z.string().optional().or(z.literal('')),
     description: z.string().optional().or(z.literal('')),
     symptoms: z.string().optional().or(z.literal('')),
@@ -108,40 +107,40 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   const [categoriesOptions, setCategoriesOptions] = useState<SelectOption[]>([]);
   const [dataSourcesOptions, setDataSourcesOptions] = useState<SelectOption[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
-
+  const [formErrors, setFormErrors] = useState<Record<string, string | undefined>>({});
   const form = useForm<DiseaseFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: initialData
       ? {
-          name: initialData.name ?? '',
-          slug: initialData.slug ?? '',
-          summary: (initialData as any).summary ?? '',
-          description: initialData.description ?? '',
-          symptoms: initialData.symptoms ?? '',
-          causes: initialData.causes ?? '',
-          prevention: initialData.prevention ?? '',
-          treatment: (initialData as any).treatment ?? '',
-          authorId: (initialData as any).authorId?.toString() ?? '',
-          categoryId: (initialData as any).categoryId?.toString() ?? '',
-          dataSourceId: (initialData as any).dataSourceId?.toString() ?? '',
-          videoUrl: (initialData as any).videoUrl ?? '',
-          isActive: initialData.isActive ?? true,
-        }
+        name: initialData.name ?? '',
+        slug: initialData.slug ?? '',
+        summary: (initialData as any).summary ?? '',
+        description: initialData.description ?? '',
+        symptoms: initialData.symptoms ?? '',
+        causes: initialData.causes ?? '',
+        prevention: initialData.prevention ?? '',
+        treatment: (initialData as any).treatment ?? '',
+        authorId: (initialData as any).authorId?.toString() ?? '',
+        categoryId: (initialData as any).categoryId?.toString() ?? '',
+        dataSourceId: (initialData as any).dataSourceId?.toString() ?? '',
+        videoUrl: (initialData as any).videoUrl ?? '',
+        isActive: initialData.isActive ?? true,
+      }
       : {
-          name: '',
-          slug: '',
-          summary: '',
-          description: '',
-          symptoms: '',
-          causes: '',
-          prevention: '',
-          treatment: '',
-          authorId: '',
-          categoryId: '',
-          dataSourceId: '',
-          videoUrl: '',
-          isActive: true,
-        },
+        name: '',
+        slug: '',
+        summary: '',
+        description: '',
+        symptoms: '',
+        causes: '',
+        prevention: '',
+        treatment: '',
+        authorId: '',
+        categoryId: '',
+        dataSourceId: '',
+        videoUrl: '',
+        isActive: true,
+      },
   });
 
   useEffect(() => {
@@ -222,19 +221,32 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
 
   const handleSubmit = async (values: DiseaseFormValues) => {
     let uploadedImagePaths: string[] = [];
-
+    const result = await formSchema.safeParseAsync(values);
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
+      setFormErrors({
+        name: fieldErrors.name?.[0],
+        summary: fieldErrors.summary?.[0],
+        description: fieldErrors.description?.[0],
+        symptoms: fieldErrors.symptoms?.[0],
+        causes: fieldErrors.causes?.[0],
+        prevention: fieldErrors.prevention?.[0],
+        treatment: fieldErrors.treatment?.[0],
+        authorId: fieldErrors.authorId?.[0],
+        categoryId: fieldErrors.categoryId?.[0],
+        dataSourceId: fieldErrors.dataSourceId?.[0],
+        videoUrl: fieldErrors.videoUrl?.[0],
+        isActive: fieldErrors.isActive?.[0],
+      } as Partial<Record<keyof DiseaseFormValues, string>>);
+      toast.error(t('validation.validationError'));
+      return;
+    }
     if (selectedFiles.length) {
       try {
         const uploads = await Promise.all(
           selectedFiles.map(async (file) => {
             const uploadResponse = await uploadFile(file);
             let path = uploadResponse.publicRelativePath;
-            if (path.startsWith('http')) {
-              path = path.replace(
-                process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
-                ''
-              );
-            }
             return path;
           })
         );
@@ -267,276 +279,181 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        <FormItem>
-          <FormLabel>{t('thumbnail') || 'Hình ảnh'}</FormLabel>
-          <FormControl>
-            <ImageUpload
-              multiple
-              value={initialImages}
-              onChange={handleFileChange}
-              placeholder={t('uploadImage') || 'Kéo & thả file vào đây'}
+    <div>
+      <div className="space-y-6">
+        <div className="space-y-2">
+          <ImageUpload
+            multiple
+            value={initialImages}
+            onChange={handleFileChange}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="name">{t('name')} <span className="text-red-500">(*)</span></Label>
+          <Input id="name" name="name" className="input-focus" value={form.getValues('name') || ''} 
+          onChange={(e) => form.setValue('name', e.target.value)} placeholder={t('enterName')} />
+          {formErrors.name && (
+            <div className="text-red-500 text-sm">{formErrors.name}</div>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="summary">{t('summary')}</Label>
+          <Textarea id="summary" name="summary" className="input-focus" rows={5} placeholder={t('enterSummary')} />
+          {formErrors.summary && (
+            <div className="text-red-500 text-sm">{formErrors.summary}</div>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">{t('description')}</Label>
+          <SimpleEditor  
+            key={initialData?.description || 'new'}
+            initialContent={form.getValues('description') || ''}
+            placeholder={t('enterDescription')}
+            onContentChange={(content) => {
+              form.setValue('description', content);
+            }}
+          />
+          {formErrors.description && (
+            <div className="text-red-500 text-sm">{formErrors.description}</div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+
+            <Label htmlFor="symptoms">{t('symptoms')}</Label>
+            <Textarea
+              name="symptoms"
+              rows={5}
+              placeholder={t('enterSymptoms')}
+              value={form.getValues('symptoms') || ''}
+              onChange={(e) => form.setValue('symptoms', e.target.value)}
             />
-          </FormControl>
-        </FormItem>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  {t('name')} <span className="text-red-500">*</span>
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder={t('enterName')} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            {formErrors.symptoms && (
+              <div className="text-red-500 text-sm">{formErrors.symptoms}</div>
             )}
-          />
+          </div>
+          <div className="space-y-2">
 
-          <FormField
-            control={form.control}
-            name="slug"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('slug')}</FormLabel>
-                <FormControl>
-                  <Input placeholder={t('enterSlug')} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+            <Label htmlFor="causes">{t('causes')}</Label>
+            <Textarea
+              name="causes"
+              rows={5}
+              placeholder={t('enterCauses')}
+              value={form.getValues('causes') || ''}
+              onChange={(e) => form.setValue('causes', e.target.value)}
+            />
+            {formErrors.causes && (
+              <div className="text-red-500 text-sm">{formErrors.causes}</div>
             )}
-          />
+          </div>
         </div>
 
-        <FormField
-          control={form.control}
-          name="summary"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('summary') || 'Tóm tắt'}</FormLabel>
-              <FormControl>
-                <Textarea rows={3} placeholder={t('enterSummary') || 'Nhập tóm tắt'} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="description"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('description')}</FormLabel>
-              <FormControl>
-                <SimpleEditor
-                      key={initialData?.id || 'new'}
-                      initialContent={initialData?.description || ''}
-                      placeholder={t('enterDescription')}
-                      onContentChange={(content) => {
-                        field.onChange(content);
-                      }}
-                    />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <FormField
-            control={form.control}
-            name="symptoms"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('symptoms')}</FormLabel>
-                <FormControl>
-                  <SimpleEditor
-                      key={initialData?.id || 'new'}
-                      initialContent={initialData?.symptoms || ''}
-                      placeholder={t('enterSymptoms')}
-                      onContentChange={(content) => {
-                        field.onChange(content);
-                      }}
-                    />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+        <div className="space-y-2">
+          <Label htmlFor="prevention">{t('prevention')}</Label>
+          <SimpleEditor
+            key={initialData?.prevention || 'new-prevention'}
+            initialContent={initialData?.prevention || ''}
+            placeholder={t('enterPrevention')}
+            onContentChange={(content) => {
+              form.setValue('prevention', content);
+            }}
           />
-
-          <FormField
-            control={form.control}
-            name="causes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('causes')}</FormLabel>
-                <FormControl>
-                  <SimpleEditor
-                      key={initialData?.id || 'new'}
-                      initialContent={initialData?.causes || ''}
-                      placeholder={t('enterCauses')}
-                      onContentChange={(content) => {
-                        field.onChange(content);
-                      }}
-                    />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {formErrors.prevention && (
+            <div className="text-red-500 text-sm">{formErrors.prevention}</div>
+          )}
         </div>
 
-        <FormField
-          control={form.control}
-          name="prevention"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('prevention')}</FormLabel>
-              <FormControl>
-                <SimpleEditor
-                      key={initialData?.id || 'new'}
-                      initialContent={initialData?.prevention || ''}
-                      placeholder={t('enterPrevention')}
-                      onContentChange={(content) => {
-                        field.onChange(content);
-                      }}
-                    />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        <div className="space-y-2">
+          <Label htmlFor="treatment">{t('treatment')}</Label>
+          <SimpleEditor
+            key={initialData?.treatment || 'new-treatment'}
+            initialContent={initialData?.treatment || ''}
+            placeholder={t('enterTreatment')}
+            onContentChange={(content) => {
+              form.setValue('treatment', content);
+            }}
+          />
+          {formErrors.treatment && (
+            <div className="text-red-500 text-sm">{formErrors.treatment}</div>
           )}
-        />
-
-        <FormField
-          control={form.control}
-          name="treatment"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('treatment') || 'Phương pháp điều trị'}</FormLabel>
-              <FormControl>
-                <SimpleEditor
-                      key={initialData?.id || 'new'}
-                      initialContent={initialData?.treatment || ''}
-                      placeholder={t('enterTreatment')}
-                      onContentChange={(content) => {
-                        field.onChange(content);
-                      }}
-                    />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <FormField
-            control={form.control}
-            name="authorId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('author') || 'Tác giả'}</FormLabel>
-                <FormControl>
-                  <Select
-                    options={authorsOptions}
-                    placeholder={t('selectAuthor') || 'Chọn tác giả'}
-                    value={field.value || ''}
-                    onChange={(value) => field.onChange(Array.isArray(value) ? value[0] : value)}
-                    searchable
-                    disabled={loadingOptions}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <div className="space-y-2">
+            <Label htmlFor="authorId">{t('author')}</Label>
+            <Select
+              options={authorsOptions}
+              placeholder={t('selectAuthor') || 'Chọn tác giả'}
+              value={form.getValues('authorId') || ''}
+              onChange={(value) => form.setValue('authorId', Array.isArray(value) ? value[0] : value)}
+              searchable
+              disabled={loadingOptions}
+            />
+            {formErrors.authorId && (
+              <div className="text-red-500 text-sm">{formErrors.authorId}</div>
             )}
-          />
+          </div>
 
-          <FormField
-            control={form.control}
-            name="categoryId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('category') || 'Danh mục'}</FormLabel>
-                <FormControl>
-                  <Select
-                    options={categoriesOptions}
-                    placeholder={t('selectCategory') || 'Chọn danh mục'}
-                    value={field.value || ''}
-                    onChange={(value) => field.onChange(Array.isArray(value) ? value[0] : value)}
-                    searchable
-                    disabled={loadingOptions}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          <div className="space-y-2">
+            <Label htmlFor="categoryId">{t('category')}</Label>
+            <Select
+              options={categoriesOptions}
+              placeholder={t('selectCategory') || 'Chọn danh mục'}
+              value={form.getValues('categoryId') || ''}
+              onChange={(value) => form.setValue('categoryId', Array.isArray(value) ? value[0] : value)}
+              searchable
+              disabled={loadingOptions}
+            />
+            {formErrors.categoryId && (
+              <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
             )}
-          />
-
-          <FormField
-            control={form.control}
-            name="dataSourceId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>{t('dataSource') || 'Nguồn dữ liệu'}</FormLabel>
-                <FormControl>
-                  <Select
-                    options={dataSourcesOptions}
-                    placeholder={t('selectDataSource') || 'Chọn nguồn dữ liệu'}
-                    value={field.value || ''}
-                    onChange={(value) => field.onChange(Array.isArray(value) ? value[0] : value || '')}
-                    searchable
-                    disabled={loadingOptions}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
+            <Select
+              options={dataSourcesOptions}
+              placeholder={t('selectDataSource') || 'Chọn nguồn dữ liệu'}
+              value={form.getValues('dataSourceId') || ''}
+              onChange={(value) => form.setValue('dataSourceId', Array.isArray(value) ? value[0] : value || '')}
+              searchable
+              disabled={loadingOptions}
+            />
+            {formErrors.dataSourceId && (
+              <div className="text-red-500 text-sm">{formErrors.dataSourceId}</div>
             )}
-          />
+          </div>
         </div>
 
-        <FormField
-          control={form.control}
-          name="videoUrl"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>{t('videoUrl') || 'URL Video'}</FormLabel>
-              <FormControl>
-                <Input placeholder={t('enterVideoUrl') || 'Nhập URL video'} {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+        <div className="space-y-2">
+          <Label htmlFor="videoUrl">{t('videoUrl')}</Label>
+          <Input className="input-focus" id="videoUrl" placeholder={t('enterVideoUrl')} />
+          {formErrors.videoUrl && (
+            <div className="text-red-500 text-sm">{formErrors.videoUrl}</div>
           )}
-        />
+        </div>
 
-        <FormField
-          control={form.control}
-          name="isActive"
-          render={({ field }) => (
-            <FormItem>
-              <Switch
-                label={field.value ? tUtils('active') : tUtils('inactive')}
-                defaultChecked={field.value}
-                onChange={(checked) => field.onChange(checked)}
-              />
-            </FormItem>
-          )}
-        />
+        <div className="space-y-2">
+          <Label htmlFor="isActive">{t('isActive')}</Label>
+          <Switch
+            defaultChecked={form.getValues('isActive') || true}
+            onChange={(checked: boolean) => form.setValue('isActive', checked)}
+            label={form.getValues('isActive') || true ? tUtils('active') : tUtils('inactive')}
+          />
+        </div>
 
         <div className="flex justify-end space-x-4">
           <Button type="button" variant="outline" onClick={onCancel}>
             {tUtils('cancel')}
           </Button>
-          <Button type="submit" disabled={loading}>
+          <Button onClick={() => handleSubmit(form.getValues())} disabled={loading}>
             {loading ? tUtils('loading') : submitLabel ?? tUtils('save')}
           </Button>
         </div>
-      </form>
-    </Form>
+      </div>
+    </div>
   );
 };
 

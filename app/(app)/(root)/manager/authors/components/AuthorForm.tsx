@@ -9,10 +9,11 @@ import ImageUpload from '@/components/ui/ImageUpload'
 import Switch from '@/components/form/switch/Switch'
 import { ArrowLeft, Save, ChevronDown, ChevronRight } from 'lucide-react'
 import { DataSource } from '@/types/data-source'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { getAllDataSources, getDataSources } from '@/services/manager-api'
+import { getAllDataSources } from '@/services/manager-api'
 import { z } from 'zod'
 import { toast } from 'sonner'
+import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor'
+import Select from '@/components/form/Select'
 
 export interface AuthorFormData {
   name: string
@@ -24,8 +25,8 @@ export interface AuthorFormData {
   works: string
   philosophy: string
   legacy: string
-  birthDate: Date
-  deathDate: Date
+  birthDate: string
+  deathDate: string
   birthPlace: string
   deathPlace: string
   era: string
@@ -42,7 +43,7 @@ export interface AuthorFormData {
   honors: string
   memorials: string
   references: string
-  dataSourceId: number | null
+  dataSourceId: string
   isActive: boolean
   avatarFile?: File | null
   portraitFile?: File | null
@@ -62,8 +63,8 @@ const authorFormSchema = (t: any) => z.object({
   works: z.string().optional(),
   philosophy: z.string().optional(),
   legacy: z.string().optional(),
-  birthDate: z.date().optional(),
-  deathDate: z.date().optional(),
+  birthDate: z.string().optional(),
+  deathDate: z.string().optional(),
   birthPlace: z.string().optional(),
   deathPlace: z.string().optional(),
   era: z.string().optional(),
@@ -72,7 +73,7 @@ const authorFormSchema = (t: any) => z.object({
   teacher: z.string().optional(),
   students: z.string().optional(),
   portrait: z.string().optional(),
-  avatar: z.string().optional(),
+  avatar: z.string().refine(val => val !== null, t('validation.avatarRequired')),
   coverImage: z.string().optional(),
   galleryImages: z.array(z.string()).optional(),
   quotes: z.string().optional(),
@@ -80,11 +81,8 @@ const authorFormSchema = (t: any) => z.object({
   honors: z.string().optional(),
   memorials: z.string().optional(),
   references: z.string().optional(),
-  dataSourceId: z.number().nullable().optional(),
+  dataSourceId: z.string().nullable().optional(),
   isActive: z.boolean().optional(),
-  avatarFile: z.instanceof(File).optional(),
-  portraitFile: z.instanceof(File).optional(),
-  coverImageFile: z.instanceof(File).optional(),
   galleryImagesFile: z.array(z.instanceof(File)).optional(),
 });
 
@@ -108,8 +106,8 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
     works: '',
     philosophy: '',
     legacy: '',
-    birthDate: new Date(),
-    deathDate: new Date(),
+    birthDate: '',
+    deathDate: '',
     isActive: true,
     avatar: '',
     portrait: '',
@@ -120,7 +118,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
     honors: '',
     memorials: '',
     references: '',
-    dataSourceId: null,
+    dataSourceId: '',
     birthPlace: '',
     deathPlace: '',
     era: '',
@@ -157,10 +155,6 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
     onInputChange(field, value)
   }
 
-  const handleMultipleImageChange = (field: string, value: File[] | null) => {
-    onInputChange(field, value)
-  }
-
   // Fetch data sources on component mount
   useEffect(() => {
     const fetchDataSources = async () => {
@@ -181,7 +175,6 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     const result = await authorForm.safeParseAsync(formData)
-    console.log(result)
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
       setFormErrors({
@@ -245,7 +238,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Cột trái - Phần ảnh (1/3) */}
         <div className="lg:col-span-1 space-y-6">
@@ -256,7 +249,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
             <div className="space-y-4">
               {/* Hình đại diện */}
               <div className="space-y-2">
-                <Label htmlFor="avatar" className="text-sm font-medium">{t('avatar')} *</Label>
+                <Label htmlFor="avatar" className="text-sm font-medium">{t('avatar')} <span className="text-red-500">(*)</span></Label>
                 <ImageUpload
                   value={formData.avatar ? formData.avatar : undefined}
                   onChange={(value) => handleImageChange('avatarFile', value)}
@@ -283,17 +276,6 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                   placeholder={t('uploadCoverImage')}
                 />
               </div>
-
-              {/* Bộ sưu tập hình ảnh */}
-              <div className="space-y-2">
-                <Label htmlFor="galleryImages" className="text-sm font-medium">{t('galleryImages')}</Label>
-                <ImageUpload
-                  multiple={true}
-                  value={formData.galleryImages}
-                  onChange={(value: File[] | null) => handleMultipleImageChange('galleryImagesFile', value)}
-                  placeholder={t('uploadGalleryImages')}
-                />
-              </div>
             </div>
           </div>
         </div>
@@ -306,7 +288,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {/* Tên tác giả */}
               <div className="space-y-2">
-                <Label htmlFor="name">{t('name')} *</Label>
+                <Label htmlFor="name">{t('name')} <span className="text-red-500">(*)</span></Label>
                 <Input
                   id="name"
                   value={formData.name}
@@ -332,13 +314,14 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
 
             {/* Tiểu sử */}
             <div className="space-y-2 mt-4">
-              <Label htmlFor="biography">{t('biography')} *</Label>
-              <Textarea
-                id="biography"
-                value={formData.biography}
-                onChange={(e) => handleChangeBiography('biography', e.target.value)}
+              <Label htmlFor="biography">{t('biography')} <span className="text-red-500">(*)</span></Label>
+              <SimpleEditor
+                key={formData?.name || 'new'}
+                initialContent={formData.biography || ''}
                 placeholder={t('enterBiography')}
-                rows={4}
+                onContentChange={(content) => {
+                  onInputChange('biography', content);
+                }}
                 
               />
               {formErrors.biography && (
@@ -351,8 +334,9 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
               <Label htmlFor="isActive" className="text-sm font-medium">{t('isActive')}</Label>
               <div className="flex items-center space-x-2 mt-2">
                 <Switch
+                  defaultChecked={formData.isActive || true}
                   onChange={(checked: boolean) => onInputChange('isActive', checked)}
-                  label={formData.isActive ? t('active') : t('inactive')}
+                  label={formData.isActive || true ? t('active') : t('inactive')}
                 />
               </div>
             </div>
@@ -402,8 +386,8 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                     <Label htmlFor="birthDate">{t('birthDate')}</Label>
                     <Input
                       id="birthDate"
-                      type="date"
-                      value={formData.birthDate.toISOString().split('T')[0]}
+                      type="string"
+                      value={formData.birthDate}
                       onChange={(e) => handleDateChange('birthDate', e.target.value)}
                     />
                   </div>
@@ -413,8 +397,8 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                     <Label htmlFor="deathDate">{t('deathDate')}</Label>
                     <Input
                       id="deathDate"
-                      type="date"
-                      value={formData.deathDate.toISOString().split('T')[0]}
+                      type="string"
+                      value={formData.deathDate}
                       onChange={(e) => handleDateChange('deathDate', e.target.value)}
                     />
                   </div>
@@ -500,24 +484,26 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                 {/* Sự nghiệp */}
                 <div className="space-y-2">
                   <Label htmlFor="career">{t('career')}</Label>
-                  <Textarea
-                    id="career"
-                    value={formData.career}
-                    onChange={(e) => onInputChange('career', e.target.value)}
+                  <SimpleEditor
+                    key={formData?.name || 'new'}
+                    initialContent={formData.career || ''}
                     placeholder={t('enterCareer')}
-                    rows={4}
+                    onContentChange={(content) => {
+                      onInputChange('career', content);
+                    }}
                   />
                 </div>
 
                 {/* Thành tựu */}
                 <div className="space-y-2">
                   <Label htmlFor="achievements">{t('achievements')}</Label>
-                  <Textarea
-                    id="achievements"
-                    value={formData.achievements}
-                    onChange={(e) => onInputChange('achievements', e.target.value)}
+                  <SimpleEditor
+                    key={formData?.achievements || 'new'}
+                    initialContent={formData.achievements || ''}
                     placeholder={t('enterAchievements')}
-                    rows={4}
+                    onContentChange={(content) => {
+                      onInputChange('achievements', content);
+                    }}
                   />
                 </div>
 
@@ -640,34 +626,18 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
                 {/* Chọn nguồn dữ liệu */}
                 <div className="space-y-2">
                   <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
-                  <Select
-                    value={formData.dataSourceId?.toString() || ''}
-                    onValueChange={(value) => onInputChange('dataSourceId', value ? parseInt(value) : null)}
-                    disabled={loadingDataSources}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder={loadingDataSources ? t('loading') : t('selectDataSource')} />
-                    </SelectTrigger>
-                    <SelectContent className="w-full bg-white">
-                      {dataSources.length > 0 ?
-                      (dataSources.map((dataSource) => (
-                        <SelectItem key={dataSource.id} value={dataSource.id.toString()} className='hover:bg-gray-50'>
-                          <div className="flex flex-col">
-                            <span className="font-medium">{dataSource.name}</span>
-                            {dataSource.title && (
-                              <span className="text-sm text-gray-500">{dataSource.title}</span>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))) :
-                      (
-                        <div className="flex flex-col items-start gap-2 justify-between p-4">
-                          <div>{t('noDataSource')}</div>
-                        </div>
-                      )
-                      }
-                    </SelectContent>
-                  </Select>
+                    <Select
+                      options={dataSources.map((dataSource) => ({
+                        value: dataSource.id.toString(),
+                        label: dataSource.name,
+                      }))}
+                      placeholder={t('selectDataSource')}
+                      onChange={(value) => onInputChange('dataSourceId', value as string)}
+                      value={formData.dataSourceId?.toString() || ''}
+                    />
+                    {formErrors.dataSourceId && (
+                      <div className="text-red-500 text-sm">{formErrors.dataSourceId}</div>
+                    )}
                 </div>
               </div>
             )}
@@ -687,7 +657,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
           {t('back')}
         </Button>
         <Button
-          type="submit"
+          onClick={handleSubmit}
           disabled={loading}
           className="flex items-center"
         >
@@ -695,7 +665,7 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
           {loading ? (isEdit ? t('updating') : t('creating')) : (isEdit ? t('updateAuthor') : t('createAuthor'))}
         </Button>
       </div>
-    </form>
+    </div>
   )
 }
 

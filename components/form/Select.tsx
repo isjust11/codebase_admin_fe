@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { ChevronDown, Search, X, Check } from "lucide-react";
 import Image from "next/image";
+import { mergeImageUrl } from "@/lib/utils";
 
 export interface SelectOption {
   value: string;
@@ -128,7 +129,7 @@ const Select: React.FC<SelectProps> = ({
         <Image
           width={24}
           height={24}
-          src={option.avatar}
+          src={mergeImageUrl(option.avatar || '')}
           alt={option.label}
           className="w-6 h-6 rounded-full bg-gray-200 ring-1 ring-gray-300"
         />

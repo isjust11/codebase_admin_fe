@@ -24,8 +24,8 @@ const CreateAuthorPage = () => {
     works: '',
     philosophy: '',
     legacy: '',
-    birthDate: new Date(),
-    deathDate: new Date(),
+    birthDate: '',
+    deathDate: '',
     birthPlace: '',
     deathPlace: '',
     era: '',
@@ -42,7 +42,7 @@ const CreateAuthorPage = () => {
     honors: '',
     memorials: '',
     references: '',
-    dataSourceId: null,
+    dataSourceId: '',
     isActive: true,
     avatarFile: undefined,
     portraitFile: undefined,
@@ -64,20 +64,18 @@ const CreateAuthorPage = () => {
     try {
       if (formData.avatarFile) {
         const uploadResponse = await uploadFile(formData.avatarFile);
-        formData.avatar = uploadResponse.url;
+        formData.avatar = uploadResponse.publicRelativePath;
         formData.avatarFile = undefined;
       }
       if (formData.coverImageFile) {
         const uploadResponse = await uploadFile(formData.coverImageFile);
-        formData.coverImage = uploadResponse.url;
+        formData.coverImage = uploadResponse.publicRelativePath;
         formData.coverImageFile = undefined;
       }
-      if (formData.galleryImagesFile) {
-        formData.galleryImages = await Promise.all(formData.galleryImagesFile.map(async (image) => {
-          const uploadResponse = await uploadFile(image);
-          return uploadResponse.url;
-        }));
-        formData.galleryImagesFile = undefined;
+      if (formData.portraitFile) {
+        const uploadResponse = await uploadFile(formData.portraitFile);
+        formData.portrait = uploadResponse.publicRelativePath;
+        formData.portraitFile = undefined;
       }
       await createAuthor(formData)
       toast.success(tUtils('createSuccess'))
@@ -91,7 +89,7 @@ const CreateAuthorPage = () => {
   }
 
   return (
-    <div>
+    <div className='h-full'>
       <PageBreadcrumb 
         pageTitle={t('createAuthor')} 
         items={[

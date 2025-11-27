@@ -10,8 +10,8 @@ export interface AuthorDto {
     works?: string;
     philosophy?: string;
     legacy?: string;
-    birthDate?: Date;
-    deathDate?: Date;
+    birthDate?: string;
+    deathDate?: string;
     birthPlace?: string;
     deathPlace?: string;
     era?: string;

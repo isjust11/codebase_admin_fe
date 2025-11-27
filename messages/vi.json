@@ -817,6 +817,7 @@
     "enterTreatment": "Nhập phương pháp điều trị",
     "summary": "Tóm tắt",
     "enterSummary": "Nhập tóm tắt",
+    "isActive": "Trạng thái",
     "messages": {
       "loadError": "Lỗi khi tải danh sách bệnh",
       "deleteTitle": "Xác nhận xóa",
@@ -834,7 +835,16 @@
     "validation": {
       "nameRequired": "Tên bệnh không được để trống",
       "nameMaxLength": "Tên bệnh không được vượt quá 255 ký tự",
-      "slugMaxLength": "Slug không được vượt quá 255 ký tự"
+      "slugMaxLength": "Slug không được vượt quá 255 ký tự",
+      "summaryRequired": "Tóm tắt bệnh không được để trống",
+      "summaryMinLength": "Tóm tắt bệnh phải có ít nhất 10 ký tự",
+      "descriptionRequired": "Mô tả bệnh không được để trống",
+      "descriptionMinLength": "Mô tắt bệnh phải có ít nhất 10 ký tự",
+      "symptomsRequired": "Triệu chứng bệnh không được để trống",
+      "symptomsMinLength": "Triệu chứng bệnh phải có ít nhất 10 ký tự",
+      "causesRequired": "Nguyên nhân bệnh không được để trống",
+      "causesMinLength": "Nguyên nhân bệnh phải có ít nhất 10 ký tự",
+      "validationError": "Vui lòng kiểm tra lại thông tin"
     }
   },
   "Herbals": {
@@ -1141,7 +1151,8 @@
       "nameMinLength": "Tên tác giả phải có ít nhất 3 ký tự",
       "biographyRequired": "Tiểu sử tác giả không được để trống",
       "biographyMinLength": "Tiểu sử tác giả phải có ít nhất 10 ký tự",
-      "validationError": "Vui lòng kiểm tra lại thông tin"
+      "validationError": "Vui lòng kiểm tra lại thông tin",
+      "avatarRequired": "Hình ảnh đại diện không được để trống"
     },
     "messages": {
       "errorLoadAuthors": "Lỗi khi tải danh sách tác giả",

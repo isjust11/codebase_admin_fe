@@ -757,7 +757,6 @@
     "searchUnit": "Search unit",
     "diseases": "Diseases",
     "selectDiseases": "Select diseases",
-    "searchDiseases": "Search diseases",
     "messages": {
       "error": "Error loading folk medicine list",
       "deleteSuccess": "Folk medicine deleted successfully",
@@ -823,6 +822,7 @@
     "enterTreatment": "Enter treatment",
     "summary": "Summary",
     "enterSummary": "Enter summary",
+    "isActive": "Is active",
     "messages": {
       "loadError": "Error loading disease list",
       "deleteTitle": "Confirm delete",
@@ -840,7 +840,16 @@
     "validation": {
       "nameRequired": "Disease name is required",
       "nameMaxLength": "Disease name must not exceed 255 characters",
-      "slugMaxLength": "Slug must not exceed 255 characters"
+      "slugMaxLength": "Slug must not exceed 255 characters",
+      "summaryRequired": "Summary is required",
+      "summaryMinLength": "Summary must be at least 10 characters",
+      "descriptionRequired": "Description is required",
+      "descriptionMinLength": "Description must be at least 10 characters",
+      "symptomsRequired": "Symptoms is required",
+      "symptomsMinLength": "Symptoms must be at least 10 characters",
+      "causesRequired": "Causes is required",
+      "causesMinLength": "Causes must be at least 10 characters",
+      "validationError": "Please check the information again"
     }
   },
   "Herbals": {
@@ -1122,7 +1131,8 @@
       "nameMinLength": "Author name must be at least 3 characters",
       "biographyRequired": "Author biography is required",
       "biographyMinLength": "Author biography must be at least 10 characters",
-      "validationError": "Please check the information again"
+      "validationError": "Please check the information again",
+      "avatarRequired": "Avatar is required"
     },
     "messages": {
       "errorLoadAuthors": "Error loading authors list",

@@ -14,7 +14,7 @@ import { toast } from 'sonner'
 import Badge from '@/components/ui/badge/Badge'
 import { Action } from '@/types/actions'
 import { Checkbox } from '@/components/ui/checkbox'
-import { isImgFormat } from '@/lib/utils'
+import { isImgFormat, mergeImageUrl } from '@/lib/utils'
 import Image from 'next/image'
 import { Author } from '@/types/author'
 import { AlertDialogUtils } from '@/components/AlertDialogUtils'
@@ -51,11 +51,11 @@ const AuthorsPage = () => {
       enableHiding: false,
     },
     {
-      accessorKey: "portrait",
+      accessorKey: "avatar",
       header: t('thumbnail'),
       cell: ({ row }) => {
         const author = row.original as any
-        const imageUrl = author.portrait
+        const imageUrl = author.avatar
         if (errorImage || !isImgFormat(imageUrl)) {
           return (
             <div className="w-16 h-16 bg-gray-200 rounded-md flex items-center justify-center">
@@ -69,8 +69,8 @@ const AuthorsPage = () => {
           imageUrl ? <Image
             width={164}
             height={124}
-            src={imageUrl}
-            alt="author-portrait"
+            src={mergeImageUrl(imageUrl)}
+            alt="author-avatar"
             className="w-16 h-16 object-cover rounded-md"
             onError={() => setErrorImage(true)}
           /> :

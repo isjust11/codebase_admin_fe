@@ -29,8 +29,8 @@ const UpdateAuthorPage = () => {
     works: '',
     philosophy: '',
     legacy: '',
-    birthDate: new Date(),
-    deathDate: new Date(),
+    birthDate: '',
+    deathDate: '',
     birthPlace: '',
     deathPlace: '',
     era: '',
@@ -47,7 +47,7 @@ const UpdateAuthorPage = () => {
     honors: '',
     memorials: '',
     references: '',
-    dataSourceId: null,
+    dataSourceId: '',
     isActive: true,
     avatarFile: undefined,
     portraitFile: undefined,
@@ -71,8 +71,8 @@ const UpdateAuthorPage = () => {
             works: response.works || '',
             philosophy: response.philosophy || '',
             legacy: response.legacy || '',
-            birthDate: response.birthDate ? new Date(response.birthDate) : new Date(),
-            deathDate: response.deathDate ? new Date(response.deathDate) : new Date(),
+            birthDate: response.birthDate || '',
+            deathDate: response.deathDate || '',
             birthPlace: response.birthPlace || '',
             deathPlace: response.deathPlace || '',
             era: response.era || '',
@@ -124,31 +124,25 @@ const UpdateAuthorPage = () => {
     try {
       const updateData = {
         ...formData,
-        birthDate: formData.birthDate ? new Date(formData.birthDate) : new Date(),
-        deathDate: formData.deathDate ? new Date(formData.deathDate) : new Date()
+        birthDate: formData.birthDate || '',
+        deathDate: formData.deathDate || ''
       }
       if(formData.portraitFile){
         const uploadResponse = await uploadFile(formData.portraitFile);
-        updateData.portrait = uploadResponse.url;
+        updateData.portrait = uploadResponse.publicRelativePath;
         updateData.portraitFile = undefined;
       }
       if (formData.avatarFile) {
         const uploadResponse = await uploadFile(formData.avatarFile);
-        updateData.avatar = uploadResponse.url;
+        updateData.avatar = uploadResponse.publicRelativePath;
         updateData.avatarFile = undefined;
       }
       if (formData.coverImageFile) {
         const uploadResponse = await uploadFile(formData.coverImageFile);
-        updateData.coverImage = uploadResponse.url;
+        updateData.coverImage = uploadResponse.publicRelativePath;
         updateData.coverImageFile = undefined;
       }
-      if (formData.galleryImagesFile) {
-        updateData.galleryImages = await Promise.all(formData.galleryImagesFile.map(async (image) => {
-          const uploadResponse = await uploadFile(image);
-          return uploadResponse.url;
-        }));
-        updateData.galleryImagesFile = undefined;
-      }
+      
       await updateAuthor(authorId, updateData)
       toast.success(t('messages.updateSuccess'))
       navigateTo('/manager/authors')

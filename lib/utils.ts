@@ -59,8 +59,7 @@ export const getMediaUtils = async (relativeUrl: string): Promise<string> => {
 
 export const isImgFormat = (url: string): boolean => {
   const endsWith = url.endsWith('.png') || url.endsWith('.jpg') || url.endsWith('.jpeg') || url.endsWith('.gif') || url.endsWith('.bmp') || url.endsWith('.webp');
-  const isHttp = url.startsWith('http://') || url.startsWith('https://');
-  return endsWith && isHttp;
+  return endsWith;
 }
 
 export function base64encrypt(text: string | number): string {
