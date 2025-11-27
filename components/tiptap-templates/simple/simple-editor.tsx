@@ -85,7 +85,6 @@ import "@/components/tiptap-templates/simple/simple-editor.scss"
 import { AlignEndVertical, AlignHorizontalJustifyCenter, AlignStartVertical, FileImage } from "lucide-react"
 
 import { Modal } from "@/components/ui/modal"
-import { useState, useEffect } from "react"
 // const { isOpen, openModal, closeModal } = useModal();
 const ImageAlignButton = ({
   align,
@@ -413,7 +412,7 @@ export function SimpleEditor({
           <MediaManager
             onSelect={media => {
               if (!editor) return
-              const baseUrl = process.env.NEXT_PUBLIC_API_URL || ''
+              const baseUrl = process.env.STORAGE_API_URL || ''
               const urls = Array.isArray(media) 
                 ? media.map(m => baseUrl + (m.url || m.path))
                 : [baseUrl + (media?.url || media?.path)]

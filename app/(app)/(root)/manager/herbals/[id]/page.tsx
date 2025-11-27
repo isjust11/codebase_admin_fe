@@ -143,9 +143,9 @@ const HerbalDetailPage = () => {
             {/* Thông tin cơ bản */}
             <div className="lg:col-span-2 space-y-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">{herbal.title}</h1>
+                <h5 className="text-lg font-bold text-gray-900">{herbal.title}</h5>
                 {herbal.scientificName && (
-                  <p className="text-lg text-gray-600 italic mt-2">{herbal.scientificName}</p>
+                  <p className="text-sm text-gray-600 italic mt-2">{herbal.scientificName}</p>
                 )}
               </div>
 
@@ -192,66 +192,59 @@ const HerbalDetailPage = () => {
         {/* Thông tin chi tiết */}
         <ComponentCard title={t('detailInfo')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {herbal.commonNames && (
+            {herbal.title && (
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">{t('commonNames')}</h4>
-                <p className="text-gray-700">{herbal.commonNames}</p>
+                <h5 className="font-semibold text-gray-900 mb-2">{t('commonNames')}</h5>
+                <p className="text-gray-700">{herbal.title}</p>
               </div>
             )}
 
-            {herbal.family && (
+            {herbal.category && (
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">{t('family')}</h4>
-                <p className="text-gray-700">{herbal.family}</p>
+                <h5 className="font-semibold text-gray-900 mb-2">{t('family')}</h5>
+                <p className="text-gray-700">{herbal.category?.name}</p>
               </div>
             )}
 
-            {herbal.partsUsed && (
+            {herbal.partsUsedCategory && (
               <div>
-                <h4 className="font-semibold text-gray-900 mb-2">{t('partsUsed')}</h4>
-                <p className="text-gray-700">{herbal.partsUsed}</p>
-              </div>
-            )}
-
-            {herbal.activeCompounds && (
-              <div>
-                <h4 className="font-semibold text-gray-900 mb-2">{t('activeCompounds')}</h4>
-                <p className="text-gray-700">{herbal.activeCompounds}</p>
+                <h5 className="font-semibold text-gray-900 mb-2">{t('partsUsed')}</h5>
+                <p className="text-gray-700">{herbal.partsUsedCategory.name}</p>
               </div>
             )}
           </div>
 
           {herbal.medicinalProperties && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">{t('medicinalProperties')}</h4>
+              <h5 className="font-semibold text-gray-900 mb-2">{t('medicinalProperties')}</h5>
               <p className="text-gray-700 leading-relaxed">{herbal.medicinalProperties}</p>
             </div>
           )}
 
           {herbal.preparationMethods && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">{t('preparationMethods')}</h4>
+              <h5 className="font-semibold text-gray-900 mb-2">{t('preparationMethods')}</h5>
               <p className="text-gray-700 leading-relaxed">{herbal.preparationMethods}</p>
             </div>
           )}
 
           {herbal.dosage && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">{t('dosage')}</h4>
+              <h5 className="font-semibold text-gray-900 mb-2">{t('dosage')}</h5>
               <p className="text-gray-700 leading-relaxed">{herbal.dosage}</p>
             </div>
           )}
 
           {herbal.contraindications && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">{t('contraindications')}</h4>
+              <h5 className="font-semibold text-gray-900 mb-2">{t('contraindications')}</h5>
               <p className="text-gray-700 leading-relaxed">{herbal.contraindications}</p>
             </div>
           )}
 
           {herbal.sideEffects && (
             <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-2">{t('sideEffects')}</h4>
+              <h5 className="font-semibold text-gray-900 mb-2">{t('sideEffects')}</h5>
               <p className="text-gray-700 leading-relaxed">{herbal.sideEffects}</p>
             </div>
           )}
@@ -276,23 +269,23 @@ const HerbalDetailPage = () => {
         <ComponentCard title={t('systemInfo')}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="font-medium text-gray-900">{t('createdAt')}:</span>
+              <span className="font-semibold text-gray-900">{t('createdAt')}:</span>
               <span className="ml-2 text-gray-600">
                 {new Date(herbal.createdAt).toLocaleDateString('vi-VN')}
               </span>
             </div>
             <div>
-              <span className="font-medium text-gray-900">{t('updatedAt')}:</span>
+              <span className="font-semibold text-gray-900">{t('updatedAt')}:</span>
               <span className="ml-2 text-gray-600">
                 {new Date(herbal.updatedAt).toLocaleDateString('vi-VN')}
               </span>
             </div>
             <div>
-              <span className="font-medium text-gray-900">{t('slug')}:</span>
+              <span className="font-semibold text-gray-900">{t('slug')}:</span>
               <span className="ml-2 text-gray-600">{herbal.slug}</span>
             </div>
             <div>
-              <span className="font-medium text-gray-900">{t('id')}:</span>
+              <span className="font-semibold text-gray-900">{t('id')}:</span>
               <span className="ml-2 text-gray-600">{herbal.id}</span>
             </div>
           </div>

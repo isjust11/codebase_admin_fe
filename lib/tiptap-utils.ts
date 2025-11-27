@@ -1,5 +1,6 @@
-import axiosApi from "@/services/base/api"
+import { axiosInstance } from "@/lib/axios"
 import { Editor } from "@tiptap/react"
+import { mergeImageUrl } from "./utils"
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
@@ -33,7 +34,7 @@ export const handleImageUpload = async (
     const formData = new FormData()
     formData.append("file", file)
 
-    const response = await axiosApi.post('/media/upload', formData, {
+    const response = await axiosInstance.post('/media/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -44,7 +45,7 @@ export const handleImageUpload = async (
     }
 
     // const data = await response.data.json()
-    const url = process.env.NEXT_PUBLIC_API_URL + response.data.url;
+    const url = mergeImageUrl(response.data.publicRelativePath);
     return url;
   } catch (error) {
     console.error("Upload error:", error)

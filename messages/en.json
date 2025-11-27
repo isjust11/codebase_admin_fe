@@ -80,7 +80,9 @@
     "uploading": "Uploading...",
     "uploadError": "Upload error",
     "uploadSuccess": "Upload success",
-    "selectCategory": "Select category"
+    "selectCategory": "Select category",
+    "deleteFileSuccess": "Delete file success",
+    "deleteFileError": "Error deleting file"
   },
   "ImageUpload": {
     "addImage": "Add image",
@@ -627,6 +629,11 @@
       "createSuccess": "Category created successfully",
       "updateSuccess": "Category updated successfully",
       "confirmDelete":"Are you sure you want to delete this category?"
+    },
+    "validation": {
+      "categoryTypeIdRequired": "Category type is required",
+      "nameMinLength": "Category name must be at least 2 characters",
+      "validationError": "Please check the information again"
     }
   },
   "CategoryTypesPage": {
@@ -927,6 +934,7 @@
     "confirmDeleteHerbal":"Are you sure you want to delete this herbal?",
     "backToList":"Back to list",
     "editHerbal":"Edit herbal",
+    "selectPartsUsed": "Select parts used",
     "validation": {
       "titleRequired": "Herbal title is required",
       "titleMinLength": "Herbal title must be at least 3 characters",

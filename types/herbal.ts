@@ -8,6 +8,7 @@ export interface Herbal {
     content: string;
     scientificName?: string;
     partsUsedId?: string;
+    partsUsedCategory?: Category;
     activeCompounds?: string;
     medicinalProperties?: string;
     preparationMethods?: string;

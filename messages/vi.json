@@ -72,7 +72,9 @@
     "uploading": "Đang tải lên...",
     "uploadError": "Lỗi khi tải lên",
     "uploadSuccess": "Tải lên thành công",
-    "selectCategory": "Chọn danh mục"
+    "selectCategory": "Chọn danh mục",
+    "deleteFileSuccess": "Xóa file thành công",
+    "deleteFileError": "Lỗi khi xóa file"
   },
   "ImageUpload": {
     "addImage": "Thêm ảnh",
@@ -622,7 +624,8 @@
     "validation": {
       "codeMinLength": "Mã danh mục phải có ít nhất 2 ký tự",
       "nameMinLength": "Tên danh mục phải có ít nhất 2 ký tự",
-      "categoryTypeIdRequired": "Yêu cầu chọn loại danh mục"
+      "categoryTypeIdRequired": "Yêu cầu chọn loại danh mục",
+      "validationError": "Vui lòng kiểm tra lại thông tin"
     }
   },
   "CategoryTypesPage": {
@@ -938,6 +941,7 @@
     "noImage": "Không có hình ảnh",
     "backToList": "Quay lại danh sách",
     "editHerbal": "Chỉnh sửa thảo dược",
+    "selectPartsUsed": "Chọn phần sử dụng",
     "validation": {
       "titleMinLength": "Tên thảo dược phải có ít nhất 3 ký tự",
       "titleRequired": "Tên thảo dược không được để trống",

@@ -1,11 +1,7 @@
 import { Button } from "@/components/ui/button";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Category } from "@/types/category";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Switch from "@/components/form/switch/Switch";
 import { Textarea } from "@/components/ui/textarea";
 import { CategoryType } from "@/types/category-type";
@@ -15,6 +11,9 @@ import { IconPickerModal } from "@/components/IconPickerModal";
 import { unicodeToEmoji } from "@/lib/utils";
 import { IconType } from "@/enums/icon-type.enum";
 import { useTranslations } from "next-intl";
+import { Label } from "@/components/ui/label";
+import Select from '@/components/form/Select';
+import { toast } from "sonner";
 
 const formCategorySchema = (t: any) => z.object({
     name: z.string().min(1, {
@@ -22,8 +21,8 @@ const formCategorySchema = (t: any) => z.object({
     }),
     description: z.string().optional(),
     isActive: z.boolean(),
-    categoryTypeId: z.string({
-        required_error: t('validation.categoryTypeIdRequired'),
+    categoryTypeId: z.string().refine(val => val.trim() !== '', {
+        message: t('validation.categoryTypeIdRequired'),
     }),
     icon: z.string().optional(),
     iconType: z.nativeEnum(IconType).optional(),
@@ -50,200 +49,172 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
         initialData.icon = unicodeToEmoji(initialData.icon ?? '');
     }
     const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: initialData
-            ? {
-                ...initialData,
-                isActive: initialData.isActive || true,
-                icon: initialData.icon || "",
-                categoryTypeId: initialData.type.id,
-                iconType: initialData.iconType,
-                sortOrder: initialData.sortOrder
-            }
-            : {
-                name: "",
-                description: "",
-                isActive: true,
-                categoryTypeId: "",
-                icon: "",
-                code: "",
-                iconType: IconType.lucide,
-                sortOrder: 1
-            },
+    const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof formSchema>, string>>>({});
+    const [formData, setFormData] = useState<z.infer<typeof formSchema>>(initialData ? {
+        name: initialData.name,
+        description: initialData.description,
+        isActive: initialData.isActive,
+        categoryTypeId: initialData.type.id.toString(),
+        icon: initialData.icon,
+        code: initialData.code || '',
+        iconType: initialData.iconType || IconType.lucide,
+        sortOrder: initialData.sortOrder || 1
+    } : {
+        name: "",
+        description: "",
+        isActive: true,
+        categoryTypeId: "",
+        icon: "",
+        code: "",
+        iconType: IconType.lucide,
+        sortOrder: 1
     });
     if (selectedType) {
-        form.setValue("categoryTypeId", selectedType.id);
+        formData.categoryTypeId = selectedType.id;
     }
-    const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-        const result = await formSchema.safeParseAsync(values);
-        if (!result.success) {
+    const handleSubmit = async () => {
+        const isValid = formSchema.safeParse(formData);
+        if (!isValid.success) {
+            setFormErrors(isValid.error.flatten().fieldErrors as Partial<Record<keyof z.infer<typeof formSchema>, string>>);
+            toast.error(t('validation.validationError'));
             return;
         }
-        onSubmit(values);
+        setFormErrors({});
+        onSubmit(formData);
     };
 
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+        setFormData((prev: any) => ({ ...prev, [name]: value }));
+    };
+    const handleChangeCategoryTypeId = (value: any) => {
+        setFormData((prev: any) => ({ ...prev, categoryTypeId: value }));
+    };
+    const handleChangeIsActive = (value: any) => {
+        setFormData((prev: any) => ({ ...prev, isActive: value }));
+    };
     return (
-        <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('name')}</FormLabel>
-                            <FormControl>
-                                <Input className="input-focus" placeholder={t('enterName')} {...field} />
-                            </FormControl>
-                            <FormMessage className="text-red-500" />
-                        </FormItem>
-                    )}
-                />
+        <div>
+            <div className="space-y-6">
+                <div className="full-width">
+                    <div className="space-y-2">
+                        <Label htmlFor="name">{t('name')} <span className="text-red-500">(*)</span></Label>
+                        <Input id="name"
+                            name="name"
+                            placeholder={t('enterName')}
+                            type="text"
+                            value={formData.name}
+                            onChange={handleChange} />
+                        {formErrors.name && <div className="text-red-500 text-sm">{formErrors.name}</div>}
+                    </div>
+                </div>
                 <div className="flex items-start gap-2">
                     <div className="basis-[70%]">
-                        <FormField
-                            control={form.control}
-                            name="code"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{t('code')}</FormLabel>
-                                    <FormControl>
-                                        <Input className="input-focus" placeholder={t('enterCode')} {...field} />
-                                    </FormControl>
-                                    <FormMessage className="text-red-500" />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="space-y-2">
+                            <Label htmlFor="code">{t('code')}</Label>
+                            <Input id="code"
+                                name="code"
+                                className="input-focus"
+                                placeholder={t('enterCode')}
+                                type="text"
+                                value={formData.code}
+                                onChange={handleChange} />
+                        </div>
+                        {formErrors.code && <div className="text-red-500 text-sm">{formErrors.code}</div>}
                     </div>
                     <div className="basis-[30%]">
-                        <FormField
-                            control={form.control}
-                            name="sortOrder"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{t('sortOrder')}</FormLabel>
-                                    <FormControl>
-                                        <Input
-                                            type="number"
-                                            className="input-focus"
-                                            value={field.value ?? ''}
-                                            onChange={(e) => {
-                                                const next = e.target.value === '' ? undefined : e.target.valueAsNumber;
-                                                field.onChange(Number.isNaN(next as any) ? undefined : next);
-                                            }}
-                                        />
-                                    </FormControl>
-                                    <FormMessage className="text-red-500" />
-                                </FormItem>
-                            )}
-                        />
+                        <div className="space-y-2">
+                            <Label htmlFor="sortOrder">{t('sortOrder')}</Label>
+                            <Input id="sortOrder"
+                                name="sortOrder"
+                                className="input-focus"
+                                placeholder={t('sortOrder')}
+                                type="number"
+                                value={formData.sortOrder || ''} onChange={handleChange} />
+                        </div>
+                        {formErrors.sortOrder && <div className="text-red-500 text-sm">{formErrors.sortOrder}</div>}
                     </div>
 
                 </div>
-                <FormField
-                    control={form.control}
-                    name="description"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('description')}</FormLabel>
-                            <FormControl>
-                                <Textarea className="input-focus" placeholder={t('enterDescription')} {...field} />
-                            </FormControl>
-                            <FormMessage className="text-red-500" />
-                        </FormItem>
-                    )}
-                />
-
-                <FormField
-                    control={form.control}
-                    name="categoryTypeId"
-                    render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>{t('type')}</FormLabel>
-                            <Select value={field.value} onValueChange={field.onChange}>
-                                <FormControl>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder={t('selectType')} />
-                                    </SelectTrigger>
-                                </FormControl>
-                                <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
-                                    {categoryTypes.map((type) => (
-                                        <SelectItem key={type.id} value={type.id} className="hover:bg-gray-100 dark:hover:bg-gray-500 rounded-md transition-colors text-gray-300 cursor-pointer">
-                                            <div className="flex flex-start items-center">
-                                                <span className="text-2xl mr-2"> {type.icon && unicodeToEmoji(type.icon)}</span>
-                                                <span className="text-sm text-gray-500">{type.name}</span>
-                                            </div>
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                <div className="flex flex-start items-center gap-2">
-                    <FormField
-                        control={form.control}
-                        name="isActive"
-                        render={({ field }) => (
-                            <FormItem className="w-1/2">
-                                <Switch
-                                    label={t('status')}
-                                    defaultChecked={field.value}
-                                    {...field}
-                                />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="icon"
-                        render={({ field }) => (
-                            <FormItem className="w-1/2">
-                                <div className="flex gap-2">
-                                    <FormControl>
-                                        <Input
-                                            disabled
-                                            className="input-focus"
-                                            {...field}
-                                            value={field.value || ""}
-                                            placeholder={t('selectIcon')}
-                                        />
-                                    </FormControl>
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        className="h-9 w-10 p-0"
-                                        onClick={() => setIsIconPickerOpen(true)}
-                                    >
-                                        <SmilePlus className="h-4 w-4 text-amber-300" />
-                                    </Button>
-                                </div>
-                                <FormMessage className="text-red-500" />
-                            </FormItem>
-                        )}
-                    />
-
+                <div className="space-y-2">
+                    <Label htmlFor="description">{t('description')}</Label>
+                    <Textarea id="description"
+                        name="description"
+                        rows={3}
+                        className="input-focus"
+                        placeholder={t('enterDescription')}
+                        value={formData.description}
+                        onChange={handleChange} />
+                    {formErrors.description && <div className="text-red-500">{formErrors.description}</div>}
                 </div>
+                <div className="space-y-2">
+                    <Label htmlFor="categoryTypeId">{t('type')} <span className="text-red-500">(*)</span></Label>
+                    <Select
+                        options={categoryTypes.map((type) => ({
+                            value: type.id,
+                            label: type.name,
+                        }))}
+                        placeholder={t('selectType')}
+                        onChange={(value) => handleChangeCategoryTypeId(value as any)}
+                        value={formData.categoryTypeId || ''}
+                    />
+                    {formErrors.categoryTypeId && (
+                        <div className="text-red-500 text-sm">{formErrors.categoryTypeId}</div>
+                    )}
+                </div>
+
+                <div className="flex flex-start items-center gap-6">
+                    <div className="basis-[30%]">
+                        <Switch
+                            label={t('status')}
+                            defaultChecked={formData.isActive}
+                            onChange={(value) => handleChangeIsActive(value as any)}
+                        />
+                    </div>
+
+                    <div className="basis-[70%]">
+                        <div className="flex flex-start items-center gap-2">
+                            <Input id="icon"
+                                name="icon"
+                                disabled
+                                className="input-focus"
+                                type="text"
+                                value={formData.icon}
+                                onChange={handleChange}
+                                placeholder={t('selectIcon')}
+                            />
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-9 w-10 p-0"
+                                onClick={() => setIsIconPickerOpen(true)}
+                            >
+                                <SmilePlus className="h-4 w-4 text-amber-300" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+                {formErrors.icon && <div className="text-red-500">{formErrors.icon}</div>}
 
 
                 <div className="flex justify-end space-x-4">
                     <Button variant="outline" onClick={onCancel}>
                         {tUtils('cancel')}
                     </Button>
-                    <Button type="submit" className="bg-blue-500 hover:bg-blue-600">
+                    <Button type="button" onClick={() => handleSubmit()} className="bg-blue-500 hover:bg-blue-600">
                         {initialData ? tUtils('update') : tUtils('add')}
                     </Button>
                 </div>
-            </form>
+            </div>
             <IconPickerModal
                 isOpen={isIconPickerOpen}
                 onClose={() => setIsIconPickerOpen(false)}
                 onSelect={(icon, iconType) => {
-                    form.setValue("icon", icon);
-                    form.setValue("iconType", iconType)
+                    setFormData((prev: any) => ({ ...prev, icon: icon }));
+                    setFormData((prev: any) => ({ ...prev, iconType: iconType }));
                 }}
             />
-        </Form>
+        </div>
     );
 }
