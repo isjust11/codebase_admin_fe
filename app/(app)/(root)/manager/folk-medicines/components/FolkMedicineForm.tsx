@@ -560,9 +560,9 @@ const FolkMedicineForm = () => {
                     options={diseasesOptions}
                     placeholder={t('selectDiseases')}
                     onChange={(values) => handleSelectChange('diseases', Array.isArray(values) ? values : values)}
-                    value={formData.diseases?.map((disease: any  ) =>{
+                    value={formData.diseases?.map((disease: Disease  ) =>{
                       console.log( "disease:", disease);
-                      return disease.toString();
+                      return disease.id;
                     }) || []}
                     multiple={true}
                   />
