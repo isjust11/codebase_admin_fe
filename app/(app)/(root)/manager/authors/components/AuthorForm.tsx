@@ -228,15 +228,6 @@ const AuthorForm: React.FC<AuthorFormProps> = ({
     }
   }
 
-  const handleChangeBiography = (field: string, value: string) => {
-    onInputChange(field, value)
-    if (value.length < 10) {
-      setFormErrors(prev => ({ ...prev, [field]: t('validation.biographyMinLength') }))
-    }else{
-      setFormErrors(prev => ({ ...prev, [field]: undefined }))
-    }
-  }
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

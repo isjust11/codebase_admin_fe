@@ -4,11 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Switch from '@/components/form/switch/Switch';
-import { Disease } from '@/types/disease';
-import { DiseaseDto } from '@/types/dto/DiseaseDto';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
@@ -24,6 +20,7 @@ import { AppCategoryCode } from '@/constants';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { Loader2 } from 'lucide-react';
 
 const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
   z.object({
@@ -51,9 +48,10 @@ const diseaseFormSchema = (t: ReturnType<typeof useTranslations>) =>
     dataSourceId: z.string().optional().or(z.literal('')),
     videoUrl: z.string().optional().or(z.literal('')),
     isActive: z.boolean().default(true),
+    imagePaths: z.array(z.string()).optional().or(z.literal('')),
   });
 
-export interface DiseaseFormValues {
+export interface DiseaseFormData {
   name: string;
   slug?: string;
   summary?: string;
@@ -67,82 +65,50 @@ export interface DiseaseFormValues {
   dataSourceId?: string;
   videoUrl?: string;
   isActive: boolean;
+  imagePaths?: string[];
 }
 
 interface DiseaseFormProps {
-  initialData?: Disease | null;
-  onSubmit: (values: DiseaseDto) => void | Promise<void>;
+  formData: DiseaseFormData;
+  onInputChange: (field: string, value: string | boolean | string[] | File | File[] | number | null) => void;
+  onSubmit: (e: React.FormEvent) => void;
   onCancel: () => void;
-  loading?: boolean;
-  submitLabel?: string;
+  loading: boolean;
+  isEdit?: boolean;
 }
 
-const getInitialImageUrls = (disease?: Disease | null) => {
-  if (!disease) return [];
-
-  if (disease.imagePaths && disease.imagePaths.length > 0) {
-    return disease.imagePaths;
-  }
-
-  const url =
-    (disease as Disease & { thumbnailUrl?: string }).thumbnailUrl ||
-    disease.thumbnail;
-
-  return url ? [url] : [];
-};
-
 export const DiseaseForm: React.FC<DiseaseFormProps> = ({
-  initialData,
+  formData = {
+    name: '',
+    slug: '',
+    summary: '',
+    description: '',
+    symptoms: '',
+    causes: '',
+    prevention: '',
+    treatment: '',
+    authorId: '',
+    categoryId: '',
+    dataSourceId: '',
+    videoUrl: '',
+    isActive: true,
+    imagePaths: [],
+  },
+  onInputChange,
   onSubmit,
   onCancel,
-  loading = false,
-  submitLabel,
+  loading,
+  isEdit = false,
 }) => {
   const t = useTranslations('DiseasesPage');
   const tUtils = useTranslations('Utils');
   const formSchema = diseaseFormSchema(t);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [initialImages, setInitialImages] = useState<string[]>(getInitialImageUrls(initialData));
   const [authorsOptions, setAuthorsOptions] = useState<SelectOption[]>([]);
   const [categoriesOptions, setCategoriesOptions] = useState<SelectOption[]>([]);
   const [dataSourcesOptions, setDataSourcesOptions] = useState<SelectOption[]>([]);
   const [loadingOptions, setLoadingOptions] = useState(false);
   const [formErrors, setFormErrors] = useState<Record<string, string | undefined>>({});
-  const form = useForm<DiseaseFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: initialData
-      ? {
-        name: initialData.name ?? '',
-        slug: initialData.slug ?? '',
-        summary: (initialData as any).summary ?? '',
-        description: initialData.description ?? '',
-        symptoms: initialData.symptoms ?? '',
-        causes: initialData.causes ?? '',
-        prevention: initialData.prevention ?? '',
-        treatment: (initialData as any).treatment ?? '',
-        authorId: (initialData as any).authorId?.toString() ?? '',
-        categoryId: (initialData as any).categoryId?.toString() ?? '',
-        dataSourceId: (initialData as any).dataSourceId?.toString() ?? '',
-        videoUrl: (initialData as any).videoUrl ?? '',
-        isActive: initialData.isActive ?? true,
-      }
-      : {
-        name: '',
-        slug: '',
-        summary: '',
-        description: '',
-        symptoms: '',
-        causes: '',
-        prevention: '',
-        treatment: '',
-        authorId: '',
-        categoryId: '',
-        dataSourceId: '',
-        videoUrl: '',
-        isActive: true,
-      },
-  });
-
   useEffect(() => {
     const fetchOptions = async () => {
       setLoadingOptions(true);
@@ -187,41 +153,11 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
     fetchOptions();
   }, []);
 
-  useEffect(() => {
-    if (initialData) {
-      // Load thumbnail from MultiImage API if needed
-      // For now, we'll just reset the form without thumbnail
-      form.reset({
-        name: initialData.name ?? '',
-        slug: initialData.slug ?? '',
-        summary: (initialData as any).summary ?? '',
-        description: initialData.description ?? '',
-        symptoms: initialData.symptoms ?? '',
-        causes: initialData.causes ?? '',
-        prevention: initialData.prevention ?? '',
-        treatment: (initialData as any).treatment ?? '',
-        authorId: (initialData as any).authorId?.toString() ?? '',
-        categoryId: (initialData as any).categoryId?.toString() ?? '',
-        dataSourceId: (initialData as any).dataSourceId?.toString() ?? '',
-        videoUrl: (initialData as any).videoUrl ?? '',
-        isActive: initialData.isActive ?? true,
-      });
-      setInitialImages(getInitialImageUrls(initialData));
-      setSelectedFiles([]);
-    }
-  }, [form, initialData]);
 
-  const handleFileChange = (files: File[] | null) => {
-    const nextFiles = files ?? [];
-    setSelectedFiles(nextFiles);
-    if (nextFiles.length) {
-      setInitialImages([]);
-    }
-  };
-
-  const handleSubmit = async (values: DiseaseFormValues) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
     let uploadedImagePaths: string[] = [];
-    const result = await formSchema.safeParseAsync(values);
+    const result = await formSchema.safeParseAsync(formData);
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
       setFormErrors({
@@ -237,7 +173,7 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
         dataSourceId: fieldErrors.dataSourceId?.[0],
         videoUrl: fieldErrors.videoUrl?.[0],
         isActive: fieldErrors.isActive?.[0],
-      } as Partial<Record<keyof DiseaseFormValues, string>>);
+      } as Partial<Record<keyof DiseaseFormData, string>>);
       toast.error(t('validation.validationError'));
       return;
     }
@@ -256,202 +192,182 @@ export const DiseaseForm: React.FC<DiseaseFormProps> = ({
       }
     }
 
-    const payload: DiseaseDto = {
-      name: values.name.trim(),
-      slug: values.slug?.trim() || '',
-      summary: (values as any).summary?.trim() ? (values as any).summary.trim() : undefined,
-      description: values.description?.trim() ? values.description.trim() : '',
-      symptoms: values.symptoms?.trim() ? values.symptoms.trim() : '',
-      causes: values.causes?.trim() ? values.causes.trim() : '',
-      prevention: values.prevention?.trim() ? values.prevention.trim() : undefined,
-      treatment: (values as any).treatment?.trim() ? (values as any).treatment.trim() : undefined,
-      authorId: (values as any).authorId ? (values as any).authorId : '',
-      categoryId: (values as any).categoryId ? (values as any).categoryId : '',
-      dataSourceId: (values as any).dataSourceId ? (values as any).dataSourceId : '',
-      videoUrl: (values as any).videoUrl?.trim() ? (values as any).videoUrl.trim() : '',
-      isActive: values.isActive,
-      imagePaths: uploadedImagePaths,
-    };
-
-    // TODO: Handle uploadedImagePaths with MultiImage API if needed.
-
-    onSubmit(payload);
+    onSubmit(e);
   };
 
   return (
-    <div>
-      <div className="space-y-6">
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <ImageUpload
+          multiple
+          value={formData.imagePaths}
+          onChange={() => { }}
+        // onChange={(files) => onInputChange('imagePaths', files)}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="name">{t('name')} <span className="text-red-500">(*)</span></Label>
+        <Input id="name" name="name" className="input-focus" value={formData.name || ''}
+          onChange={(e) => onInputChange('name', e.target.value)} placeholder={t('enterName')} />
+        {formErrors.name && (
+          <div className="text-red-500 text-sm">{formErrors.name}</div>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="summary">{t('summary')}</Label>
+        <Textarea id="summary" name="summary" className="input-focus" rows={5} placeholder={t('enterSummary')} />
+        {formErrors.summary && (
+          <div className="text-red-500 text-sm">{formErrors.summary}</div>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description">{t('description')}</Label>
+        <SimpleEditor
+          key={formData.description || 'new'}
+          initialContent={formData.description || ''}
+          placeholder={t('enterDescription')}
+          onContentChange={(content) => {
+            onInputChange('description', content);
+          }}
+        />
+        {formErrors.description && (
+          <div className="text-red-500 text-sm">{formErrors.description}</div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
-          <ImageUpload
-            multiple
-            value={initialImages}
-            onChange={handleFileChange}
+
+          <Label htmlFor="symptoms">{t('symptoms')}</Label>
+          <Textarea
+            name="symptoms"
+            rows={5}
+            placeholder={t('enterSymptoms')}
+            value={formData.symptoms || ''}
+            onChange={(e) => onInputChange('symptoms', e.target.value)}
           />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="name">{t('name')} <span className="text-red-500">(*)</span></Label>
-          <Input id="name" name="name" className="input-focus" value={form.getValues('name') || ''} 
-          onChange={(e) => form.setValue('name', e.target.value)} placeholder={t('enterName')} />
-          {formErrors.name && (
-            <div className="text-red-500 text-sm">{formErrors.name}</div>
+          {formErrors.symptoms && (
+            <div className="text-red-500 text-sm">{formErrors.symptoms}</div>
           )}
         </div>
-
         <div className="space-y-2">
-          <Label htmlFor="summary">{t('summary')}</Label>
-          <Textarea id="summary" name="summary" className="input-focus" rows={5} placeholder={t('enterSummary')} />
-          {formErrors.summary && (
-            <div className="text-red-500 text-sm">{formErrors.summary}</div>
-          )}
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="description">{t('description')}</Label>
-          <SimpleEditor  
-            key={initialData?.description || 'new'}
-            initialContent={form.getValues('description') || ''}
-            placeholder={t('enterDescription')}
-            onContentChange={(content) => {
-              form.setValue('description', content);
-            }}
+          <Label htmlFor="causes">{t('causes')}</Label>
+          <Textarea
+            name="causes"
+            rows={5}
+            placeholder={t('enterCauses')}
+            value={formData.causes || ''}
+            onChange={(e) => onInputChange('causes', e.target.value)}
           />
-          {formErrors.description && (
-            <div className="text-red-500 text-sm">{formErrors.description}</div>
+          {formErrors.causes && (
+            <div className="text-red-500 text-sm">{formErrors.causes}</div>
           )}
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
+      <div className="space-y-2">
+        <Label htmlFor="prevention">{t('prevention')}</Label>
+        <SimpleEditor
+          key={formData.prevention || 'new-prevention'}
+          initialContent={formData.prevention || ''}
+          placeholder={t('enterPrevention')}
+          onContentChange={(content) => {
+            onInputChange('prevention', content);
+          }}
+        />
+        {formErrors.prevention && (
+          <div className="text-red-500 text-sm">{formErrors.prevention}</div>
+        )}
+      </div>
 
-            <Label htmlFor="symptoms">{t('symptoms')}</Label>
-            <Textarea
-              name="symptoms"
-              rows={5}
-              placeholder={t('enterSymptoms')}
-              value={form.getValues('symptoms') || ''}
-              onChange={(e) => form.setValue('symptoms', e.target.value)}
-            />
-            {formErrors.symptoms && (
-              <div className="text-red-500 text-sm">{formErrors.symptoms}</div>
-            )}
-          </div>
-          <div className="space-y-2">
+      <div className="space-y-2">
+        <Label htmlFor="treatment">{t('treatment')}</Label>
+        <SimpleEditor
+          key={formData.treatment || 'new-treatment'}
+          initialContent={formData.treatment || ''}
+          placeholder={t('enterTreatment')}
+          onContentChange={(content) => {
+            onInputChange('treatment', content);
+          }}
+        />
+        {formErrors.treatment && (
+          <div className="text-red-500 text-sm">{formErrors.treatment}</div>
+        )}
+      </div>
 
-            <Label htmlFor="causes">{t('causes')}</Label>
-            <Textarea
-              name="causes"
-              rows={5}
-              placeholder={t('enterCauses')}
-              value={form.getValues('causes') || ''}
-              onChange={(e) => form.setValue('causes', e.target.value)}
-            />
-            {formErrors.causes && (
-              <div className="text-red-500 text-sm">{formErrors.causes}</div>
-            )}
-          </div>
-        </div>
-
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="space-y-2">
-          <Label htmlFor="prevention">{t('prevention')}</Label>
-          <SimpleEditor
-            key={initialData?.prevention || 'new-prevention'}
-            initialContent={initialData?.prevention || ''}
-            placeholder={t('enterPrevention')}
-            onContentChange={(content) => {
-              form.setValue('prevention', content);
-            }}
+          <Label htmlFor="authorId">{t('author')}</Label>
+          <Select
+            options={authorsOptions}
+            placeholder={t('selectAuthor') || 'Chọn tác giả'}
+            value={formData.authorId || ''}
+            onChange={(value) => onInputChange('authorId', Array.isArray(value) ? value[0] : value)}
+            searchable
+            disabled={loadingOptions}
           />
-          {formErrors.prevention && (
-            <div className="text-red-500 text-sm">{formErrors.prevention}</div>
+          {formErrors.authorId && (
+            <div className="text-red-500 text-sm">{formErrors.authorId}</div>
           )}
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="treatment">{t('treatment')}</Label>
-          <SimpleEditor
-            key={initialData?.treatment || 'new-treatment'}
-            initialContent={initialData?.treatment || ''}
-            placeholder={t('enterTreatment')}
-            onContentChange={(content) => {
-              form.setValue('treatment', content);
-            }}
+          <Label htmlFor="categoryId">{t('category')}</Label>
+          <Select
+            options={categoriesOptions}
+            placeholder={t('selectCategory') || 'Chọn danh mục'}
+            value={formData.categoryId || ''}
+            onChange={(value) => onInputChange('categoryId', Array.isArray(value) ? value[0] : value)}
+            searchable
+            disabled={loadingOptions}
           />
-          {formErrors.treatment && (
-            <div className="text-red-500 text-sm">{formErrors.treatment}</div>
+          {formErrors.categoryId && (
+            <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
           )}
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="authorId">{t('author')}</Label>
-            <Select
-              options={authorsOptions}
-              placeholder={t('selectAuthor') || 'Chọn tác giả'}
-              value={form.getValues('authorId') || ''}
-              onChange={(value) => form.setValue('authorId', Array.isArray(value) ? value[0] : value)}
-              searchable
-              disabled={loadingOptions}
-            />
-            {formErrors.authorId && (
-              <div className="text-red-500 text-sm">{formErrors.authorId}</div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="categoryId">{t('category')}</Label>
-            <Select
-              options={categoriesOptions}
-              placeholder={t('selectCategory') || 'Chọn danh mục'}
-              value={form.getValues('categoryId') || ''}
-              onChange={(value) => form.setValue('categoryId', Array.isArray(value) ? value[0] : value)}
-              searchable
-              disabled={loadingOptions}
-            />
-            {formErrors.categoryId && (
-              <div className="text-red-500 text-sm">{formErrors.categoryId}</div>
-            )}
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
-            <Select
-              options={dataSourcesOptions}
-              placeholder={t('selectDataSource') || 'Chọn nguồn dữ liệu'}
-              value={form.getValues('dataSourceId') || ''}
-              onChange={(value) => form.setValue('dataSourceId', Array.isArray(value) ? value[0] : value || '')}
-              searchable
-              disabled={loadingOptions}
-            />
-            {formErrors.dataSourceId && (
-              <div className="text-red-500 text-sm">{formErrors.dataSourceId}</div>
-            )}
-          </div>
-        </div>
-
         <div className="space-y-2">
-          <Label htmlFor="videoUrl">{t('videoUrl')}</Label>
-          <Input className="input-focus" id="videoUrl" placeholder={t('enterVideoUrl')} />
-          {formErrors.videoUrl && (
-            <div className="text-red-500 text-sm">{formErrors.videoUrl}</div>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="isActive">{t('isActive')}</Label>
-          <Switch
-            defaultChecked={form.getValues('isActive') || true}
-            onChange={(checked: boolean) => form.setValue('isActive', checked)}
-            label={form.getValues('isActive') || true ? tUtils('active') : tUtils('inactive')}
+          <Label htmlFor="dataSourceId">{t('dataSource')}</Label>
+          <Select
+            options={dataSourcesOptions}
+            placeholder={t('selectDataSource') || 'Chọn nguồn dữ liệu'}
+            value={formData.dataSourceId || ''}
+            onChange={(value) => onInputChange('dataSourceId', Array.isArray(value) ? value[0] : value || '')}
+            searchable
+            disabled={loadingOptions}
           />
+          {formErrors.dataSourceId && (
+            <div className="text-red-500 text-sm">{formErrors.dataSourceId}</div>
+          )}
         </div>
+      </div>
 
-        <div className="flex justify-end space-x-4">
-          <Button type="button" variant="outline" onClick={onCancel}>
-            {tUtils('cancel')}
-          </Button>
-          <Button onClick={() => handleSubmit(form.getValues())} disabled={loading}>
-            {loading ? tUtils('loading') : submitLabel ?? tUtils('save')}
-          </Button>
-        </div>
+      <div className="space-y-2">
+        <Label htmlFor="videoUrl">{t('videoUrl')}</Label>
+        <Input className="input-focus" id="videoUrl" placeholder={t('enterVideoUrl')} />
+        {formErrors.videoUrl && (
+          <div className="text-red-500 text-sm">{formErrors.videoUrl}</div>
+        )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="isActive">{t('isActive')}</Label>
+        <Switch
+          defaultChecked={formData.isActive || true}
+          onChange={(checked: boolean) => onInputChange('isActive', checked)}
+          label={formData.isActive || true ? tUtils('active') : tUtils('inactive')}
+        />
+      </div>
+
+      <div className="flex justify-end space-x-4">
+        <Button type="button" variant="outline" onClick={onCancel}>
+          {tUtils('cancel')}
+        </Button>
+        <Button onClick={handleSubmit} className="bg-blue-500 hover:bg-blue-600" disabled={loading}>
+          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : isEdit ? tUtils('update') : tUtils('save')}
+        </Button>
       </div>
     </div>
   );
