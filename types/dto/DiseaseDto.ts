@@ -7,9 +7,9 @@ export interface DiseaseDto {
   causes?: string;
   prevention?: string;
   treatment?: string;
-  authorId?: number;
-  categoryId?: number;
-  dataSourceId?: number;
+  authorId?: string;
+  categoryId?: string;
+  dataSourceId?: string;
   videoUrl?: string;
   isActive?: boolean;
   imagePaths?: string[];
