@@ -1350,5 +1350,133 @@
     "selectDataSource": "Chọn nguồn dữ liệu",
     "noDataSource": "Không có nguồn dữ liệu",
     "loading": "Đang tải..."
+  },
+  "NotificationPage": {
+    "title": "Danh sách thông báo",
+    "addNotification": "Thêm thông báo",
+    "notificationTitle": "Tiêu đề",
+    "content": "Nội dung",
+    "type": "Loại",
+    "priority": "Độ ưu tiên",
+    "status": "Trạng thái",
+    "userId": "ID người dùng",
+    "sentAt": "Thời gian gửi",
+    "createdAt": "Ngày tạo",
+    "actions": "Thao tác",
+    "viewDetails": "Xem chi tiết",
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách thông báo",
+      "deleteTitle": "Xóa thông báo",
+      "deleteDescription": "Bạn có chắc chắn muốn xóa thông báo này không?",
+      "deleteSuccess": "Thông báo đã được xóa thành công",
+      "deleteError": "Lỗi khi xóa thông báo",
+      "createSuccess": "Tạo thông báo thành công",
+      "createError": "Lỗi khi tạo thông báo",
+      "updateSuccess": "Cập nhật thông báo thành công",
+      "updateError": "Lỗi khi cập nhật thông báo"
+    },
+    "createNotification": "Tạo thông báo mới",
+    "updateNotification": "Cập nhật thông báo",
+    "notificationDetails": "Chi tiết thông báo",
+    "metadata": "Dữ liệu bổ sung",
+    "form": {
+      "titlePlaceholder": "Nhập tiêu đề thông báo",
+      "contentPlaceholder": "Nhập nội dung thông báo",
+      "selectType": "Chọn loại thông báo",
+      "selectPriority": "Chọn độ ưu tiên",
+      "selectStatus": "Chọn trạng thái",
+      "userIdPlaceholder": "Nhập ID người dùng (tùy chọn)"
+    },
+    "types": {
+      "NEW_ARTICLE": "Bài viết mới",
+      "FOLK_MEDICINE": "Bài thuốc dân gian",
+      "HERBAL": "Thảo dược",
+      "FEEDBACK": "Phản hồi",
+      "DISEASE": "Bệnh",
+      "SYSTEM": "Hệ thống"
+    },
+    "priorities": {
+      "LOW": "Thấp",
+      "MEDIUM": "Trung bình",
+      "HIGH": "Cao",
+      "URGENT": "Khẩn cấp"
+    },
+    "statuses": {
+      "READ": "Đã đọc",
+      "UNREAD": "Chưa đọc"
+    }
+  },
+  "FcmTokenPage": {
+    "title": "Danh sách FCM Token",
+    "token": "Token",
+    "userId": "ID người dùng",
+    "deviceId": "ID thiết bị",
+    "platform": "Nền tảng",
+    "isActive": "Trạng thái",
+    "createdAt": "Ngày tạo",
+    "actions": "Thao tác",
+    "viewDetails": "Xem chi tiết",
+    "deactivate": "Vô hiệu hóa",
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách FCM token",
+      "deleteTitle": "Xóa FCM token",
+      "deleteDescription": "Bạn có chắc chắn muốn xóa FCM token này không?",
+      "deleteSuccess": "FCM token đã được xóa thành công",
+      "deleteError": "Lỗi khi xóa FCM token",
+      "deactivateSuccess": "Vô hiệu hóa FCM token thành công",
+      "deactivateError": "Lỗi khi vô hiệu hóa FCM token"
+    },
+    "platforms": {
+      "ios": "iOS",
+      "android": "Android",
+      "web": "Web"
+    }
+  },
+  "NotificationConfigPage": {
+    "title": "Danh sách cấu hình thông báo",
+    "addConfig": "Thêm cấu hình",
+    "key": "Khóa",
+    "scope": "Phạm vi áp dụng",
+    "isDefault": "Cấu hình mặc định",
+    "value": "Giá trị",
+    "jsonValue": "Giá trị JSON",
+    "isActive": "Trạng thái",
+    "createdAt": "Ngày tạo",
+    "actions": "Thao tác",
+    "viewDetails": "Xem chi tiết",
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách cấu hình",
+      "deleteTitle": "Xóa cấu hình",
+      "deleteDescription": "Bạn có chắc chắn muốn xóa cấu hình này không?",
+      "deleteSuccess": "Cấu hình đã được xóa thành công",
+      "deleteError": "Lỗi khi xóa cấu hình",
+      "createSuccess": "Tạo cấu hình thành công",
+      "createError": "Lỗi khi tạo cấu hình",
+      "updateSuccess": "Cập nhật cấu hình thành công",
+      "updateError": "Lỗi khi cập nhật cấu hình"
+    },
+    "createConfig": "Tạo cấu hình mới",
+    "updateConfig": "Cập nhật cấu hình",
+    "form": {
+      "keyPlaceholder": "Nhập khóa cấu hình",
+      "valuePlaceholder": "Nhập giá trị",
+      "jsonValuePlaceholder": "Nhập giá trị JSON"
+    }
+  },
+  "TopicSubscriptionPage": {
+    "title": "Danh sách đăng ký chủ đề",
+    "userId": "ID người dùng",
+    "topic": "Chủ đề",
+    "isActive": "Trạng thái",
+    "createdAt": "Ngày tạo",
+    "actions": "Thao tác",
+    "viewDetails": "Xem chi tiết",
+    "messages": {
+      "loadError": "Lỗi khi tải danh sách đăng ký",
+      "deleteTitle": "Xóa đăng ký",
+      "deleteDescription": "Bạn có chắc chắn muốn xóa đăng ký này không?",
+      "deleteSuccess": "Đăng ký đã được xóa thành công",
+      "deleteError": "Lỗi khi xóa đăng ký"
+    }
   }
 }

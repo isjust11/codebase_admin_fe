@@ -1320,5 +1320,133 @@
       "thumbnailMinLength": "Static page thumbnail must be at least 3 characters"
     },
     "loading": "Loading..."
+  },
+  "NotificationPage": {
+    "title": "Notifications List",
+    "addNotification": "Add Notification",
+    "notificationTitle": "Title",
+    "content": "Content",
+    "type": "Type",
+    "priority": "Priority",
+    "status": "Status",
+    "userId": "User ID",
+    "sentAt": "Sent At",
+    "createdAt": "Created At",
+    "actions": "Actions",
+    "viewDetails": "View Details",
+    "messages": {
+      "loadError": "Error loading notifications list",
+      "deleteTitle": "Delete Notification",
+      "deleteDescription": "Are you sure you want to delete this notification?",
+      "deleteSuccess": "Notification deleted successfully",
+      "deleteError": "Error deleting notification",
+      "createSuccess": "Notification created successfully",
+      "createError": "Error creating notification",
+      "updateSuccess": "Notification updated successfully",
+      "updateError": "Error updating notification"
+    },
+    "createNotification": "Create New Notification",
+    "updateNotification": "Update Notification",
+    "notificationDetails": "Notification Details",
+    "metadata": "Metadata",
+    "form": {
+      "titlePlaceholder": "Enter notification title",
+      "contentPlaceholder": "Enter notification content",
+      "selectType": "Select notification type",
+      "selectPriority": "Select priority",
+      "selectStatus": "Select status",
+      "userIdPlaceholder": "Enter user ID (optional)"
+    },
+    "types": {
+      "NEW_ARTICLE": "New Article",
+      "FOLK_MEDICINE": "Folk Medicine",
+      "HERBAL": "Herbal",
+      "FEEDBACK": "Feedback",
+      "DISEASE": "Disease",
+      "SYSTEM": "System"
+    },
+    "priorities": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High",
+      "URGENT": "Urgent"
+    },
+    "statuses": {
+      "READ": "Read",
+      "UNREAD": "Unread"
+    }
+  },
+  "FcmTokenPage": {
+    "title": "FCM Tokens List",
+    "token": "Token",
+    "userId": "User ID",
+    "deviceId": "Device ID",
+    "platform": "Platform",
+    "isActive": "Status",
+    "createdAt": "Created At",
+    "actions": "Actions",
+    "viewDetails": "View Details",
+    "deactivate": "Deactivate",
+    "messages": {
+      "loadError": "Error loading FCM tokens list",
+      "deleteTitle": "Delete FCM Token",
+      "deleteDescription": "Are you sure you want to delete this FCM token?",
+      "deleteSuccess": "FCM token deleted successfully",
+      "deleteError": "Error deleting FCM token",
+      "deactivateSuccess": "FCM token deactivated successfully",
+      "deactivateError": "Error deactivating FCM token"
+    },
+    "platforms": {
+      "ios": "iOS",
+      "android": "Android",
+      "web": "Web"
+    }
+  },
+  "NotificationConfigPage": {
+    "title": "Notification Configs List",
+    "addConfig": "Add Config",
+    "key": "Key",
+    "scope": "Scope",
+    "isDefault": "Default Config",
+    "value": "Value",
+    "jsonValue": "JSON Value",
+    "isActive": "Status",
+    "createdAt": "Created At",
+    "actions": "Actions",
+    "viewDetails": "View Details",
+    "messages": {
+      "loadError": "Error loading configs list",
+      "deleteTitle": "Delete Config",
+      "deleteDescription": "Are you sure you want to delete this config?",
+      "deleteSuccess": "Config deleted successfully",
+      "deleteError": "Error deleting config",
+      "createSuccess": "Config created successfully",
+      "createError": "Error creating config",
+      "updateSuccess": "Config updated successfully",
+      "updateError": "Error updating config"
+    },
+    "createConfig": "Create New Config",
+    "updateConfig": "Update Config",
+    "form": {
+      "keyPlaceholder": "Enter config key",
+      "valuePlaceholder": "Enter value",
+      "jsonValuePlaceholder": "Enter JSON value"
+    }
+  },
+  "TopicSubscriptionPage": {
+    "title": "Topic Subscriptions List",
+    "userId": "User ID",
+    "topic": "Topic",
+    "isActive": "Status",
+    "createdAt": "Created At",
+    "actions": "Actions",
+    "viewDetails": "View Details",
+    "messages": {
+      "loadError": "Error loading subscriptions list",
+      "deleteTitle": "Delete Subscription",
+      "deleteDescription": "Are you sure you want to delete this subscription?",
+      "deleteSuccess": "Subscription deleted successfully",
+      "deleteError": "Error deleting subscription"
+    }
   }
 }
