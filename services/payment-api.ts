@@ -1,69 +1,35 @@
-import { axiosInstance } from '../lib/axios';
+import { axiosInstance } from "@/lib/axios";
+import { Payment, PaymentStatus, PaymentMethod } from "@/types/payment";
 
-export interface CreatePaymentRequest {
-  amount: number;
-  currency?: string;
-  paymentMethod: 'stripe' | 'vnpay' | 'momo' | 'zalopay';
-  description?: string;
-  metadata?: Record<string, any>;
+interface PaginatedResponse {
+  data: Payment[];
+  pagination: {
+    total: number;
+    page: number;
+    size: number;
+    totalPages: number;
+  };
 }
 
-export interface PaymentResponse {
-  id: number;
-  amount: number;
-  currency: string;
-  paymentMethod: string;
-  status: string;
-  transactionId?: string;
-  paymentIntentId?: string;
-  description?: string;
-  createdAt: string;
-  clientSecret?: string;
-  paymentUrl?: string;
+interface AdminListParams {
+  page: number;
+  size: number;
+  search?: string;
+  status?: PaymentStatus;
+  paymentMethod?: PaymentMethod;
 }
 
-export interface Payment {
-  id: number;
-  userId: number;
-  amount: number;
-  currency: string;
-  paymentMethod: string;
-  status: string;
-  transactionId?: string;
-  paymentIntentId?: string;
-  gatewayResponse?: string;
-  description?: string;
-  metadata?: string;
-  failureReason?: string;
-  createdAt: string;
-  updatedAt: string;
-  completedAt?: string;
-}
+export const getPayments = async (params: AdminListParams): Promise<PaginatedResponse> => {
+  const response = await axiosInstance.get('/payment/admin/list', { params });
+  return response.data;
+};
 
-class PaymentApiService {
-  private baseUrl = '/payments';
+export const getPaymentById = async (id: string): Promise<Payment> => {
+  const response = await axiosInstance.get(`/payment/admin/${id}`);
+  return response.data;
+};
 
-  async createPayment(data: CreatePaymentRequest): Promise<PaymentResponse> {
-    const response = await axiosInstance.post(`${this.baseUrl}/create`, data);
-    return response.data;
-  }
-
-  async getPayment(paymentId: number): Promise<Payment> {
-    const response = await axiosInstance.get(`${this.baseUrl}/${paymentId}`);
-    return response.data;
-  }
-
-  async getPaymentsByUser(userId: number): Promise<Payment[]> {
-    const response = await axiosInstance.get(`${this.baseUrl}/user/${userId}`);
-    return response.data;
-  }
-
-  async confirmStripePayment(paymentIntentId: string): Promise<Payment> {
-    const response = await axiosInstance.post(`${this.baseUrl}/stripe/confirm`, {
-      paymentIntentId,
-    });
-    return response.data;
-  }
-}
-
-export const paymentApi = new PaymentApiService(); 
+export const updatePaymentStatus = async (id: string, status: PaymentStatus): Promise<Payment> => {
+  const response = await axiosInstance.put(`/payment/admin/${id}/status`, { status });
+  return response.data;
+};

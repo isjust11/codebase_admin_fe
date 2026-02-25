@@ -47,6 +47,11 @@ export const AppRoutes = {
     SubscriptionPlansCreate: '/manager/subscription-plans/create',
     SubscriptionPlansUpdate: '/manager/subscription-plans/update',
     SubscriptionPlansDetail: '/manager/subscription-plans',
+    UserSubscriptions: '/manager/user-subscriptions',
+    UserSubscriptionsAssign: '/manager/user-subscriptions/assign',
+    UserSubscriptionsDetail: '/manager/user-subscriptions',
+    Payments: '/manager/payments',
+    PaymentsDetail: '/manager/payments',
   }
 }
 export const AppApi = {
