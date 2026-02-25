@@ -64,37 +64,37 @@ const AppSidebar: React.FC = () => {
 
         // If flagged as loaded, still attempt to hydrate from cache
         const isLoadSidebar = localStorage.getItem(AppConstants.IsLoadSidebar);
-        if (isLoadSidebar) {
-          const cachedHydrate = localStorage.getItem(CACHE_KEY);
-          if (cachedHydrate) {
-            try {
-              const cached = JSON.parse(cachedHydrate) as { data: Category[]; ts: number };
-              if (cached && Array.isArray(cached.data)) {
-                if (!isMounted) return;
-                setMenuTypes(cached.data.sort((a, b) => a.sortOrder - b.sortOrder));
-                setIsDataLoading(false);
-                return;
-              }
-            } catch (_e) { }
-          }
-        }
+        // if (isLoadSidebar) {
+        //   const cachedHydrate = localStorage.getItem(CACHE_KEY);
+        //   if (cachedHydrate) {
+        //     try {
+        //       const cached = JSON.parse(cachedHydrate) as { data: Category[]; ts: number };
+        //       if (cached && Array.isArray(cached.data)) {
+        //         if (!isMounted) return;
+        //         setMenuTypes(cached.data.sort((a, b) => a.sortOrder - b.sortOrder));
+        //         setIsDataLoading(false);
+        //         return;
+        //       }
+        //     } catch (_e) { }
+        //   }
+        // }
 
         // Try fresh cache first
-        const cachedRaw = localStorage.getItem(CACHE_KEY);
-        if (cachedRaw) {
-          try {
-            const cached = JSON.parse(cachedRaw) as { data: Category[]; ts: number };
-            if (cached && Array.isArray(cached.data) && cached.ts && Date.now() - cached.ts < CACHE_TTL_MS) {
-              if (!isMounted) return;
-              setMenuTypes(cached.data.sort((a, b) => a.sortOrder - b.sortOrder));
-              setIsDataLoading(false);
-              localStorage.setItem(AppConstants.IsLoadSidebar, 'true');
-              return; // cache hit, skip network
-            }
-          } catch (_e) {
-            // ignore cache parse errors
-          }
-        }
+        // const cachedRaw = localStorage.getItem(CACHE_KEY);
+        // if (cachedRaw) {
+        //   try {
+        //     const cached = JSON.parse(cachedRaw) as { data: Category[]; ts: number };
+        //     if (cached && Array.isArray(cached.data) && cached.ts && Date.now() - cached.ts < CACHE_TTL_MS) {
+        //       if (!isMounted) return;
+        //       setMenuTypes(cached.data.sort((a, b) => a.sortOrder - b.sortOrder));
+        //       setIsDataLoading(false);
+        //       localStorage.setItem(AppConstants.IsLoadSidebar, 'true');
+        //       return; // cache hit, skip network
+        //     }
+        //   } catch (_e) {
+        //     // ignore cache parse errors
+        //   }
+        // }
 
         // Fallback to network
         const data: Category[] = await getCategoryByCode(appCode[0][0]);

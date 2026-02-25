@@ -17,7 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { forgotPassword, login, register } from '@/services/auth-api';
+import { forgotPassword, getCurrentUser, getFeaturesByRole, login, register } from '@/services/auth-api';
 import { FcGoogle } from 'react-icons/fc';
 import { FaFacebook } from 'react-icons/fa';
 import { Label } from '@/components/ui/label';
@@ -92,17 +92,24 @@ export default function LoginPage() {
       if (values.remember) {
         localStorage.setItem(AppConstants.Remember, 'true');
         localStorage.setItem(AppConstants.Username, values.username);
-        localStorage.setItem(AppConstants.Password, encrypt(values.password));
+        localStorage.setItem(AppConstants.Password, values.password);
       } else {
         localStorage.removeItem(AppConstants.Remember);
         localStorage.removeItem(AppConstants.Username);
         localStorage.removeItem(AppConstants.Password);
       }
       toast.success(t('messages.loginSuccess'));
+      const userInfo = getCurrentUser();
+      // load feature by role
+      const roleId = userInfo?.roles[0].id;
+      const feature = await getFeaturesByRole(roleId || '');
+      localStorage.setItem(AppConstants.Feature, JSON.stringify(feature));
+
       router.push('/');
     } catch (error: any) {
       console.error('Lỗi đăng nhập:', error);
       toast.error(error.response.data.message);
+      
     } finally {
       setIsLoading(false);
     }

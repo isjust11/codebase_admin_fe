@@ -99,7 +99,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                 const data = await getCategoryByCode(getFeatureType());
                 setFeatureType(data);
                 if (data.length > 0) {
-                    const menuFeature = data.find((x) => x.code == AppCategoryCode.FEATURE_MENU)
+                    const menuFeature = data.find((x: any) => x.code === AppCategoryCode.FEATURE_MENU)
                     form.setValue("featureTypeId", menuFeature?.id);
                 }
             };

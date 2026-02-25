@@ -90,7 +90,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const hasResourcePermission = (resource: string) => {
-    return permissions.some(p => p === resource);
+    const hasPermission = permissions.some((p: string) => p.toLowerCase().includes(resource.toLowerCase()));
+    return hasPermission;
   };
 
   const hasPermission = (permission: string) => {

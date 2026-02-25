@@ -20,6 +20,8 @@ export const AppRoutes = {
     // RefreshToken: '/auth/refresh-token',
     ResendEmail: '/auth/resend-email',
     ValidateToken: '/auth/validate-token',
+    Success: '/success',
+    Error: '/error',
   },
   Home: '/',
   Manager: {
@@ -36,7 +38,15 @@ export const AppRoutes = {
     StaticPagesCreate: '/manager/static-pages/create',
     StaticPagesUpdate: '/manager/static-pages/update',
     StaticPagesDetail: '/manager/static-pages/details',
-    Category: '/manager/category'
+    Category: '/manager/category',
+    Ebooks: '/manager/ebooks',
+    EbooksCreate: '/manager/ebooks/create',
+    EbooksUpdate: '/manager/ebooks/update',
+    EbooksDetail: '/manager/ebooks',
+    SubscriptionPlans: '/manager/subscription-plans',
+    SubscriptionPlansCreate: '/manager/subscription-plans/create',
+    SubscriptionPlansUpdate: '/manager/subscription-plans/update',
+    SubscriptionPlansDetail: '/manager/subscription-plans',
   }
 }
 export const AppApi = {
@@ -53,8 +63,8 @@ export const AppApi = {
 }
 export const AppCategoryCode = {
 
-  FeatureType: {
-    code: 'FeatureType',
+  FEATURE_TYPE: {
+    code: 'FEATURE_TYPE',
     name: 'Menu chức năng',
   },
   FoodCategory: {
@@ -112,5 +122,9 @@ export const AppCategoryCode = {
   PartsUsed: {
     code: 'PartsUsed',
     name: 'Phần sử dụng',
+  },
+  BookCategory: {
+    code: 'BOOK_CATEGORY',
+    name: 'Danh mục sách',
   },
 }

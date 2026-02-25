@@ -198,7 +198,7 @@ export default function FolkMedicineDetail() {
                       <User className="w-4 h-4 text-gray-500" />
                       <span className="text-sm text-gray-600">{t('author')}:</span>
                       <span className="text-sm font-medium">
-                        {folkMedicine.author || tUtils('unknown')}
+                        {folkMedicine.author?.name || tUtils('unknown')}
                       </span>
                     </div>
 
@@ -238,7 +238,7 @@ export default function FolkMedicineDetail() {
                         <span className="text-sm text-gray-600">{t('viewCount')}:</span>
                       </div>
                       <span className="text-sm font-medium text-blue-600">
-                        {folkMedicine.viewCount || 0}
+                        {0}
                       </span>
                     </div>
 
@@ -248,7 +248,7 @@ export default function FolkMedicineDetail() {
                         <span className="text-sm text-gray-600">{t('likeCount')}:</span>
                       </div>
                       <span className="text-sm font-medium text-red-600">
-                        {folkMedicine.likeCount || 0}
+                        { 0}
                       </span>
                     </div>
                   </CardContent>
