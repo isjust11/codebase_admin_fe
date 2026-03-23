@@ -30,14 +30,14 @@ const planFormSchema = (t: any) => z.object({
 });
 
 const codeOptions: SelectOption[] = [
-  { value: 'basic', label: 'Basic' },
-  { value: 'advanced', label: 'Advanced' },
-  { value: 'ultra', label: 'Ultra' },
+  { value: 'FREE', label: 'Basic' },
+  { value: 'PRO', label: 'Advanced' },
+  { value: 'ULTRA', label: 'Ultra' },
 ];
 
 const periodOptions: SelectOption[] = [
-  { value: 'month', label: 'Tháng' },
-  { value: 'year', label: 'Năm' },
+  { value: 'MONTH', label: 'Tháng' },
+  { value: 'YEAR', label: 'Năm' },
 ];
 
 const storagePresets: SelectOption[] = [
@@ -61,13 +61,12 @@ const PlanForm: React.FC<PlanFormProps> = ({
   const schema = planFormSchema(t);
 
   const [formData, setFormData] = useState<Record<string, any>>({
-    code: 'basic',
+    code: 'FREE',
     name: '',
     description: '',
-    storageLimitBytes: 0,
     ttsLimitPerPeriod: 0,
     convertLimitPerPeriod: 0,
-    periodType: 'month',
+    periodType: 'MONTH',
     price: 0,
     sortOrder: 0,
     isActive: true,

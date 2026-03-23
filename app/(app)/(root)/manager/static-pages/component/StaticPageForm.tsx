@@ -25,7 +25,7 @@ const staticPageFormSchema = (t: any) => z.object({
   title: z.string().min(3, t('validation.titleMinLength'))
     .refine(val => val.trim() !== '', t('validation.titleRequired')),
   content: z.string().min(3, t('validation.contentMinLength'))
-    .refine(val => val.trim() !== '', t('validation.contentRequired')), 
+    .refine(val => val.trim() !== '', t('validation.contentRequired')),
   thumbnailFile: z.instanceof(File).optional(),
   thumbnailUrl: z.string().optional(),
   metaTitle: z.string().optional(),
@@ -117,6 +117,7 @@ const StaticPageForm = () => {
         metaTitle: formData.metaTitle,
         metaDescription: formData.metaDescription,
         isActive: formData.isActive,
+        slug: formData.title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''),
         thumbnail: thumbnail.startsWith('http') ? thumbnail.replace(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000', '') : thumbnail,
       };
 
@@ -129,8 +130,8 @@ const StaticPageForm = () => {
       }
       navigateTo(AppRoutes.Manager.StaticPages);
     } catch (error) {
-        const message = (error as any).response.data.message;
-        toast.error(message);
+      const message = (error as any).response.data.message;
+      toast.error(message);
       // toast.error(isEditing ? t('messages.updateError') : t('messages.createError'));
     } finally {
       setLoading(false);
