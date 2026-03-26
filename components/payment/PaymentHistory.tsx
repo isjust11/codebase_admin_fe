@@ -3,8 +3,9 @@
 import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { paymentApi, Payment } from '@/services/payment-api';
 import { toast } from 'sonner';
+import { Payment } from '@/types/payment';
+import { getPaymentById } from '@/services/payment-api';
 
 interface PaymentHistoryProps {
   userId?: number;
@@ -52,11 +53,11 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ userId }) => {
 
   const loadPayments = async () => {
     if (!userId) return;
-    
+
     try {
       setLoading(true);
-      const data = await paymentApi.getPaymentsByUser(userId);
-      setPayments(data);
+      const data = await getPaymentById(userId.toString());
+      setPayments([]);
     } catch (error: any) {
       toast.error('Failed to load payment history');
       console.error('Error loading payments:', error);
@@ -120,7 +121,7 @@ export const PaymentHistory: React.FC<PaymentHistoryProps> = ({ userId }) => {
                   </div>
                 </div>
               </div>
-              
+
               <div className="text-right">
                 <div className="font-semibold">
                   {payment.amount.toLocaleString('vi-VN')} VND

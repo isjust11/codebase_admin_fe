@@ -66,7 +66,6 @@ const BookForm: React.FC<BookFormProps> = ({
     publishedDate: '',
     language: 'vi',
     isPublic: true,
-    category: '',
     ...initialData,
     category: initialData?.category?.id?.toString() || '',
   });

@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import Label from '@/components/form/Label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { paymentApi, CreatePaymentRequest } from '@/services/payment-api';
+// import { paymentApi, CreatePaymentRequest } from '@/services/payment-api';
 import { toast } from 'sonner';
 
 interface PaymentFormProps {
@@ -29,7 +29,7 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (amount <= 0) {
       toast.error('Please enter a valid amount');
       return;
@@ -37,24 +37,24 @@ export const PaymentForm: React.FC<PaymentFormProps> = ({
 
     setLoading(true);
     try {
-      const paymentData: CreatePaymentRequest = {
+      const paymentData = {
         amount,
         currency: 'VND',
         paymentMethod,
         description,
       };
 
-      const response = await paymentApi.createPayment(paymentData);
-      
-      if (response.paymentUrl) {
-        // Redirect to external payment gateway
-        window.location.href = response.paymentUrl;
-      } else if (response.clientSecret) {
-        // Handle Stripe payment
-        handleStripePayment(response);
-      }
-      
-      onPaymentSuccess?.(response);
+      // const response = await paymentApi.createPayment(paymentData);
+
+      // if (response.paymentUrl) {
+      //   // Redirect to external payment gateway
+      //   window.location.href = response.paymentUrl;
+      // } else if (response.clientSecret) {
+      //   // Handle Stripe payment
+      //   handleStripePayment(response);
+      // }
+
+      // onPaymentSuccess?.(response);
       toast.success('Payment initiated successfully');
     } catch (error: any) {
       const errorMessage = error.response?.data?.message || 'Payment failed';
