@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
       test: /\.svg$/,
       use: ["@svgr/webpack"],
     });
+
+    config.resolve.alias.canvas = false;
+    
     return config;
   },
   images: {
@@ -36,7 +39,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'http',
-        hostname: '127.0.0.1',
+        hostname: 'localhost',
         port: '3005',
         pathname: '/**',
       }

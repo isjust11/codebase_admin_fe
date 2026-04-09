@@ -14,6 +14,9 @@ import { toast } from 'sonner';
 import ImageUpload from '@/components/ui/ImageUpload';
 import Select, { SelectOption } from '@/components/form/Select';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
+import { Trash, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { extractPdfMetadata, extractPdfThumbnail } from '@/services/pdf-service';
 
 interface BookFormProps {
   initialData?: Partial<Book>;
@@ -108,6 +111,9 @@ const BookForm: React.FC<BookFormProps> = ({
 
   const handleCoverFileChange = (value: File | null) => {
     setSelectedCoverFile(value instanceof File ? value : null);
+    if (!value) {
+      setFormData(prev => ({ ...prev, coverImageUrl: '' }));
+    }
   };
 
   const handlePdfFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,20 +126,46 @@ const BookForm: React.FC<BookFormProps> = ({
     }
 
     setSelectedPdfFile(file);
-    setUploadingPdf(true);
+    setFormData(prev => ({ ...prev, fileUrl: '' }));
+
     try {
-      const result = await uploadFile(file);
-      setFormData(prev => ({ ...prev, fileUrl: result.publicRelativePath }));
-      toast.success(t('pdfUploadSuccess'));
+      const toastId = toast.loading('Đang trích xuất metadata và thumbnail từ PDF...');
+      const metadata = await extractPdfMetadata(file);
+
+      let newCoverBase64 = '';
+      if (!formData.coverImageUrl && !selectedCoverFile) {
+        try {
+          newCoverBase64 = await extractPdfThumbnail(file);
+          const res = await fetch(newCoverBase64);
+          const blob = await res.blob();
+          const coverFile = new File([blob], `${file.name.replace('.pdf', '')}_cover.jpg`, { type: 'image/jpeg' });
+          setSelectedCoverFile(coverFile);
+        } catch (err) {
+          console.warn('Không thể trích xuất thumbnail', err);
+        }
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        title: prev.title || metadata.title || '',
+        author: prev.author || metadata.author || '',
+        totalPages: prev.totalPages || metadata.totalPages || undefined,
+        publisher: prev.publisher || metadata.producer || '',
+        coverImageUrl: prev.coverImageUrl || newCoverBase64 || '',
+      }));
+      toast.success('Đã lấy metadata và ảnh bìa', { id: toastId });
     } catch (error) {
-      toast.error(t('pdfUploadError'));
-    } finally {
-      setUploadingPdf(false);
+      console.warn('Không thể trích xuất pdf metadata', error);
+      toast.dismiss();
     }
   };
 
   const handleSubmit = async () => {
-    const result = await schema.safeParseAsync(formData);
+    const validationData = {
+      ...formData,
+      fileUrl: formData.fileUrl || (selectedPdfFile ? 'pending-upload' : '')
+    };
+    const result = await schema.safeParseAsync(validationData);
     if (!result.success) {
       const fieldErrors = result.error.flatten().fieldErrors as Record<string, string[] | undefined>;
       const errors: Record<string, string | undefined> = {};
@@ -153,12 +185,23 @@ const BookForm: React.FC<BookFormProps> = ({
         coverImageUrl = uploadResponse.publicRelativePath;
       }
 
+      let fileUrl = formData.fileUrl || '';
+      if (selectedPdfFile) {
+        setUploadingPdf(true);
+        try {
+          const uploadResponse = await uploadFile(selectedPdfFile);
+          fileUrl = uploadResponse.publicRelativePath;
+        } finally {
+          setUploadingPdf(false);
+        }
+      }
+
       const submitData = {
         title: formData.title,
         author: formData.author,
         description: formData.description,
         coverImageUrl,
-        fileUrl: formData.fileUrl,
+        fileUrl,
         totalPages: formData.totalPages ? Number(formData.totalPages) : undefined,
         isbn: formData.isbn,
         publisher: formData.publisher,
@@ -171,6 +214,7 @@ const BookForm: React.FC<BookFormProps> = ({
       await onSubmit(submitData);
     } catch (error) {
       console.error('Error submitting form:', error);
+      setUploadingPdf(false);
       throw error;
     }
   };
@@ -179,7 +223,7 @@ const BookForm: React.FC<BookFormProps> = ({
     if (typeof window !== 'undefined') {
       (window as any).bookFormSubmit = handleSubmit;
     }
-  }, [formData, selectedCoverFile]);
+  }, [formData, selectedCoverFile, selectedPdfFile]);
 
   const languageOptions: SelectOption[] = [
     { value: 'vi', label: 'Tiếng Việt' },
@@ -206,21 +250,24 @@ const BookForm: React.FC<BookFormProps> = ({
           <div className="mt-4">
             <Label>{t('pdfFile')} <span className="text-red-500">(*)</span></Label>
             <div className="mt-2">
-              {formData.fileUrl ? (
+              {(formData.fileUrl || selectedPdfFile) ? (
                 <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
                   <span className="text-green-600 text-sm font-medium">
-                    {selectedPdfFile?.name || t('fileUploaded')}
+                    {uploadingPdf ? t('uploading') + '...' : (selectedPdfFile?.name || t('fileUploaded'))}
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setFormData(prev => ({ ...prev, fileUrl: '' }));
-                      setSelectedPdfFile(null);
-                    }}
-                    className="text-red-500 text-xs hover:underline ml-auto"
-                  >
-                    {t('removeFile')}
-                  </button>
+                  {!uploadingPdf && (
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          setFormData(prev => ({ ...prev, fileUrl: '' }));
+                          setSelectedPdfFile(null);
+                        }}
+                        className="text-red-500 text-xs hover:underline ml-auto"
+                      >
+                        <Trash className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
