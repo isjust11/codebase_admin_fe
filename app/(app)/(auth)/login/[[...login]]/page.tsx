@@ -51,20 +51,6 @@ export default function LoginPage() {
     },
   });
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const loadData = async () => {
-        const remember = localStorage.getItem(AppConstants.Remember);
-        if (remember) {
-          form.setValue('remember', remember === 'true');
-          form.setValue('username', localStorage.getItem(AppConstants.Username) || '');
-          const password = localStorage.getItem(AppConstants.Password);
-          form.setValue('password', decrypt(password || ''));
-        }
-      }
-      loadData();
-    }
-  }, [form]);
 
   const handleForgotPassword = async () => {
     try {
@@ -109,7 +95,7 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error('Lỗi đăng nhập:', error);
       toast.error(error.response.data.message);
-      
+
     } finally {
       setIsLoading(false);
     }
@@ -208,14 +194,6 @@ export default function LoginPage() {
               />
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <FormField
-                    control={form.control}
-                    name="remember"
-                    render={({ field }) => (
-                      <Checkbox id="remember" checked={field.value} onCheckedChange={field.onChange} />
-                    )}
-                  />
-                  <Label htmlFor="remember" className='block font-normal text-gray-700 text-theme-sm dark:text-gray-400'>{t('rememberMe')}</Label>
                 </div>
                 <p className={`text-sm text-fuchsia-500 hover:text-fuchsia-600 dark:text-fuchsia-400 cursor-pointer ${isLoading ? 'pointer-events-none' : ''}`}
                   onClick={() => isForgotPasswordLoading ? null : handleForgotPassword()}>

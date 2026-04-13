@@ -19,6 +19,7 @@ import Image from 'next/image'
 import { Book } from '@/types/book'
 import { useTranslations } from 'next-intl'
 import { AlertDialogUtils } from '@/components/AlertDialogUtils'
+import { useAuth } from '@/contexts/AuthContext'
 
 const formatFileSize = (bytes: number) => {
   if (!bytes || bytes === 0) return '-'
@@ -301,6 +302,11 @@ const EbooksPage = () => {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null)
   const [dialogContent, setDialogContent] = useState('')
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 })
+  const { user } = useAuth()
+  
+  const isOwner = (userId: string) => {
+    return user?.id === userId
+  }
 
   const fetchStats = async () => {
     try {
