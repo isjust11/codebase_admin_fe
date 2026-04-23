@@ -8,6 +8,7 @@ import { z } from 'zod';
 import { toast } from 'sonner';
 import Select, { SelectOption } from '@/components/form/Select';
 import { SubscriptionPlan, PlanCode } from '@/types/subscription-plan';
+import { getSubscriptionPlansMetadata } from '@/services/subscription-plan-api';
 
 interface PlanFormProps {
   initialData?: Partial<SubscriptionPlan>;
@@ -29,17 +30,6 @@ const planFormSchema = (t: any) => z.object({
   isActive: z.boolean().optional(),
 });
 
-const codeOptions: SelectOption[] = [
-  { value: 'FREE', label: 'Basic' },
-  { value: 'PRO', label: 'Advanced' },
-  { value: 'ULTRA', label: 'Ultra' },
-];
-
-const periodOptions: SelectOption[] = [
-  { value: 'MONTH', label: 'Tháng' },
-  { value: 'YEAR', label: 'Năm' },
-];
-
 const storagePresets: SelectOption[] = [
   { value: '0', label: '0 (Không giới hạn)' },
   { value: '104857600', label: '100 MB' },
@@ -59,6 +49,8 @@ const PlanForm: React.FC<PlanFormProps> = ({
   const t = useTranslations('SubscriptionPlans');
   const [formErrors, setFormErrors] = useState<Record<string, string | undefined>>({});
   const schema = planFormSchema(t);
+  const [codes, setCodes] = useState<SelectOption[]>([]);
+  const [periodTypes, setPeriodTypes] = useState<SelectOption[]>([]);
 
   const [formData, setFormData] = useState<Record<string, any>>({
     code: 'FREE',
@@ -83,6 +75,19 @@ const PlanForm: React.FC<PlanFormProps> = ({
       }));
     }
   }, [initialData]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await getSubscriptionPlansMetadata();
+        setCodes(response.codes.map(code => ({ value: code, label: code })));
+        setPeriodTypes(response.periodTypes.map(periodType => ({ value: periodType, label: periodType })));
+      } catch (error) {
+        console.error('Failed to fetch metadata:', error);
+      }
+    };
+    fetchData();
+  }, []);
 
   const handleInputChange = (field: string, value: string | boolean | number | null) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -132,7 +137,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
         <div className="space-y-2">
           <Label>{t('code')} <span className="text-red-500">(*)</span></Label>
           <Select
-            options={codeOptions}
+            options={codes}
             placeholder={t('selectCode')}
             value={formData.code}
             onChange={(value) => handleInputChange('code', value as string)}
@@ -176,7 +181,7 @@ const PlanForm: React.FC<PlanFormProps> = ({
         <div className="space-y-2">
           <Label>{t('period')}</Label>
           <Select
-            options={periodOptions}
+            options={periodTypes}
             value={formData.periodType}
             onChange={(value) => handleInputChange('periodType', value as string)}
           />

@@ -27,3 +27,8 @@ export const updateSubscriptionPlan = async (id: string, data: UpdateSubscriptio
 export const deleteSubscriptionPlan = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/subscription-plans/${id}`);
 };
+
+export const getSubscriptionPlansMetadata = async (): Promise<{ codes: string[]; periodTypes: string[] }> => {
+  const response = await axiosInstance.get('/subscription-plans/metadata/enums');
+  return response.data;
+};
