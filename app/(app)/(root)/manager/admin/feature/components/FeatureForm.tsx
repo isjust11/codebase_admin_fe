@@ -45,6 +45,12 @@ interface FeatureFormProps {
     featureParent?: Feature;
 }
 
+function resolveFeatureTypeId(data?: Feature | null): string {
+    if (!data) return '';
+    const id = data.featureTypeId ?? data.featureType?.id;
+    return id != null && id !== '' ? String(id) : '';
+}
+
 export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, featureParent }: FeatureFormProps) {
     const t = useTranslations('FeaturePage');
     const featureForm = featureFormSchema(t)
@@ -68,7 +74,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                 iconSize: initialData.iconSize || 20,
                 className: initialData.className || "",
                 iconType: initialData.iconType || IconType.lucide,
-                featureTypeId: initialData.featureTypeId || ""
+                featureTypeId: resolveFeatureTypeId(initialData),
             }
             : {
                 label: "",
@@ -86,26 +92,39 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
     });
 
     const handleSubmit = (values: z.infer<typeof featureForm>) => {
-        // Đảm bảo sortOrder là số
         setIsLoading(true);
         values.sortOrder = values.sortOrder || "0";
-        onSubmit(values);
+        const featureTypeId =
+            values.featureTypeId ||
+            form.getValues('featureTypeId') ||
+            resolveFeatureTypeId(initialData);
+        onSubmit({ ...values, featureTypeId });
         setIsLoading(false);
     };
 
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const loadFeatureType = async () => {
-                const data = await getCategoryByCode(getFeatureType());
-                setFeatureType(data);
-                if (data.length > 0) {
-                    const menuFeature = data.find((x: any) => x.code === AppCategoryCode.FEATURE_MENU)
-                    form.setValue("featureTypeId", menuFeature?.id);
+        if (typeof window === 'undefined') return;
+        const loadFeatureType = async () => {
+            const data = await getCategoryByCode(getFeatureType());
+            setFeatureType(data);
+
+            const resolved = resolveFeatureTypeId(initialData);
+            if (resolved) {
+                form.setValue('featureTypeId', resolved, { shouldDirty: false });
+                return;
+            }
+
+            if (!initialData && data.length > 0) {
+                const menuFeature = data.find(
+                    (x: Category) => x.code === AppCategoryCode.FEATURE_MENU.code,
+                );
+                if (menuFeature?.id) {
+                    form.setValue('featureTypeId', String(menuFeature.id), { shouldDirty: false });
                 }
-            };
-            loadFeatureType();
-        }
-    }, []);
+            }
+        };
+        loadFeatureType();
+    }, [initialData, form]);
     return (
         <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
@@ -130,7 +149,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                             <FormLabel>{t('featureType')}</FormLabel>
                             <FormControl>
                                 <Select
-                                    value={field.value}
+                                    value={field.value ?? ''}
                                     onValueChange={field.onChange}
                                 >
                                     <FormControl>
@@ -140,7 +159,7 @@ export function FeatureForm({ initialData, onSubmit, onCancel, featureParents, f
                                     </FormControl>
                                     <SelectContent className="max-h-60 overflow-y-auto bg-white z-[999991]">
                                         {featureType.length > 0 ? featureType.map((type) => (
-                                            <SelectItem key={type.id} value={type.id} className="hover:bg-gray-100">
+                                            <SelectItem key={type.id} value={String(type.id)} className="hover:bg-gray-100">
                                                 <div className="flex flex-start items-center">
                                                     <span className="text-2xl mr-2">
                                                         {

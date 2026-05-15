@@ -11,6 +11,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   getFilteredRowModel,
+  RowSelectionState,
+  OnChangeFn,
 } from "@tanstack/react-table"
 
 import {
@@ -40,6 +42,9 @@ interface DataTableProps<TData, TValue> {
   getRowChildren?: (row: TData) => TData[] | undefined,
   allowPagination?: boolean,
   onSizeChange?: (size: number) => void
+  getRowId?: (row: TData) => string
+  rowSelection?: RowSelectionState
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>
 }
 
 export function DataTable<TData, TValue>({
@@ -53,12 +58,17 @@ export function DataTable<TData, TValue>({
   getRowChildren,
   allowPagination = true,
   onSizeChange,
+  getRowId,
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange: controlledOnRowSelectionChange,
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('Utils');
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = React.useState({})
+  const [internalRowSelection, setInternalRowSelection] = React.useState<RowSelectionState>({})
+  const rowSelection = controlledRowSelection ?? internalRowSelection
+  const setRowSelection = controlledOnRowSelectionChange ?? setInternalRowSelection
   const [pageSizeState, setPageSizeState] = React.useState(pageSize || 10)
   const [pageIndex, setPageIndex] = React.useState(0)
   const [search, setSearch] = React.useState("")
@@ -96,6 +106,8 @@ export function DataTable<TData, TValue>({
   const table = useReactTable({
     data: expandedData,
     columns,
+    getRowId: getRowId ? (row) => getRowId(row as TData) : undefined,
+    enableRowSelection: true,
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,

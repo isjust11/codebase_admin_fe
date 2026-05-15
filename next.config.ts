@@ -20,10 +20,9 @@ const nextConfig: NextConfig = {
     // domains: ['localhost','lh3.googleusercontent.com','platform-lookaside.fbsbx.com'],
     remotePatterns: [
       {
-        protocol: 'http',
-        hostname: '192.168.1.19',
-        port: '3005',
-        pathname: '/storage-data/**',
+        protocol: 'https',
+        hostname: 's3.vn-hcm-1.vietnix.cloud',
+        pathname: '/**',
       },
       {
         protocol: 'http',

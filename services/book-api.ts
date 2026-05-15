@@ -40,3 +40,18 @@ export const updateBookStatus = async (id: string, statusCode: string): Promise<
   const response = await axiosInstance.put(`/books/${id}/status`, { statusCode });
   return response.data;
 };
+
+export type BulkBookResult = { success: number; failed: number; total: number };
+
+export const bulkDeleteBooks = async (ids: string[]): Promise<BulkBookResult> => {
+  const response = await axiosInstance.post('/books/bulk/delete', { ids });
+  return response.data;
+};
+
+export const bulkUpdateBookStatus = async (
+  ids: string[],
+  statusCode: string,
+): Promise<BulkBookResult> => {
+  const response = await axiosInstance.post('/books/bulk/status', { ids, statusCode });
+  return response.data;
+};

@@ -15,7 +15,6 @@ import ImageUpload from '@/components/ui/ImageUpload';
 import Select, { SelectOption } from '@/components/form/Select';
 import { SimpleEditor } from '@/components/tiptap-templates/simple/simple-editor';
 import { Trash, X } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { extractPdfMetadata, extractPdfThumbnail } from '@/services/pdf-service';
 
 interface BookFormProps {

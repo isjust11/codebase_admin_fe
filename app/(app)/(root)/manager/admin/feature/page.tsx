@@ -309,6 +309,7 @@ export default function FeaturePage() {
               {selectedFeature ? t('updateFeature') : t('addFeatureNew')}
             </h4>
             <FeatureForm
+              key={selectedFeature?.id ?? 'new'}
               initialData={selectedFeature}
               onSubmit={handleSubmit}
               onCancel={closeModal}

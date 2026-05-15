@@ -5,6 +5,8 @@ export interface Category {
   id: string;
   name: string;
   description: string;
+  nameEN?: string;
+  descriptionEN?: string;
   isActive: boolean;
   icon: string;
   createBy: string;

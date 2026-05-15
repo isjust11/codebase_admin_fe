@@ -1,10 +1,19 @@
 'use client'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
+import { RowSelectionState } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
 import { ArrowDown, ArrowLeftRight, ArrowUp, BadgeInfo, BookOpen, Check, CheckCircle2, Clock, HardDrive, ImageOff, MoreHorizontal, Pencil, Plus, Trash, XCircle } from 'lucide-react'
 import { useLoading } from '@/contexts/LoadingContext'
 import { DataTable } from '@/components/DataTable'
-import { getBooksByPage, deleteBook, updateBook, getBookStatistics, updateBookStatus } from '@/services/book-api'
+import {
+  getBooksByPage,
+  deleteBook,
+  updateBook,
+  getBookStatistics,
+  updateBookStatus,
+  bulkDeleteBooks,
+  bulkUpdateBookStatus,
+} from '@/services/book-api'
 import ComponentCard from '@/components/common/ComponentCard'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu'
@@ -105,7 +114,15 @@ const EbooksPage = () => {
     },
     {
       accessorKey: "author",
-      header: t('author'),
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t('author')}
+          {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
+        </Button>
+      ),
       cell: ({ row }) => (
         <div className="text-sm text-gray-600 max-w-[100px] truncate">
           {(row.getValue("author") as string) || t('noData')}
@@ -114,7 +131,15 @@ const EbooksPage = () => {
     },
     {
       accessorKey: "category",
-      header: t('category'),
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t('category')}
+          {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
+        </Button>
+      ),
       cell: ({ row }) => {
         const category = row.getValue("category") as Category
         return (
@@ -126,11 +151,14 @@ const EbooksPage = () => {
     },
     {
       accessorKey: "fileSize",
-      header: () => (
-        <div className="flex items-center gap-1">
-          <HardDrive className="w-4 h-4" />
-          <span>{'Dung lượng'}</span>
-        </div>
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t('fileSize')}
+          {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
+        </Button>
       ),
       cell: ({ row }) => (
         <div className="text-sm text-gray-500 text-center">
@@ -140,7 +168,15 @@ const EbooksPage = () => {
     },
     {
       accessorKey: "createBy",
-      header: t('uploadedBy'),
+      header: ({ column }) => (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          {t('uploadedBy')}
+          {column.getIsSorted() === "asc" ? <ArrowUp /> : <ArrowDown />}
+        </Button>
+      ),
       cell: ({ row }) => {
         const createBy = row.getValue("createBy") as Book['createBy']
         const avatarUrl = createBy?.picture ? mergeImageUrl(createBy.picture) : null
@@ -302,11 +338,18 @@ const EbooksPage = () => {
   const [selectedBook, setSelectedBook] = useState<Book | null>(null)
   const [dialogContent, setDialogContent] = useState('')
   const [stats, setStats] = useState({ total: 0, pending: 0, approved: 0, rejected: 0 })
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
+  const [bulkDialogType, setBulkDialogType] = useState<'delete' | 'approve' | 'reject' | null>(null)
+  const [isBulkProcessing, setIsBulkProcessing] = useState(false)
   const { user } = useAuth()
-  
-  const isOwner = (userId: string) => {
-    return user?.id === userId
-  }
+
+  const selectedBookIds = useMemo(
+    () => Object.keys(rowSelection).filter((id) => rowSelection[id]),
+    [rowSelection],
+  )
+  const selectedCount = selectedBookIds.length
+
+  const clearSelection = () => setRowSelection({})
 
   const fetchStats = async () => {
     try {
@@ -338,6 +381,7 @@ const EbooksPage = () => {
   useEffect(() => {
     fetchBooks()
     fetchStats()
+    clearSelection()
   }, [pageIndex, pageSize, search, statusFilter])
 
   const handlePaginationChange = (newPageIndex: number, newPageSize: number) => {
@@ -398,6 +442,59 @@ const EbooksPage = () => {
       toast.success(t('success'))
     } catch (error) {
       toast.error(t('errorUpdatingBook'))
+    }
+  }
+
+  const openBulkDialog = (type: 'delete' | 'approve' | 'reject') => {
+    if (selectedCount === 0) {
+      toast.error(t('bulkNoSelection'))
+      return
+    }
+    setBulkDialogType(type)
+  }
+
+  const getBulkDialogContent = () => {
+    if (bulkDialogType === 'delete') {
+      return t('confirmBulkDelete', { count: selectedCount })
+    }
+    if (bulkDialogType === 'approve') {
+      return t('confirmBulkApprove', { count: selectedCount })
+    }
+    if (bulkDialogType === 'reject') {
+      return t('confirmBulkReject', { count: selectedCount })
+    }
+    return ''
+  }
+
+  const confirmBulkAction = async () => {
+    if (!bulkDialogType || selectedCount === 0) return
+    setIsBulkProcessing(true)
+    try {
+      let result
+      if (bulkDialogType === 'delete') {
+        result = await bulkDeleteBooks(selectedBookIds)
+      } else if (bulkDialogType === 'approve') {
+        result = await bulkUpdateBookStatus(selectedBookIds, 'BOOK_STATUS_APPROVED')
+      } else {
+        result = await bulkUpdateBookStatus(selectedBookIds, 'BOOK_STATUS_REJECTED')
+      }
+      if (result.failed > 0) {
+        toast.warning(t('bulkPartialSuccess', { success: result.success, failed: result.failed }))
+      } else {
+        toast.success(t('bulkSuccess', { count: result.success }))
+      }
+      clearSelection()
+      await fetchBooks()
+      await fetchStats()
+    } catch {
+      if (bulkDialogType === 'delete') {
+        toast.error(t('errorDeletingBook'))
+      } else {
+        toast.error(t('errorUpdatingBook'))
+      }
+    } finally {
+      setIsBulkProcessing(false)
+      setBulkDialogType(null)
     }
   }
 
@@ -486,7 +583,54 @@ const EbooksPage = () => {
         </div>
 
         <ComponentCard title={t('ebooks')} listAction={lstActions}>
-          <div className="container mx-auto">
+          <div className="container mx-auto space-y-3">
+            {selectedCount > 0 && (
+              <div className="flex flex-wrap items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-900/20">
+                <span className="text-sm font-medium text-blue-800 dark:text-blue-200">
+                  {t('bulkSelected', { count: selectedCount })}
+                </span>
+                <div className="ml-auto flex flex-wrap gap-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-green-300 text-green-700 hover:bg-green-50"
+                    onClick={() => openBulkDialog('approve')}
+                    disabled={isBulkProcessing}
+                  >
+                    <Check className="mr-1 h-4 w-4" />
+                    {t('bulkApprove')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-orange-300 text-orange-700 hover:bg-orange-50"
+                    onClick={() => openBulkDialog('reject')}
+                    disabled={isBulkProcessing}
+                  >
+                    <XCircle className="mr-1 h-4 w-4" />
+                    {t('bulkReject')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-red-300 text-red-700 hover:bg-red-50"
+                    onClick={() => openBulkDialog('delete')}
+                    disabled={isBulkProcessing}
+                  >
+                    <Trash className="mr-1 h-4 w-4" />
+                    {t('bulkDelete')}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={clearSelection}
+                    disabled={isBulkProcessing}
+                  >
+                    {t('bulkClearSelection')}
+                  </Button>
+                </div>
+              </div>
+            )}
             <DataTable
               columns={columns}
               data={books}
@@ -494,6 +638,9 @@ const EbooksPage = () => {
               onPaginationChange={handlePaginationChange}
               onSearchChange={handleSearch}
               manualPagination={true}
+              getRowId={(row) => String(row.id)}
+              rowSelection={rowSelection}
+              onRowSelectionChange={setRowSelection}
             />
           </div>
         </ComponentCard>
@@ -507,6 +654,23 @@ const EbooksPage = () => {
           confirmText={tUtils('confirm')}
           cancelText={tUtils('cancel')}
           onCancel={() => setOpenDialog(false)}
+        />
+        <AlertDialogUtils
+          type={bulkDialogType === 'delete' ? 'warning' : 'info'}
+          isOpen={bulkDialogType !== null}
+          onOpenChange={(open) => !open && setBulkDialogType(null)}
+          onConfirm={confirmBulkAction}
+          title={
+            bulkDialogType === 'delete'
+              ? t('bulkDeleteTitle')
+              : bulkDialogType === 'approve'
+                ? t('bulkApproveTitle')
+                : t('bulkRejectTitle')
+          }
+          content={getBulkDialogContent()}
+          confirmText={tUtils('confirm')}
+          cancelText={tUtils('cancel')}
+          onCancel={() => setBulkDialogType(null)}
         />
       </div>
     </div>

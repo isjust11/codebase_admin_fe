@@ -19,7 +19,9 @@ const formCategorySchema = (t: any) => z.object({
     name: z.string().min(1, {
         message: t('validation.nameMinLength'),
     }),
+    nameEN: z.string().optional(),
     description: z.string().optional(),
+    descriptionEN: z.string().optional(),
     isActive: z.boolean(),
     categoryTypeId: z.string().refine(val => val.trim() !== '', {
         message: t('validation.categoryTypeIdRequired'),
@@ -52,7 +54,9 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
     const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof formSchema>, string>>>({});
     const [formData, setFormData] = useState<z.infer<typeof formSchema>>(initialData ? {
         name: initialData.name,
+        nameEN: initialData.nameEN || '',
         description: initialData.description,
+        descriptionEN: initialData.descriptionEN || '',
         isActive: initialData.isActive,
         categoryTypeId: initialData.type.id.toString(),
         icon: initialData.icon,
@@ -61,7 +65,9 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
         sortOrder: initialData.sortOrder || 1
     } : {
         name: "",
+        nameEN: "",
         description: "",
+        descriptionEN: "",
         isActive: true,
         categoryTypeId: "",
         icon: "",
@@ -108,6 +114,18 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                         {formErrors.name && <div className="text-red-500 text-sm">{formErrors.name}</div>}
                     </div>
                 </div>
+                <div className="full-width">
+                    <div className="space-y-2">
+                        <Label htmlFor="nameEN">{t('nameEN')}</Label>
+                        <Input id="nameEN"
+                            name="nameEN"
+                            placeholder={t('enterNameEN')}
+                            type="text"
+                            value={formData.nameEN}
+                            onChange={handleChange} />
+                        {formErrors.nameEN && <div className="text-red-500 text-sm">{formErrors.nameEN}</div>}
+                    </div>
+                </div>
                 <div className="flex items-start gap-2">
                     <div className="basis-[70%]">
                         <div className="space-y-2">
@@ -146,6 +164,17 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                         value={formData.description}
                         onChange={handleChange} />
                     {formErrors.description && <div className="text-red-500">{formErrors.description}</div>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="descriptionEN">{t('descriptionEN')}</Label>
+                    <Textarea id="descriptionEN"
+                        name="descriptionEN"
+                        rows={3}
+                        className="input-focus"
+                        placeholder={t('enterDescriptionEN')}
+                        value={formData.descriptionEN}
+                        onChange={handleChange} />
+                    {formErrors.descriptionEN && <div className="text-red-500">{formErrors.descriptionEN}</div>}
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="categoryTypeId">{t('type')} <span className="text-red-500">(*)</span></Label>
