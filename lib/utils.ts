@@ -44,12 +44,24 @@ export const mergeImageUrl = (relativeUrl: string): string => {
   if (relativeUrl.startsWith('http://') || relativeUrl.startsWith('https://')) {
     return relativeUrl;
   }
+
+  // link google drive — endpoint nằm ở main backend (NEXT_PUBLIC_API_URL)
+  if (relativeUrl.startsWith('google-drive/download/')) {
+    const apiUrl = (process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000').replace(/\/$/, '');
+    return `${apiUrl}/${relativeUrl}`;
+  }
   
   // Lấy API_URL từ biến môi trường
   const apiUrl = process.env.STORAGE_API_URL || 'http://localhost:3005';
   
   // Merge URL
   return `${apiUrl}${relativeUrl.startsWith('/') ? relativeUrl : `/${relativeUrl}`}`;
+};
+
+export const toGoogleDriveViewerUrl = (fileUrl: string): string => {
+  const absolute = mergeImageUrl(fileUrl);
+  if (!absolute) return '';
+  return `https://docs.google.com/viewer?url=${encodeURIComponent(absolute)}&embedded=false`;
 };
 
 export const getMediaUtils = async (relativeUrl: string): Promise<string> => {

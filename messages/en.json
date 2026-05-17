@@ -1584,6 +1584,7 @@
     "selectLanguage": "Select language",
     "storageGB": "Storage (GB)",
     "uploadedAt": "Uploaded At",
+    "fileSize": "File Size",
     "validation": {
       "titleRequired": "Title is required",
       "authorRequired": "Author is required",
@@ -1597,8 +1598,12 @@
     "code": "Plan Code",
     "name": "Plan Name",
     "namePlaceholder": "Enter plan name",
+    "nameEn": "Plan Name (English)",
+    "nameEnPlaceholder": "Enter plan name in English",
     "description": "Description",
     "descriptionPlaceholder": "Enter plan description",
+    "descriptionEn": "Description (English)",
+    "descriptionEnPlaceholder": "Enter plan description in English",
     "price": "Price",
     "storage": "Storage",
     "ttsLimit": "TTS Limit",
@@ -1638,6 +1643,7 @@
     "validation": {
       "codeRequired": "Plan code is required",
       "nameRequired": "Plan name is required",
+      "nameEnRequired": "English plan name is required",
       "validationError": "Please check the form fields"
     }
   },

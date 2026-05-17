@@ -1625,6 +1625,7 @@
     "authorPlaceholder": "Nhập tên tác giả",
     "selectLanguage": "Chọn ngôn ngữ",
     "uploadedAt": "Ngày tải lên",
+    "fileSize": "Kích thước file",
     "validation": {
       "titleRequired": "Tên sách là bắt buộc",
       "authorRequired": "Tác giả là bắt buộc",
@@ -1638,8 +1639,12 @@
     "code": "Mã gói",
     "name": "Tên gói",
     "namePlaceholder": "Nhập tên gói",
+    "nameEn": "Tên gói (Tiếng Anh)",
+    "nameEnPlaceholder": "Nhập tên gói bằng tiếng Anh",
     "description": "Mô tả",
     "descriptionPlaceholder": "Nhập mô tả gói",
+    "descriptionEn": "Mô tả (Tiếng Anh)",
+    "descriptionEnPlaceholder": "Nhập mô tả gói bằng tiếng Anh",
     "price": "Giá",
     "storage": "Dung lượng",
     "ttsLimit": "Giới hạn TTS",
@@ -1681,6 +1686,7 @@
     "validation": {
       "codeRequired": "Mã gói là bắt buộc",
       "nameRequired": "Tên gói là bắt buộc",
+      "nameEnRequired": "Tên gói tiếng Anh là bắt buộc",
       "validationError": "Vui lòng kiểm tra lại thông tin"
     }
   },

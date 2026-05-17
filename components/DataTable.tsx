@@ -45,6 +45,8 @@ interface DataTableProps<TData, TValue> {
   getRowId?: (row: TData) => string
   rowSelection?: RowSelectionState
   onRowSelectionChange?: OnChangeFn<RowSelectionState>
+  stickyHeader?: boolean
+  maxHeight?: string
 }
 
 export function DataTable<TData, TValue>({
@@ -61,6 +63,8 @@ export function DataTable<TData, TValue>({
   getRowId,
   rowSelection: controlledRowSelection,
   onRowSelectionChange: controlledOnRowSelectionChange,
+  stickyHeader = false,
+  maxHeight = '70vh',
 }: DataTableProps<TData, TValue>) {
   const t = useTranslations('Utils');
   const [sorting, setSorting] = React.useState<SortingState>([])
@@ -194,14 +198,22 @@ export function DataTable<TData, TValue>({
         </DropdownMenu>
       </div>
 
-      <div className="rounded-md border dark:border-white/[0.05] overflow-x-auto">
-        <Table>
-          <TableHeader className=" border-gray-500 dark:border-white/[0.05] dark:bg-white/[0.05]">
+      <div
+        className="rounded-md border dark:border-white/[0.05] overflow-x-auto"
+        style={stickyHeader ? { overflowY: 'auto', maxHeight } : undefined}
+      >
+        <Table className={stickyHeader ? 'border-separate border-spacing-0' : ''}>
+          <TableHeader
+            className={`border-gray-500 dark:border-white/[0.05] dark:bg-white/[0.05]${stickyHeader ? ' sticky top-0 z-10' : ''}`}
+          >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => {
                   return (
-                    <TableHead key={header.id} className="px-5 py-3 font-medium dark:border-white/[0.05] text-gray-500 text-start text-theme-sm dark:text-gray-400">
+                    <TableHead
+                      key={header.id}
+                      className={`px-5 py-3 font-medium dark:border-white/[0.05] text-gray-500 text-start text-theme-sm dark:text-gray-400 bg-white dark:bg-gray-800${stickyHeader ? ' border-b border-gray-200 dark:border-white/[0.1]' : ''}`}
+                    >
                       {header.isPlaceholder
                         ? null
                         : flexRender(
@@ -214,6 +226,7 @@ export function DataTable<TData, TValue>({
               </TableRow>
             ))}
           </TableHeader>
+
           <TableBody className="divide-y divide-gray-100 dark:divide-white/[0.05] dark:border-white/[0.05]">
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {

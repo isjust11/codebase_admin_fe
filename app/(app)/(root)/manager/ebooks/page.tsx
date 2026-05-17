@@ -44,9 +44,11 @@ const formatDate = (dateStr: string) => {
 }
 
 const EbooksPage = () => {
+  const { user } = useAuth()
   const { navigateTo } = useLoading()
   const t = useTranslations('Ebooks')
   const tUtils = useTranslations('Utils')
+
 
   const columns: ColumnDef<Book>[] = [
     {
@@ -237,7 +239,10 @@ const EbooksPage = () => {
         }
 
         return (
-          <Badge variant="light" color={color}>
+          <Badge variant="light" color={color}
+          onClick={() => (row.original.isPublic == true && row.original.status?.code !== 'BOOK_STATUS_APPROVED') ? handleUpdateStatus(row.original, 'BOOK_STATUS_APPROVED') : undefined}
+          disabled={ (row.original.isPublic == true && row.original.status?.code === 'BOOK_STATUS_APPROVED')}
+          >
             {text}
           </Badge>
         )
@@ -250,9 +255,11 @@ const EbooksPage = () => {
         const isPublic = row.getValue("isPublic") as boolean
         return (
           <Badge
+            onClick={() => user?.id === row.original.createById ? handleTogglePublic(row.original) : undefined}
             className={isPublic ? 'ring-green-400' : 'ring-red-400'}
             variant="light"
             color={isPublic ? 'success' : 'error'}
+            disabled={user?.id !== row.original.createById}
           >
             {isPublic ? t('public') : t('private')}
           </Badge>
@@ -282,8 +289,9 @@ const EbooksPage = () => {
                   {t('viewDetail')}
                 </DropdownMenuItem>
                 <DropdownMenuItem
+                  disabled={user?.id !== book.createById}
                   className="flex flex-start px-4 py-2 cursor-pointer hover:bg-gray-300/20 text-violet-500 dark:text-white"
-                  onClick={() => handleTogglePublic(book)}
+                  onClick={() => user?.id === book.createById ? handleTogglePublic(book) : undefined}
                 >
                   <ArrowLeftRight className="mr-2 h-4 w-4 text-violet-500 dark:text-white" />
                   {book.isPublic ? t('setPrivate') : t('setPublic')}
@@ -291,7 +299,8 @@ const EbooksPage = () => {
                 {book.status?.code !== 'BOOK_STATUS_APPROVED' && (
                   <DropdownMenuItem
                     className="flex flex-start px-4 py-2 cursor-pointer hover:bg-green-300/20 text-green-500"
-                    onClick={() => handleUpdateStatus(book, 'BOOK_STATUS_APPROVED')}
+                    disabled={(book.isPublic == true && book.status?.code === 'BOOK_STATUS_APPROVED')}
+                    onClick={() =>(book.isPublic == true && book.status?.code === 'BOOK_STATUS_APPROVED') ? handleUpdateStatus(book, 'BOOK_STATUS_APPROVED') : undefined}
                   >
                     <Check className="mr-2 h-4 w-4" />
                     {t('approve')}
@@ -341,7 +350,6 @@ const EbooksPage = () => {
   const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
   const [bulkDialogType, setBulkDialogType] = useState<'delete' | 'approve' | 'reject' | null>(null)
   const [isBulkProcessing, setIsBulkProcessing] = useState(false)
-  const { user } = useAuth()
 
   const selectedBookIds = useMemo(
     () => Object.keys(rowSelection).filter((id) => rowSelection[id]),
@@ -432,6 +440,10 @@ const EbooksPage = () => {
     } catch (error) {
       toast.error(t('errorUpdatingBook'))
     }
+  }
+
+  const handleSizeChange = (size: number) => {
+    setPageSize(size)
   }
 
   const handleUpdateStatus = async (book: Book, statusCode: string) => {
@@ -637,10 +649,13 @@ const EbooksPage = () => {
               pageCount={pageCount}
               onPaginationChange={handlePaginationChange}
               onSearchChange={handleSearch}
+              onSizeChange={handleSizeChange}
               manualPagination={true}
               getRowId={(row) => String(row.id)}
               rowSelection={rowSelection}
               onRowSelectionChange={setRowSelection}
+              stickyHeader
+              maxHeight="65vh"
             />
           </div>
         </ComponentCard>

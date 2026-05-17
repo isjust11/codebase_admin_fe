@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import PageBreadcrumb from '@/components/common/PageBreadCrumb'
 import ComponentCard from '@/components/common/ComponentCard'
 import { ArrowLeft, Edit, BookOpen, Globe, Lock } from 'lucide-react'
-import { mergeImageUrl } from '@/lib/utils'
+import { mergeImageUrl, toGoogleDriveViewerUrl } from '@/lib/utils'
 import Image from 'next/image'
 import Badge from '@/components/ui/badge/Badge'
 import { Book } from '@/types/book'
@@ -207,13 +207,13 @@ const BookDetailPage = () => {
               <span className="ml-2 text-gray-600">{book.id}</span>
             </div>
             {book.fileUrl && (
-              <div>
+              <div className="flex items-center gap-3 flex-wrap">
                 <span className="font-semibold text-gray-900">{t('pdfFile')}:</span>
                 <a
                   href={mergeImageUrl(book.fileUrl)}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="ml-2 text-blue-600 hover:underline"
+                  className="text-blue-600 hover:underline text-sm"
                 >
                   {t('viewFile')}
                 </a>

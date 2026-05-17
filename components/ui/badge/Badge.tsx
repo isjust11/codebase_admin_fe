@@ -19,6 +19,8 @@ interface BadgeProps {
   endIcon?: React.ReactNode; // Icon at the end
   children: React.ReactNode; // Badge content
   className?:string;
+  disabled?:boolean;
+  onClick?: () => void;
 }
 
 const Badge: React.FC<BadgeProps> = ({
@@ -29,6 +31,8 @@ const Badge: React.FC<BadgeProps> = ({
   endIcon,
   children,
   className,
+  disabled = false,
+  onClick,
 }) => {
   const baseStyles =
     "inline-flex items-center px-2.5 py-0.5 justify-center gap-1 rounded-full font-medium";
@@ -70,7 +74,9 @@ const Badge: React.FC<BadgeProps> = ({
   const colorStyles = variants[variant][color];
 
   return (
-    <span className={`px-2 py-1 ring-1 cursor-default ${className} ${baseStyles} ${sizeClass} ${colorStyles} `}>
+    <span 
+    onClick={onClick}
+    className={`px-2 py-1 ring-1 cursor-default ${className} ${baseStyles} ${sizeClass} ${colorStyles} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
       {startIcon && <span className="mr-1">{startIcon}</span>}
       {children}
       {endIcon && <span className="ml-1">{endIcon}</span>}

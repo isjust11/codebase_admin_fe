@@ -5,6 +5,8 @@ export interface SubscriptionPlan {
   code: PlanCode;
   name: string;
   description?: string;
+  nameEn: string;
+  descriptionEn?: string;
   storageLimitBytes: string;
   ttsLimitPerPeriod: number;
   convertLimitPerPeriod: number;

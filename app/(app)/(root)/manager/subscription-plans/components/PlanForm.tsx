@@ -21,6 +21,8 @@ const planFormSchema = (t: any) => z.object({
   code: z.string().min(1, t('validation.codeRequired')),
   name: z.string().min(1, t('validation.nameRequired')),
   description: z.string().optional(),
+  nameEn: z.string().min(1, t('validation.nameEnRequired')),
+  descriptionEn: z.string().optional(),
   storageLimitBytes: z.number().min(0).optional(),
   ttsLimitPerPeriod: z.number().min(0).optional(),
   convertLimitPerPeriod: z.number().min(0).optional(),
@@ -56,6 +58,8 @@ const PlanForm: React.FC<PlanFormProps> = ({
     code: 'FREE',
     name: '',
     description: '',
+    nameEn: '',
+    descriptionEn: '',
     ttsLimitPerPeriod: 0,
     convertLimitPerPeriod: 0,
     periodType: 'MONTH',
@@ -164,6 +168,30 @@ const PlanForm: React.FC<PlanFormProps> = ({
           value={formData.description}
           onChange={(e) => handleInputChange('description', e.target.value)}
           placeholder={t('descriptionPlaceholder')}
+          rows={3}
+        />
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="nameEn">{t('nameEn')} <span className="text-red-500">(*)</span></Label>
+          <Input
+            id="nameEn"
+            value={formData.nameEn}
+            onChange={(e) => handleInputChange('nameEn', e.target.value)}
+            placeholder={t('nameEnPlaceholder')}
+          />
+          {formErrors.nameEn && <div className="text-red-500 text-sm">{formErrors.nameEn}</div>}
+        </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="descriptionEn">{t('descriptionEn')}</Label>
+        <Textarea
+          id="descriptionEn"
+          value={formData.descriptionEn}
+          onChange={(e) => handleInputChange('descriptionEn', e.target.value)}
+          placeholder={t('descriptionEnPlaceholder')}
           rows={3}
         />
       </div>

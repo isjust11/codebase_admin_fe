@@ -4,6 +4,8 @@ export interface CreateSubscriptionPlanDto {
   code: PlanCode;
   name: string;
   description?: string;
+  nameEn: string;
+  descriptionEn?: string;
   storageLimitBytes?: number;
   ttsLimitPerPeriod?: number;
   convertLimitPerPeriod?: number;
@@ -16,6 +18,8 @@ export interface CreateSubscriptionPlanDto {
 export interface UpdateSubscriptionPlanDto {
   name?: string;
   description?: string;
+  nameEn?: string;
+  descriptionEn?: string;
   storageLimitBytes?: number;
   ttsLimitPerPeriod?: number;
   convertLimitPerPeriod?: number;
