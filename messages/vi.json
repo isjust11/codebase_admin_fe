@@ -5,6 +5,7 @@
   "Utils": {
     "confirm": "Xác nhận",
     "cancel": "Hủy",
+    "clear": "Xoá",
     "removeConfirm": "Bạn có chắc chắn muốn xóa {count} file?",
     "back": "Quay lại",
     "update": "Cập nhật",
@@ -618,6 +619,14 @@
     "enterDescriptionEN": "Nhập mô tả danh mục bằng tiếng Anh",
     "selectIcon": "Chọn icon",
     "sortOrder": "Thứ tự",
+    "parentCategory": "Danh mục cha",
+    "selectParent": "Chọn danh mục cha",
+    "searchParent": "Tìm kiếm danh mục cha...",
+    "noParent": "Không có (danh mục gốc)",
+    "noParentAvailable": "Không có danh mục cha phù hợp",
+    "image": "Ảnh đại diện",
+    "uploadImage": "Tải ảnh đại diện",
+    "color": "Màu chủ đạo",
     "messages": {
       "loadError": "Có lỗi xảy ra khi tải danh sách danh mục",
       "deleteSuccess": "Danh mục đã được xóa thành công",

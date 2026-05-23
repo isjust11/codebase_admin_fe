@@ -5,6 +5,7 @@
   "Utils": {
     "confirm": "Confirm",
     "cancel": "Cancel",
+    "clear": "Clear",
     "removeConfirm": "Are you sure you want to delete {count} files?",
     "back": "Back",
     "update": "Update",
@@ -627,6 +628,14 @@
     "enterDescriptionEN": "Enter category description in English",
     "selectIcon": "Select icon",
     "sortOrder": "Sort Order",
+    "parentCategory": "Parent Category",
+    "selectParent": "Select parent category",
+    "searchParent": "Search parent...",
+    "noParent": "No parent (root category)",
+    "noParentAvailable": "No parent category available",
+    "image": "Image",
+    "uploadImage": "Upload image",
+    "color": "Primary color",
     "messages": {
       "loadError": "Error loading category list",
       "deleteSuccess": "Category deleted successfully",

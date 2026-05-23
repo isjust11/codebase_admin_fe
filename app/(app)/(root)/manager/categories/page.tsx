@@ -10,7 +10,8 @@ import { DataTable } from '@/components/DataTable';
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { createCategory, deleteCategory, getAllCategoryTypes, getCategories, updateCategory, updateCategoryStatus } from '@/services/manager-api';
+import { createCategory, deleteCategory, getAllCategoryTypes, getCategories, getCategoriesByType, getCategoryTreeByType, updateCategory, updateCategoryStatus } from '@/services/manager-api';
+import { uploadFile } from '@/services/media-api';
 import { CategoryType } from '@/types/category-type';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Category } from '@/types/category';
@@ -43,6 +44,8 @@ export default function CategoriesManagement() {
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<CategoryType | null>(null);
   const [filterByType, setFilterByType] = useState<Category[]>([]);
+  // Danh sách flat của tất cả category cùng type (để chọn parent trong form)
+  const [parentCandidates, setParentCandidates] = useState<Category[]>([]);
   const { isOpen, openModal, closeModal } = useModal();
   const { hasPermission, hasResourcePermission } = useAuth();
   const [openDialog, setOpenDialog] = useState<boolean>(false);
@@ -97,6 +100,15 @@ export default function CategoriesManagement() {
         const type = row.getValue("type") as CategoryType
         if (!type) return null;
         return <div className="capitalize">{type.name}</div>
+      },
+    },
+    {
+      accessorKey: "parent",
+      header: t('parentCategory'),
+      cell: ({ row }) => {
+        const parent = row.original.parent as Category | null | undefined;
+        if (!parent) return <span className="text-gray-400">—</span>;
+        return <div className="capitalize">{parent.name}</div>;
       },
     },
     {
@@ -278,12 +290,19 @@ export default function CategoriesManagement() {
   const handleSave = async (values: any) => {
     try {
       setLoading(true)
-      console.log(values)
+      // Form trả về `imageFile` (File mới user vừa pick) — upload trước khi save
+      const payload = { ...values };
+      if (payload.imageFile instanceof File) {
+        const uploaded = await uploadFile(payload.imageFile);
+        payload.image = uploaded.publicRelativePath;
+      }
+      delete payload.imageFile;
+
       if (selectedCategory) {
-        await updateCategory(selectedCategory.id, values);
+        await updateCategory(selectedCategory.id, payload);
         toast.success(t('messages.updateSuccess'));
       } else {
-        await createCategory(values);
+        await createCategory(payload);
         toast.success(t('messages.createSuccess'));
       }
       closeModal();
@@ -301,19 +320,31 @@ export default function CategoriesManagement() {
   }
 
   const handleChangeType = async (id: string) => {
-    console.log(id)
     if (id === 'all') {
       setFilterByType(categories);
+      setParentCandidates(categories);
       setSelectedType(null);
       return;
     }
-    const filters = categories.filter((category) => category.type.id === id)
-    setFilterByType(filters);
-    const pageCount = Math.ceil(filters.length/ pageSize)
-    setPageCount(pageCount);
     const foundType = categoryTypes.find(type => type.id === id);
     setSelectedType(foundType || null);
-    console.log(foundType)
+    if (!foundType) return;
+
+    try {
+      setLoading(true);
+      const [tree, flat] = await Promise.all([
+        getCategoryTreeByType(foundType.code),
+        getCategoriesByType(foundType.code),
+      ]);
+      setFilterByType(tree);
+      setParentCandidates(flat);
+      setPageCount(Math.ceil(tree.length / pageSize));
+    } catch (error) {
+      console.error('Error fetching category tree:', error);
+      toast.error(t('messages.loadError'));
+    } finally {
+      setLoading(false);
+    }
   }
 
   const handleChangeStatus = async (category: Category) => {
@@ -385,6 +416,7 @@ export default function CategoriesManagement() {
               onCancel={closeModal}
               categoryTypes={categoryTypes}
               selectedType={selectedType}
+              allCategories={parentCandidates.length > 0 ? parentCandidates : categories}
             />
           </Modal>
           <AlertDialogUtils

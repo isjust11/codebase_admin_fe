@@ -221,6 +221,40 @@ export const deleteCategory = async (id: string): Promise<void> => {
   }
 };
 
+export const getCategoryTreeByType = async (
+  categoryTypeCode: string,
+  sortBy: string = 'sortOrder',
+  sortType: 'ASC' | 'DESC' = 'ASC',
+): Promise<Category[]> => {
+  try {
+    const response = await axiosInstance.get(
+      `/categories/get-tree-by-category-type/${categoryTypeCode}`,
+      { params: { sortBy, sortType } },
+    );
+    return response.data ?? [];
+  } catch (_error) {
+    console.error('Error fetching category tree:', _error);
+    return [];
+  }
+};
+
+export const getCategoriesByType = async (
+  categoryTypeCode: string,
+  sortBy: string = 'sortOrder',
+  sortType: 'ASC' | 'DESC' = 'ASC',
+): Promise<Category[]> => {
+  try {
+    const response = await axiosInstance.get(
+      `/categories/get-by-category-type/${categoryTypeCode}`,
+      { params: { sortBy, sortType } },
+    );
+    return response.data ?? [];
+  } catch (_error) {
+    console.error('Error fetching categories by type:', _error);
+    return [];
+  }
+};
+
 // todo: api category type
 export const getCategoryTypes = async (params?: PaginationParams): Promise<PaginatedResponse<CategoryType>> => {
   try {

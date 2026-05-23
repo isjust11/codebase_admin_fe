@@ -19,4 +19,11 @@ export interface Category {
   sortOrder: number;
   code: string;
   isDefault: boolean;
-} 
+  parentId?: string | null;
+  parent?: Category | null;
+  children?: Category[];
+  // URL ảnh đại diện. Server lưu relative path, client tự ghép base url.
+  image?: string | null;
+  // Mã màu HEX (#RRGGBB hoặc #RRGGBBAA) dùng làm tone chính của card.
+  color?: string | null;
+}

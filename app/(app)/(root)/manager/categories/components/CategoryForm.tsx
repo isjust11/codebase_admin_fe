@@ -5,7 +5,7 @@ import * as z from "zod";
 import Switch from "@/components/form/switch/Switch";
 import { Textarea } from "@/components/ui/textarea";
 import { CategoryType } from "@/types/category-type";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { SmilePlus } from "lucide-react";
 import { IconPickerModal } from "@/components/IconPickerModal";
 import { unicodeToEmoji } from "@/lib/utils";
@@ -14,6 +14,23 @@ import { useTranslations } from "next-intl";
 import { Label } from "@/components/ui/label";
 import Select from '@/components/form/Select';
 import { toast } from "sonner";
+import ImageUpload from "@/components/ui/ImageUpload";
+
+const NO_PARENT_VALUE = "__none__";
+
+// Vài màu gợi ý nhanh cho UX (user vẫn có thể chọn màu tuỳ ý qua color input)
+const COLOR_PRESETS = [
+    "#6366F1", // indigo
+    "#22C55E", // green
+    "#F97316", // orange
+    "#EF4444", // red
+    "#06B6D4", // cyan
+    "#A855F7", // purple
+    "#F59E0B", // amber
+    "#10B981", // emerald
+];
+
+const HEX_COLOR_REGEX = /^#([0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/;
 
 const formCategorySchema = (t: any) => z.object({
     name: z.string().min(1, {
@@ -26,6 +43,7 @@ const formCategorySchema = (t: any) => z.object({
     categoryTypeId: z.string().refine(val => val.trim() !== '', {
         message: t('validation.categoryTypeIdRequired'),
     }),
+    parentId: z.string().optional().nullable(),
     icon: z.string().optional(),
     iconType: z.nativeEnum(IconType).optional(),
     sortOrder: z.preprocess(
@@ -33,6 +51,15 @@ const formCategorySchema = (t: any) => z.object({
         z.coerce.number().int().min(0).optional()
     ),
     code: z.string().optional(),
+    image: z.string().optional().nullable(),
+    color: z
+        .string()
+        .optional()
+        .nullable()
+        .refine(
+            (val) => !val || HEX_COLOR_REGEX.test(val),
+            { message: 'Color phải là HEX hợp lệ (#RRGGBB hoặc #RRGGBBAA)' }
+        ),
 });
 
 interface CategoryFormProps {
@@ -41,9 +68,11 @@ interface CategoryFormProps {
     onCancel: () => void;
     categoryTypes: CategoryType[];
     selectedType?: CategoryType | null;
+    /** Danh sách toàn bộ category để chọn parent (cùng categoryType) */
+    allCategories?: Category[];
 }
 
-export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, selectedType }: CategoryFormProps) {
+export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, selectedType, allCategories = [] }: CategoryFormProps) {
     const t = useTranslations("CategoriesPage");
     const tUtils = useTranslations("Utils");
     const formSchema = formCategorySchema(t);
@@ -52,6 +81,8 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
     }
     const [isIconPickerOpen, setIsIconPickerOpen] = useState(false);
     const [formErrors, setFormErrors] = useState<Partial<Record<keyof z.infer<typeof formSchema>, string>>>({});
+    // File ảnh người dùng vừa pick — upload trước khi submit, không nằm trong schema
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [formData, setFormData] = useState<z.infer<typeof formSchema>>(initialData ? {
         name: initialData.name,
         nameEN: initialData.nameEN || '',
@@ -59,10 +90,13 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
         descriptionEN: initialData.descriptionEN || '',
         isActive: initialData.isActive,
         categoryTypeId: initialData.type.id.toString(),
+        parentId: initialData.parentId ? initialData.parentId.toString() : null,
         icon: initialData.icon,
         code: initialData.code || '',
         iconType: initialData.iconType || IconType.lucide,
-        sortOrder: initialData.sortOrder || 1
+        sortOrder: initialData.sortOrder || 1,
+        image: initialData.image || '',
+        color: initialData.color || '',
     } : {
         name: "",
         nameEN: "",
@@ -70,14 +104,46 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
         descriptionEN: "",
         isActive: true,
         categoryTypeId: "",
+        parentId: null,
         icon: "",
         code: "",
         iconType: IconType.lucide,
-        sortOrder: 1
+        sortOrder: 1,
+        image: "",
+        color: "",
     });
-    if (selectedType) {
+    if (selectedType && !initialData) {
         formData.categoryTypeId = selectedType.id;
     }
+
+    // Tập category có thể làm parent: cùng categoryType, khác chính nó, khác con của nó
+    const parentOptions = useMemo(() => {
+        const typeId = formData.categoryTypeId?.toString();
+        if (!typeId) return [];
+        const editingId = initialData?.id?.toString();
+
+        // Build danh sách id descendant của category đang edit (tránh tạo vòng lặp)
+        const descendantIds = new Set<string>();
+        if (editingId) {
+            const queue: string[] = [editingId];
+            while (queue.length > 0) {
+                const current = queue.shift()!;
+                descendantIds.add(current);
+                allCategories
+                    .filter(c => (c.parentId?.toString() ?? '') === current)
+                    .forEach(c => queue.push(c.id.toString()));
+            }
+        }
+
+        return allCategories
+            .filter(c => c.type?.id?.toString() === typeId)
+            .filter(c => !descendantIds.has(c.id.toString()))
+            .map(c => ({
+                value: c.id.toString(),
+                label: c.name,
+            }));
+    }, [allCategories, formData.categoryTypeId, initialData?.id]);
+
     const handleSubmit = async () => {
         const isValid = formSchema.safeParse(formData);
         if (!isValid.success) {
@@ -86,7 +152,18 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
             return;
         }
         setFormErrors({});
-        onSubmit(formData);
+        const payload = {
+            ...formData,
+            parentId: formData.parentId && formData.parentId !== NO_PARENT_VALUE
+                ? formData.parentId
+                : null,
+            // Cha (page) sẽ upload imageFile và gán lại vào image trước khi gọi API
+            imageFile: imageFile ?? undefined,
+            // Chuẩn hoá empty string -> null cho BE
+            color: formData.color && formData.color.trim() !== '' ? formData.color : null,
+            image: formData.image && formData.image.trim() !== '' ? formData.image : null,
+        };
+        onSubmit(payload);
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -94,10 +171,25 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
         setFormData((prev: any) => ({ ...prev, [name]: value }));
     };
     const handleChangeCategoryTypeId = (value: any) => {
-        setFormData((prev: any) => ({ ...prev, categoryTypeId: value }));
+        // Đổi category type → reset parent để tránh chọn parent khác type
+        setFormData((prev: any) => ({ ...prev, categoryTypeId: value, parentId: null }));
+    };
+    const handleChangeParentId = (value: any) => {
+        const next = value === NO_PARENT_VALUE ? null : value;
+        setFormData((prev: any) => ({ ...prev, parentId: next }));
     };
     const handleChangeIsActive = (value: any) => {
         setFormData((prev: any) => ({ ...prev, isActive: value }));
+    };
+    const handleChangeImage = (file: File | null) => {
+        setImageFile(file);
+        // Khi user xoá ảnh thì cũng clear field image trong formData
+        if (!file) {
+            setFormData((prev: any) => ({ ...prev, image: '' }));
+        }
+    };
+    const handleChangeColor = (value: string) => {
+        setFormData((prev: any) => ({ ...prev, color: value }));
     };
     return (
         <div>
@@ -192,6 +284,26 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                     )}
                 </div>
 
+                <div className="space-y-2">
+                    <Label htmlFor="parentId">{t('parentCategory')}</Label>
+                    <Select
+                        searchable
+                        searchPlaceholder={t('searchParent')}
+                        options={[
+                            { value: NO_PARENT_VALUE, label: t('noParent') },
+                            ...parentOptions,
+                        ]}
+                        placeholder={t('selectParent')}
+                        onChange={(value) => handleChangeParentId(value as any)}
+                        value={formData.parentId ?? NO_PARENT_VALUE}
+                        disabled={!formData.categoryTypeId}
+                        emptyMessage={t('noParentAvailable')}
+                    />
+                    {formErrors.parentId && (
+                        <div className="text-red-500 text-sm">{formErrors.parentId as string}</div>
+                    )}
+                </div>
+
                 <div className="flex flex-start items-center gap-6">
                     <div className="basis-[30%]">
                         <Switch
@@ -225,6 +337,66 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                     </div>
                 </div>
                 {formErrors.icon && <div className="text-red-500">{formErrors.icon}</div>}
+
+                <div className="space-y-2">
+                    <Label htmlFor="image">{t('image')}</Label>
+                    <ImageUpload
+                        value={formData.image ? formData.image : undefined}
+                        onChange={(file) => handleChangeImage(file)}
+                        placeholder={t('uploadImage')}
+                    />
+                    {formErrors.image && (
+                        <div className="text-red-500 text-sm">{formErrors.image as string}</div>
+                    )}
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="color">{t('color')}</Label>
+                    <div className="flex items-center gap-3">
+                        <input
+                            id="color"
+                            type="color"
+                            value={formData.color && HEX_COLOR_REGEX.test(formData.color) ? formData.color.slice(0, 7) : '#6366F1'}
+                            onChange={(e) => handleChangeColor(e.target.value.toUpperCase())}
+                            className="h-10 w-14 cursor-pointer rounded-md border border-gray-200 bg-white p-1"
+                            aria-label={t('color')}
+                        />
+                        <Input
+                            id="colorHex"
+                            name="color"
+                            type="text"
+                            placeholder="#6366F1"
+                            value={formData.color ?? ''}
+                            onChange={(e) => handleChangeColor(e.target.value)}
+                            className="max-w-[160px]"
+                        />
+                        {formData.color && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="h-9 px-3"
+                                onClick={() => handleChangeColor('')}
+                            >
+                                {tUtils('clear')}
+                            </Button>
+                        )}
+                    </div>
+                    <div className="flex flex-wrap items-center gap-2 pt-1">
+                        {COLOR_PRESETS.map((c) => (
+                            <button
+                                key={c}
+                                type="button"
+                                onClick={() => handleChangeColor(c)}
+                                className={`h-7 w-7 rounded-full border-2 transition ${formData.color?.toUpperCase() === c ? 'border-gray-900 ring-2 ring-offset-1 ring-gray-300' : 'border-white shadow'}`}
+                                style={{ backgroundColor: c }}
+                                aria-label={`Preset ${c}`}
+                            />
+                        ))}
+                    </div>
+                    {formErrors.color && (
+                        <div className="text-red-500 text-sm">{formErrors.color as string}</div>
+                    )}
+                </div>
 
 
                 <div className="flex justify-end space-x-4">
