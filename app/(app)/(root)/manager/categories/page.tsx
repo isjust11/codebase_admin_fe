@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
 import { createCategory, deleteCategory, getAllCategoryTypes, getCategories, getCategoriesByType, getCategoryTreeByType, updateCategory, updateCategoryStatus } from '@/services/manager-api';
-import { uploadFile } from '@/services/media-api';
+import { uploadSystemAsset } from '@/services/media-api';
 import { CategoryType } from '@/types/category-type';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Category } from '@/types/category';
@@ -290,10 +290,11 @@ export default function CategoriesManagement() {
   const handleSave = async (values: any) => {
     try {
       setLoading(true)
-      // Form trả về `imageFile` (File mới user vừa pick) — upload trước khi save
+      // Form trả về `imageFile` (File mới user vừa pick) — upload vào folder
+      // `system/categories` để dùng chung, không kèm userId trong path.
       const payload = { ...values };
       if (payload.imageFile instanceof File) {
-        const uploaded = await uploadFile(payload.imageFile);
+        const uploaded = await uploadSystemAsset(payload.imageFile, 'categories');
         payload.image = uploaded.publicRelativePath;
       }
       delete payload.imageFile;

@@ -136,4 +136,40 @@ export const uploadFile = async (file: File): Promise<Media> => {
     console.error('Error uploading file:', error);
     throw error;
   }
-}; 
+};
+
+/** Subfolders cho phép upload tài nguyên hệ thống (sync với BE whitelist). */
+export type SystemAssetSubfolder =
+  | 'categories'
+  | 'icons'
+  | 'banners'
+  | 'placeholders'
+  | 'general';
+
+/**
+ * Upload tài nguyên dùng chung của hệ thống (svg category, banner, icon...).
+ * File được lưu dưới `system/<subfolder>/<filename>` ở storage; BE yêu cầu
+ * quyền CREATE 'media' (mặc định chỉ admin có).
+ */
+export const uploadSystemAsset = async (
+  file: File,
+  subfolder: SystemAssetSubfolder = 'general',
+): Promise<Media> => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  try {
+    const response = await axiosInstance.post(
+      '/media/upload-system',
+      formData,
+      {
+        params: { subfolder },
+        headers: { 'Content-Type': 'multipart/form-data' },
+      },
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Error uploading system asset:', error);
+    throw error;
+  }
+};
