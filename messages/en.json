@@ -85,7 +85,8 @@
     "deleteFileSuccess": "Delete file success",
     "deleteFileError": "Error deleting file",
     "close": "Close",
-    "send": "Send"
+    "send": "Send",
+    "all": "All"
   },
   "ImageUpload": {
     "addImage": "Add image",

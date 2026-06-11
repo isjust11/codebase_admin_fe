@@ -77,7 +77,8 @@
     "deleteFileSuccess": "Xóa file thành công",
     "deleteFileError": "Lỗi khi xóa file",
     "close": "Đóng",
-    "send": "Gửi"
+    "send": "Gửi",
+    "all": "Tất cả"
   },
   "ImageUpload": {
     "addImage": "Thêm ảnh",

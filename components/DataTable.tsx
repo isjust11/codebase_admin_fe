@@ -34,6 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  total?: number;
   pageCount?: number;
   pageSize?: number;
   onPaginationChange?: (pageIndex: number, pageSize: number) => void
@@ -52,6 +53,7 @@ interface DataTableProps<TData, TValue> {
 export function DataTable<TData, TValue>({
   columns,
   data,
+  total,
   pageCount,
   pageSize,
   onPaginationChange,
@@ -89,18 +91,18 @@ export function DataTable<TData, TValue>({
     if (!data || !Array.isArray(data)) {
       return [];
     }
-    
+
     return data.reduce((acc: TData[], row: TData) => {
       const rowId = (row as any).id?.toString()
       acc.push(row)
-      
+
       if (rowId && expandedRows[rowId] && getRowChildren) {
         const children = getRowChildren(row)
         if (children) {
           acc.push(...getExpandedData(children))
         }
       }
-      
+
       return acc
     }, [])
   }
@@ -150,6 +152,33 @@ export function DataTable<TData, TValue>({
     }, ms);
   }
 
+  const getPaginationItems = (currentPage: number, pageCount: number) => {
+    const delta = 2;
+    const range = [];
+    const rangeWithDots = [];
+    let l;
+
+    for (let i = 1; i <= pageCount; i++) {
+      if (i === 1 || i === pageCount || (i >= currentPage - delta && i <= currentPage + delta)) {
+        range.push(i);
+      }
+    }
+
+    for (let i of range) {
+      if (l) {
+        if (i - l === 2) {
+          rangeWithDots.push(l + 1);
+        } else if (i - l !== 1) {
+          rangeWithDots.push('...');
+        }
+      }
+      rangeWithDots.push(i);
+      l = i;
+    }
+
+    return rangeWithDots;
+  };
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
@@ -188,8 +217,8 @@ export function DataTable<TData, TValue>({
                       column.toggleVisibility(!!value)
                     }
                   >
-                    {typeof column.columnDef.header === 'string' 
-                      ? column.columnDef.header 
+                    {typeof column.columnDef.header === 'string'
+                      ? column.columnDef.header
                       : column.id}
                   </DropdownMenuCheckboxItem>
                 )
@@ -302,39 +331,47 @@ export function DataTable<TData, TValue>({
                 }}
                 aria-label={t('rowsPerPage')}
               >
-                <SelectTrigger className="h-8 w-[70px] rounded-md bg-background px-2 py-1 text-sm dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90">
+                <SelectTrigger className="h-8 w-[85px] rounded-md bg-background px-2 py-1 text-sm dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90">
                   <SelectValue placeholder={t('rowsPerPage')} />
                 </SelectTrigger>
-                <SelectContent className="max-w-20">
-                {[5, 10, 20, 30, 40, 50].map((size) => (
-                  <SelectItem key={size} value={size.toString()} className="dark:text-white/90 bg-white dark:bg-white/[0.05] hover:bg-gray-200">
-                    {size}
-                  </SelectItem>
-                ))}
+                <SelectContent className="min-w-20">
+                  {Array.from(new Set([5, 10, 20, 30, 40, 50, total].filter(Boolean))).map((size) => (
+                    <SelectItem key={size} value={size!.toString()} className="dark:text-white/90 bg-white dark:bg-white/[0.05] hover:bg-gray-200">
+                      {size === total ? t('all') : size}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
             <Button
               variant="outline"
-               className="dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90"
+              className="dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90"
               size="sm"
               onClick={() => table.previousPage()}
               disabled={!table.getCanPreviousPage()}
             >
               {t('previous')}
             </Button>
-            {Array.from({ length: table.getPageCount() }, (_, i) => i + 1).map((page) => (
-              <Button
-                // className="text-white"
-                key={page}
-                variant={table.getState().pagination.pageIndex === page - 1 ? "default" : "outline"}
-                 className="dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90"
-                size="sm"
-                onClick={() => table.setPageIndex(page - 1)}
-              >
-                {page}
-              </Button>
-            ))}
+            {getPaginationItems(table.getState().pagination.pageIndex + 1, table.getPageCount()).map((page, index) => {
+              if (page === '...') {
+                return (
+                  <span key={`dots-${index}`} className="px-2 text-gray-500 dark:text-white/90 self-end mb-1">
+                    ...
+                  </span>
+                );
+              }
+              return (
+                <Button
+                  key={`page-${page}`}
+                  variant={table.getState().pagination.pageIndex === (page as number) - 1 ? "default" : "outline"}
+                  className="dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90"
+                  size="sm"
+                  onClick={() => table.setPageIndex((page as number) - 1)}
+                >
+                  {page}
+                </Button>
+              );
+            })}
             <Button
               variant="outline"
               className="dark:border-white/[0.05] dark:bg-white/[0.05] dark:text-white/90"

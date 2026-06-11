@@ -240,8 +240,8 @@ const EbooksPage = () => {
 
         return (
           <Badge variant="light" color={color}
-          onClick={() => (row.original.isPublic == true && row.original.status?.code !== 'BOOK_STATUS_APPROVED') ? handleUpdateStatus(row.original, 'BOOK_STATUS_APPROVED') : undefined}
-          disabled={ (row.original.isPublic == true && row.original.status?.code === 'BOOK_STATUS_APPROVED')}
+            onClick={() => (row.original.isPublic == true && row.original.status?.code !== 'BOOK_STATUS_APPROVED') ? handleUpdateStatus(row.original, 'BOOK_STATUS_APPROVED') : undefined}
+            disabled={(row.original.isPublic == true && row.original.status?.code === 'BOOK_STATUS_APPROVED')}
           >
             {text}
           </Badge>
@@ -300,7 +300,7 @@ const EbooksPage = () => {
                   <DropdownMenuItem
                     className="flex flex-start px-4 py-2 cursor-pointer hover:bg-green-300/20 text-green-500"
                     disabled={(book.isPublic == true && book.status?.code === 'BOOK_STATUS_APPROVED')}
-                    onClick={() =>(book.isPublic == true && book.status?.code === 'BOOK_STATUS_APPROVED') ? handleUpdateStatus(book, 'BOOK_STATUS_APPROVED') : undefined}
+                    onClick={() => (book.isPublic == true && book.status?.code === 'BOOK_STATUS_APPROVED') ? handleUpdateStatus(book, 'BOOK_STATUS_APPROVED') : undefined}
                   >
                     <Check className="mr-2 h-4 w-4" />
                     {t('approve')}
@@ -339,6 +339,7 @@ const EbooksPage = () => {
 
   const [books, setBooks] = useState<Book[]>([])
   const [pageCount, setPageCount] = useState(0)
+  const [total, setTotal] = useState(0)
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(10)
   const [search, setSearch] = useState('')
@@ -379,6 +380,7 @@ const EbooksPage = () => {
       if (response && response.data) {
         setBooks(response.data)
         setPageCount(response.totalPages)
+        setTotal(response.total)
       }
     } catch (error) {
       console.error('Error loading books:', error)
@@ -646,6 +648,7 @@ const EbooksPage = () => {
             <DataTable
               columns={columns}
               data={books}
+              total={total}
               pageCount={pageCount}
               onPaginationChange={handlePaginationChange}
               onSearchChange={handleSearch}

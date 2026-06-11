@@ -192,8 +192,8 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
         setFormData((prev: any) => ({ ...prev, color: value }));
     };
     return (
-        <div>
-            <div className="space-y-6">
+        <div className="flex flex-col">
+            <div className="space-y-6 max-h-[70vh] overflow-y-auto px-1 pb-2">
                 <div className="full-width">
                     <div className="space-y-2">
                         <Label htmlFor="name">{t('name')} <span className="text-red-500">(*)</span></Label>
@@ -397,16 +397,15 @@ export function CategoryForm({ initialData, onSubmit, onCancel, categoryTypes, s
                         <div className="text-red-500 text-sm">{formErrors.color as string}</div>
                     )}
                 </div>
+            </div>
 
-
-                <div className="flex justify-end space-x-4">
-                    <Button variant="outline" onClick={onCancel}>
-                        {tUtils('cancel')}
-                    </Button>
-                    <Button type="button" onClick={() => handleSubmit()} className="bg-blue-500 hover:bg-blue-600">
-                        {initialData ? tUtils('update') : tUtils('add')}
-                    </Button>
-                </div>
+            <div className="flex justify-end space-x-4 border-t pt-4 mt-4">
+                <Button variant="outline" onClick={onCancel}>
+                    {tUtils('cancel')}
+                </Button>
+                <Button type="button" onClick={() => handleSubmit()} className="bg-blue-500 hover:bg-blue-600">
+                    {initialData ? tUtils('update') : tUtils('add')}
+                </Button>
             </div>
             <IconPickerModal
                 isOpen={isIconPickerOpen}

@@ -41,6 +41,7 @@ export default function CategoriesManagement() {
   const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(20);
   const [pageCount, setPageCount] = useState(0);
+  const [total, setTotal] = useState(0);
   const [search, setSearch] = useState('');
   const [selectedType, setSelectedType] = useState<CategoryType | null>(null);
   const [filterByType, setFilterByType] = useState<Category[]>([]);
@@ -250,8 +251,8 @@ export default function CategoriesManagement() {
         console.log("RUN CATEGORY ", selectedType)
         handleChangeType(selectedType.id);
       } else {
-        
         setPageCount(categoriesData.totalPages);
+        setTotal(categoriesData.total);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
@@ -340,6 +341,7 @@ export default function CategoriesManagement() {
       setFilterByType(tree);
       setParentCandidates(flat);
       setPageCount(Math.ceil(tree.length / pageSize));
+      setTotal(tree.length);
     } catch (error) {
       console.error('Error fetching category tree:', error);
       toast.error(t('messages.loadError'));
@@ -395,6 +397,7 @@ export default function CategoriesManagement() {
           <DataTable
             columns={columns}
             data={filterByType}
+            total={total}
             pageCount={pageCount}
             onPaginationChange={handlePaginationChange}
             onSizeChange={handleSizeChange}
