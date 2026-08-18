@@ -1792,6 +1792,8 @@
     "htmlContent": "HTML",
     "cssContent": "CSS",
     "preview": "Preview",
+    "visualMode": "Visual",
+    "codeMode": "Code",
     "deleteTitle": "Delete template",
     "deleteDescription": "Are you sure you want to delete this template?",
     "types": {
@@ -1837,7 +1839,13 @@
     "success": "RSVP saved. Thank you!",
     "error": "Could not send RSVP",
     "notFound": "Invitation not found or expired",
-    "loading": "Loading invitation..."
+    "loading": "Loading invitation...",
+    "wishesTitle": "Guestbook",
+    "wishName": "Your name",
+    "wishMessage": "Your wish",
+    "wishSubmit": "Send wish",
+    "wishSuccess": "Wish received and waiting for approval.",
+    "wishError": "Could not send wish"
   },
   "PublicTemplatePreview": {
     "useTemplate": "Use this template",

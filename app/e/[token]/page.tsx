@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { useTranslations } from 'next-intl';
 import { toast } from 'sonner';
-import { fetchPublicInvite, markInviteViewed, submitRsvp, PublicInvitePayload } from '@/services/public-invite-api';
+import { fetchPublicInvite, markInviteViewed, submitRsvp, fetchWishes, submitWish, PublicInvitePayload } from '@/services/public-invite-api';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,10 @@ export default function PublicInvitePage() {
   const [note, setNote] = useState('');
   const [plusOnes, setPlusOnes] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+  const [wishes, setWishes] = useState<Array<{ id?: string; name: string; message: string }>>([]);
+  const [wishName, setWishName] = useState('');
+  const [wishMessage, setWishMessage] = useState('');
+  const [wishSubmitting, setWishSubmitting] = useState(false);
 
   useEffect(() => {
     if (!token) return;
@@ -32,9 +36,24 @@ export default function PublicInvitePage() {
           setPlusOnes(data.guest.plusOnes || 0);
         }
         markInviteViewed(token).catch(() => undefined);
+        fetchWishes(token).then(setWishes).catch(() => undefined);
       })
       .catch(() => setError(t('notFound')));
   }, [token, t]);
+
+  const onWish = async () => {
+    if (!wishMessage.trim()) return;
+    setWishSubmitting(true);
+    try {
+      await submitWish(token, { name: wishName || payload?.guest?.name, message: wishMessage });
+      setWishMessage('');
+      toast.success(t('wishSuccess'));
+    } catch (_err) {
+      toast.error(t('wishError'));
+    } finally {
+      setWishSubmitting(false);
+    }
+  };
 
   const onSubmit = async () => {
     setSubmitting(true);
@@ -75,7 +94,7 @@ export default function PublicInvitePage() {
             srcDoc={payload.html}
           />
         ) : null}
-        <section className="mt-6 bg-white rounded-xl p-5 shadow-sm space-y-4">
+        <section id="rsvp-form" className="mt-6 bg-white rounded-xl p-5 shadow-sm space-y-4">
           <h2 className="text-lg font-semibold">{t('rsvpTitle')}</h2>
           <div className="grid grid-cols-3 gap-2">
             {[
@@ -105,6 +124,22 @@ export default function PublicInvitePage() {
           </div>
           <Button className="w-full" onClick={onSubmit} disabled={submitting}>
             {t('submit')}
+          </Button>
+        </section>
+        <section className="mt-6 bg-white rounded-xl p-5 shadow-sm space-y-4">
+          <h2 className="text-lg font-semibold">{t('wishesTitle')}</h2>
+          <div className="space-y-3">
+            {wishes.map((wish) => (
+              <div key={wish.id || wish.message} className="rounded-lg bg-stone-50 p-3">
+                <p className="text-sm font-medium">{wish.name}</p>
+                <p className="text-sm text-stone-600">{wish.message}</p>
+              </div>
+            ))}
+          </div>
+          <Input value={wishName} onChange={(e) => setWishName(e.target.value)} placeholder={t('wishName')} />
+          <Textarea value={wishMessage} onChange={(e) => setWishMessage(e.target.value)} placeholder={t('wishMessage')} />
+          <Button className="w-full" variant="outline" onClick={onWish} disabled={wishSubmitting}>
+            {t('wishSubmit')}
           </Button>
         </section>
       </div>

@@ -6,10 +6,12 @@ export interface TemplateDto {
   slug?: string;
   type?: string;
   thumbnailUrl?: string;
-  htmlContent: string;
+  htmlContent?: string;
   cssContent?: string;
   variablesSchema?: TemplateVariable[];
   isPublished?: boolean;
   isPremium?: boolean;
   description?: string;
+  layoutJson?: Record<string, any>;
+  editorMode?: 'visual' | 'code';
 }

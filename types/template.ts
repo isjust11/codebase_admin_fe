@@ -1,10 +1,10 @@
 export type TemplateVariable = {
   key: string;
   label?: string;
-  type?: 'text' | 'date' | 'image' | 'url' | 'richtext';
+  type?: 'text' | 'date' | 'image' | 'url' | 'richtext' | 'gallery' | 'map' | 'json';
   scope?: 'event' | 'guest' | 'system';
   required?: boolean;
-  defaultValue?: string;
+  defaultValue?: any;
 };
 
 export interface Template {
@@ -13,7 +13,7 @@ export interface Template {
   slug?: string;
   type?: string;
   thumbnailUrl?: string;
-  htmlContent: string;
+  htmlContent?: string;
   cssContent?: string;
   variablesSchema?: TemplateVariable[];
   isPublished?: boolean;
@@ -21,6 +21,8 @@ export interface Template {
   status?: 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'REJECTED';
   description?: string;
   reviewNote?: string;
+  layoutJson?: Record<string, any>;
+  editorMode?: 'visual' | 'code';
   createdAt?: Date;
   updatedAt?: Date;
 }

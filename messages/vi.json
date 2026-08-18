@@ -1835,6 +1835,8 @@
     "htmlContent": "HTML",
     "cssContent": "CSS",
     "preview": "Xem trước",
+    "visualMode": "Visual",
+    "codeMode": "Code",
     "deleteTitle": "Xóa mẫu thiệp",
     "deleteDescription": "Bạn có chắc chắn muốn xóa mẫu thiệp này?",
     "types": {
@@ -1880,7 +1882,13 @@
     "success": "Đã ghi nhận RSVP. Cảm ơn bạn!",
     "error": "Không gửi được RSVP, vui lòng thử lại",
     "notFound": "Thiệp không tồn tại hoặc đã hết hạn",
-    "loading": "Đang tải thiệp..."
+    "loading": "Đang tải thiệp...",
+    "wishesTitle": "Sổ lời chúc",
+    "wishName": "Tên của bạn",
+    "wishMessage": "Lời chúc",
+    "wishSubmit": "Gửi lời chúc",
+    "wishSuccess": "Đã ghi nhận lời chúc, chờ duyệt.",
+    "wishError": "Không gửi được lời chúc"
   },
   "PublicTemplatePreview": {
     "useTemplate": "Dùng mẫu này",

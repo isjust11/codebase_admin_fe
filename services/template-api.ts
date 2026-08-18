@@ -67,3 +67,31 @@ export const previewTemplate = async (id: string, sampleData?: Record<string, an
   const response = await axiosInstance.post(`/templates/${id}/preview`, { sampleData: sampleData || {} });
   return response.data;
 };
+
+export const previewTemplateDraft = async (payload: {
+  htmlContent?: string;
+  cssContent?: string;
+  layoutJson?: Record<string, any>;
+  editorMode?: string;
+  name?: string;
+  sampleData?: Record<string, any>;
+}): Promise<{ html: string; compiled?: { htmlContent: string; cssContent: string; variablesSchema: any[] } }> => {
+  const response = await axiosInstance.post('/templates/preview-draft', payload);
+  return response.data;
+};
+
+export const getTemplateStarters = async (): Promise<{
+  sections: Array<{ type: string; label: string }>;
+  starters: Array<{
+    id: string;
+    name: string;
+    description?: string;
+    html: string;
+    css: string;
+    layoutJson: Record<string, any>;
+    variablesSchema: any[];
+  }>;
+}> => {
+  const response = await axiosInstance.get('/templates/starters');
+  return response.data;
+};

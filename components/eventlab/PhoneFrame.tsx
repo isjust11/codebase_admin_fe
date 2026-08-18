@@ -25,6 +25,7 @@ export default function PhoneFrame({ html, title = 'preview', className = '' }: 
             className="h-full w-full border-0 bg-white"
             style={{ borderRadius: 30 }}
             srcDoc={html}
+            sandbox="allow-scripts allow-same-origin allow-popups"
           />
         ) : (
           <div
