@@ -52,6 +52,10 @@ export const AppRoutes = {
     UserSubscriptionsDetail: '/manager/user-subscriptions',
     Payments: '/manager/payments',
     PaymentsDetail: '/manager/payments',
+    Templates: '/manager/templates',
+    TemplatesCreate: '/manager/templates/create',
+    TemplatesUpdate: '/manager/templates/update',
+    TemplatesMine: '/manager/templates/mine',
   }
 }
 export const AppApi = {

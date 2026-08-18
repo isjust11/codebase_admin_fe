@@ -1,14 +1,14 @@
 module.exports.SITE = {
-    name: 'Base Admin',
+    name: 'EventLab',
     logo: '/images/logo/base.svg',
     logoDark: '/images/logo/base-dark.svg',
     icon: '/images/logo/icon.svg',
-    origin: 'https://base.admin',
+    origin: 'https://eventlab.app',
     basePathname: '/',
     trailingSlash: false,
   
-    title: 'Base - Admin web system',
-    description: 'Hệ thống quản trị website',
+    title: 'EventLab - Admin',
+    description: 'Hệ thống quản trị EventLab — tạo và quản lý thiệp sự kiện',
 
   };
   
