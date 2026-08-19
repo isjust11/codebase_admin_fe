@@ -55,6 +55,8 @@ export const AppRoutes = {
     Templates: '/manager/templates',
     TemplatesCreate: '/manager/templates/create',
     TemplatesUpdate: '/manager/templates/update',
+    TemplatesStudioCreate: '/manager/templates/studio/create',
+    TemplatesStudioUpdate: '/manager/templates/studio/update',
     TemplatesMine: '/manager/templates/mine',
   }
 }

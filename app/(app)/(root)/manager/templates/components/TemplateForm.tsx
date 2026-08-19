@@ -35,6 +35,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import TemplateCodeEditor from './TemplateCodeEditor';
 import TemplateVisualComposer from './TemplateVisualComposer';
 import { defaultWeddingLayout, LayoutJson } from '@/lib/wedding-layout';
+import { Expand } from 'lucide-react';
 
 const DEFAULT_HTML = `<div class="card">
   <h1>{{eventTitle}}</h1>
@@ -64,7 +65,11 @@ const schema = (t: any) =>
     name: z.string().min(2, t('validation.nameRequired')),
   });
 
-export default function TemplateForm() {
+interface TemplateFormProps {
+  isStudio?: boolean;
+}
+
+export default function TemplateForm({ isStudio = false }: TemplateFormProps) {
   const t = useTranslations('TemplatePage');
   const tUtils = useTranslations('Utils');
   const { navigateTo, back } = useLoading();
@@ -226,6 +231,13 @@ export default function TemplateForm() {
 
   const canSubmitReview = !!id && (status === 'DRAFT' || status === 'REJECTED');
 
+  const openStudioPage = () => {
+    const studioPath = id
+      ? `${AppRoutes.Manager.TemplatesStudioUpdate}/${id}`
+      : AppRoutes.Manager.TemplatesStudioCreate;
+    window.open(studioPath, '_blank', 'noopener,noreferrer');
+  };
+
   const actions: Action[] = [
     {
       icon: <Save className="w-4 h-4 mr-2" />,
@@ -249,13 +261,27 @@ export default function TemplateForm() {
       title: tUtils('cancel'),
       variant: 'outline',
     },
+    ...(!isStudio
+      ? [
+          {
+            icon: <Expand className="w-4 h-4 mr-2" />,
+            onClick: openStudioPage,
+            title: 'Mở không gian rộng',
+            variant: 'outline' as const,
+          },
+        ]
+      : []),
   ];
 
   return (
-    <div>
-      <PageBreadcrumb pageTitle={id ? t('updateTemplate') : t('addTemplate')} />
-      <ComponentCard title={id ? t('updateTemplate') : t('addTemplate')} listAction={actions}>
-        <div className="grid gap-6 xl:grid-cols-[1fr_340px]">
+    <div className={isStudio ? 'min-h-screen bg-gray-50 p-4 md:p-6' : ''}>
+      {!isStudio && <PageBreadcrumb pageTitle={id ? t('updateTemplate') : t('addTemplate')} />}
+      <ComponentCard
+        title={id ? t('updateTemplate') : t('addTemplate')}
+        listAction={actions}
+        maxHeight={isStudio ? 'calc(100vh - 130px)' : 'calc(100vh - 250px)'}
+      >
+        <div className={`grid gap-6 ${isStudio ? '2xl:grid-cols-[1fr_420px]' : 'xl:grid-cols-[1fr_340px]'}`}>
           <div className="space-y-4">
             <div>
               <Label>{t('name')}</Label>
@@ -428,7 +454,7 @@ export default function TemplateForm() {
               </TabsContent>
             </Tabs>
           </div>
-          <div className="space-y-3">
+          <div className={`space-y-3 ${isStudio ? '2xl:sticky 2xl:top-2 self-start' : ''}`}>
             <Label>{t('preview')}</Label>
             <PhoneFrame html={previewHtml} title={formData.name || 'preview'} />
           </div>
