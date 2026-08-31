@@ -23,6 +23,7 @@ import {
   LayoutSection,
   SECTION_CATALOG,
 } from '@/lib/wedding-layout';
+import InlineSlotEditor from '@/components/eventlab/InlineSlotEditor';
 
 const SECTION_FIELD_MAP: Record<string, Array<{ key: string; label: string; type: 'text' | 'color' | 'number' | 'textarea' }>> = {
   cover: [
@@ -229,23 +230,72 @@ export default function TemplateVisualComposer({ layout, onChange }: Props) {
                 >
                   <style>{String(props.css || '')}</style>
                   <div className="visual-section-preview">
-                    <div className="text-xs uppercase tracking-[0.2em] opacity-70">
+                    <div className="text-xs uppercase tracking-[0.2em] opacity-70 mb-2">
                       {SECTION_CATALOG.find((item) => item.type === section.type)?.label || section.type}
                     </div>
-                    <div className="mt-2 text-2xl font-bold" style={{ color: String(props.textColor || '#1f2937') }}>
-                      {String(props.title || 'Tiêu đề')}
-                    </div>
-                    {props.subtitle ? (
-                      <div className="mt-2 text-sm opacity-80">{String(props.subtitle)}</div>
+                    <InlineSlotEditor
+                      value={String(props.title || 'Tiêu đề')}
+                      label="Tiêu đề"
+                      onChange={(val) => {
+                        const patch = { title: val };
+                        onChange({
+                          ...layout,
+                          sections: layout.sections.map((item) =>
+                            item.id === section.id ? { ...item, props: { ...(item.props || {}), ...patch } } : item
+                          ),
+                        });
+                      }}
+                    >
+                      <div className="text-2xl font-bold" style={{ color: String(props.textColor || '#1f2937') }}>
+                        {String(props.title || 'Tiêu đề')}
+                      </div>
+                    </InlineSlotEditor>
+                    
+                    {props.subtitle !== undefined ? (
+                      <div className="mt-2">
+                        <InlineSlotEditor
+                          value={String(props.subtitle)}
+                          type="textarea"
+                          label="Phụ đề / Mô tả"
+                          onChange={(val) => {
+                            const patch = { subtitle: val };
+                            onChange({
+                              ...layout,
+                              sections: layout.sections.map((item) =>
+                                item.id === section.id ? { ...item, props: { ...(item.props || {}), ...patch } } : item
+                              ),
+                            });
+                          }}
+                        >
+                          <div className="text-sm opacity-80">{String(props.subtitle)}</div>
+                        </InlineSlotEditor>
+                      </div>
                     ) : null}
-                    {props.buttonText ? (
-                      <button
-                        type="button"
-                        className="mt-4 rounded-full px-4 py-2 text-sm font-medium"
-                        style={{ background: String(props.accentColor || '#c9a227'), color: '#ffffff' }}
-                      >
-                        {String(props.buttonText)}
-                      </button>
+                    
+                    {props.buttonText !== undefined ? (
+                      <div className="mt-4">
+                        <InlineSlotEditor
+                          value={String(props.buttonText)}
+                          label="Nút CTA"
+                          onChange={(val) => {
+                            const patch = { buttonText: val };
+                            onChange({
+                              ...layout,
+                              sections: layout.sections.map((item) =>
+                                item.id === section.id ? { ...item, props: { ...(item.props || {}), ...patch } } : item
+                              ),
+                            });
+                          }}
+                        >
+                          <button
+                            type="button"
+                            className="rounded-full px-4 py-2 text-sm font-medium"
+                            style={{ background: String(props.accentColor || '#c9a227'), color: '#ffffff' }}
+                          >
+                            {String(props.buttonText || 'Xác nhận')}
+                          </button>
+                        </InlineSlotEditor>
+                      </div>
                     ) : null}
                   </div>
                 </div>

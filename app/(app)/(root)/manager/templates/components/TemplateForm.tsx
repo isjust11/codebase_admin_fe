@@ -142,8 +142,8 @@ export default function TemplateForm({ isStudio = false }: TemplateFormProps) {
         type: data.type || 'EVENT',
         thumbnailUrl: data.thumbnailUrl || '',
         description: data.description || '',
-        htmlContent: data.htmlContent,
-        cssContent: data.cssContent || '',
+        htmlContent: data.htmlContent || DEFAULT_HTML,
+        cssContent: data.cssContent || DEFAULT_CSS,
         isPublished: !!data.isPublished,
         isPremium: !!data.isPremium,
       });
