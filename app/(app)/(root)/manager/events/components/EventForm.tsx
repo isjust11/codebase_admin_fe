@@ -28,6 +28,7 @@ export default function EventForm() {
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [templates, setTemplates] = useState<SelectOption[]>([]);
+  const [allTemplates, setAllTemplates] = useState<any[]>([]);
   
   const [formData, setFormData] = useState<EventDto>({
     title: '',
@@ -57,6 +58,7 @@ export default function EventForm() {
   useEffect(() => {
     // Load available templates
     getTemplates({ size: 100 }).then(res => {
+      setAllTemplates(res.data);
       setTemplates(res.data.map((t: any) => ({ value: t.id, label: t.name })));
     }).catch(console.error);
 
@@ -133,6 +135,8 @@ export default function EventForm() {
     },
   ];
 
+  const selectedTemplate = allTemplates.find(t => String(t.id) === String(formData.templateId));
+
   return (
     <div>
       <PageBreadcrumb pageTitle={id ? 'Update Event' : 'Add Event'} />
@@ -198,6 +202,12 @@ export default function EventForm() {
                 value={formData.templateId as string}
                 onChange={(value) => setFormData({ ...formData, templateId: Array.isArray(value) ? value[0] : value as string })}
               />
+              {selectedTemplate?.thumbnailUrl && (
+                <div className="mt-4">
+                  <p className="mb-2 text-sm text-stone-500">Template Preview</p>
+                  <img src={selectedTemplate.thumbnailUrl} alt="Template Preview" className="w-full max-w-[240px] rounded-xl border object-cover shadow-sm" />
+                </div>
+              )}
             </div>
           </div>
           <div className="space-y-4">

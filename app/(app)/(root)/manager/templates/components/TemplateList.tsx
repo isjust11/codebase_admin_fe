@@ -175,6 +175,7 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
       },
     },
     { accessorKey: 'name', header: t('name') },
+    { accessorKey: 'slug', header: 'Slug' },
     { accessorKey: 'type', header: t('type') },
     {
       accessorKey: 'status',

@@ -1,5 +1,5 @@
 export type PublicTemplatePreview = {
-  html: string;
+  reactInviteUrl?: string;
   template: {
     id?: string;
     name?: string;

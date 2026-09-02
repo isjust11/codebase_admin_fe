@@ -63,7 +63,7 @@ export default function PublicTemplatePreviewPage() {
     <div className="min-h-screen bg-[#efe6d9]">
       <Toaster position="top-center" richColors />
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 lg:flex-row lg:items-start lg:justify-center">
-        <PhoneFrame html={payload.html} title={payload.template?.name || 'EventLab'} />
+        <PhoneFrame url={payload.reactInviteUrl} title={payload.template?.name || 'EventLab'} />
         <aside className="w-full max-w-sm space-y-5 rounded-2xl bg-white/70 p-6 shadow-sm backdrop-blur">
           <div>
             <p className="text-xs uppercase tracking-wide text-stone-500">EventLab</p>

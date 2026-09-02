@@ -2,11 +2,12 @@
 
 type PhoneFrameProps = {
   html?: string;
+  url?: string;
   title?: string;
   className?: string;
 };
 
-export default function PhoneFrame({ html, title = 'preview', className = '' }: PhoneFrameProps) {
+export default function PhoneFrame({ html, url, title = 'preview', className = '' }: PhoneFrameProps) {
   return (
     <div className={`flex justify-center ${className}`}>
       <div
@@ -19,7 +20,15 @@ export default function PhoneFrame({ html, title = 'preview', className = '' }: 
         }}
       >
         <div className="absolute top-3 left-1/2 z-10 h-5 w-24 -translate-x-1/2 rounded-full bg-neutral-950" />
-        {html ? (
+        {url ? (
+          <iframe
+            title={title}
+            className="h-full w-full border-0 bg-white"
+            style={{ borderRadius: 30 }}
+            src={url}
+            sandbox="allow-scripts allow-same-origin allow-popups"
+          />
+        ) : html ? (
           <iframe
             title={title}
             className="h-full w-full border-0 bg-white"
