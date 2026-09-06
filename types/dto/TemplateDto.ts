@@ -14,4 +14,5 @@ export interface TemplateDto {
   description?: string;
   layoutJson?: Record<string, any>;
   editorMode?: 'visual' | 'code';
+  data?: Record<string, any>;
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, ChangeEvent } from 'react';
 import { useParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -11,12 +11,13 @@ import {
   getTemplate,
   submitTemplate,
   updateTemplate,
+  importSchema,
 } from '@/services/template-api';
 import { uploadFile } from '@/services/media-api';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { Action } from '@/types/actions';
-import { Plus, Save, Trash, X, Send } from 'lucide-react';
+import { Plus, Save, Trash, X, Send, Upload } from 'lucide-react';
 import { useLoading } from '@/contexts/LoadingContext';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
@@ -56,6 +57,7 @@ export default function TemplateForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState('DRAFT');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -166,6 +168,26 @@ export default function TemplateForm() {
 
   const canSubmitReview = !!id && (status === 'DRAFT' || status === 'REJECTED');
 
+  const handleImportSchemaClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !id) return;
+    try {
+      setLoading(true);
+      await importSchema(id, file);
+      toast.success(tUtils('success') || 'Schema imported successfully');
+      await loadTemplate(id);
+    } catch (_error) {
+      toast.error(tUtils('error') || 'Failed to import schema');
+    } finally {
+      setLoading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
+
   const actions: Action[] = [
     {
       icon: <Save className="w-4 h-4 mr-2" />,
@@ -183,6 +205,16 @@ export default function TemplateForm() {
           },
         ]
       : []),
+    ...(id
+      ? [
+          {
+            icon: <Upload className="w-4 h-4 mr-2" />,
+            onClick: handleImportSchemaClick,
+            title: 'Import Schema',
+            variant: 'outline' as const,
+          },
+        ]
+      : []),
     {
       icon: <X className="w-4 h-4 mr-2" />,
       onClick: () => back(),
@@ -193,6 +225,7 @@ export default function TemplateForm() {
 
   return (
     <div>
+      <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
       <PageBreadcrumb pageTitle={id ? t('updateTemplate') : t('addTemplate')} />
       <ComponentCard
         title={id ? t('updateTemplate') : t('addTemplate')}

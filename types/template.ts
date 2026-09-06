@@ -25,4 +25,5 @@ export interface Template {
   editorMode?: 'visual' | 'code';
   createdAt?: Date;
   updatedAt?: Date;
+  data?: Record<string, any>;
 }
