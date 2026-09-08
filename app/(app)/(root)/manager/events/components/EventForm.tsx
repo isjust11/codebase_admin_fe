@@ -29,7 +29,7 @@ export default function EventForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [templates, setTemplates] = useState<SelectOption[]>([]);
   const [allTemplates, setAllTemplates] = useState<any[]>([]);
-  
+
   const [formData, setFormData] = useState<EventDto>({
     title: '',
     slug: '',
@@ -90,7 +90,7 @@ export default function EventForm() {
       toast.error('Title is required');
       return;
     }
-    
+
     setLoading(true);
     try {
       let coverImageUrl = formData.coverImageUrl;
@@ -98,7 +98,7 @@ export default function EventForm() {
         const uploaded = await uploadFile(selectedFile);
         coverImageUrl = uploaded.url || uploaded.publicRelativePath || coverImageUrl;
       }
-      
+
       const payload = {
         ...formData,
         coverImageUrl,
@@ -200,7 +200,28 @@ export default function EventForm() {
               <Select
                 options={templates}
                 value={formData.templateId as string}
-                onChange={(value) => setFormData({ ...formData, templateId: Array.isArray(value) ? value[0] : value as string })}
+                onChange={(value) => {
+                  const templateId = Array.isArray(value) ? value[0] : value as string;
+                  const template = allTemplates.find(t => String(t.id) === templateId);
+                  let initialData = { ...(formData.eventData || {}) };
+
+                  // Auto-populate from schema defaults when template changes
+                  const dataEntries = Array.isArray(template?.data)
+                    ? template.data.map((d: any) => [d.fieldKey, { type: d.fieldType, value: d.value }])
+                    : Object.entries(template?.data || {});
+
+                  dataEntries.forEach(([fieldKey, d]: [string, any]) => {
+                    if (initialData[fieldKey] === undefined && d.value !== undefined && d.value !== null) {
+                      let val = d.value;
+                      if (d.type === 'json' || d.type === 'textarea') {
+                        try { val = JSON.parse(val); } catch(e) {}
+                      }
+                      initialData[fieldKey] = val;
+                    }
+                  });
+
+                  setFormData({ ...formData, templateId, eventData: initialData });
+                }}
               />
               {selectedTemplate?.thumbnailUrl && (
                 <div className="mt-4">
@@ -209,6 +230,54 @@ export default function EventForm() {
                 </div>
               )}
             </div>
+
+            {/* Dynamic Template Data Form */}
+            {selectedTemplate?.data && Object.keys(selectedTemplate.data).length > 0 && (
+              <div className="col-span-1 sm:col-span-2 mt-6 pt-6 border-t border-stone-200">
+                <h3 className="mb-4 text-lg font-medium">Custom Event Data (Template Variables)</h3>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {(Array.isArray(selectedTemplate.data)
+                    ? selectedTemplate.data.map((d: any) => [d.fieldKey, { type: d.fieldType, config: d.config }])
+                    : Object.entries(selectedTemplate.data)
+                  ).map(([fieldKey, schemaField]: [string, any]) => {
+                    const isJson = schemaField.type === 'json' || schemaField.type === 'textarea';
+                    const val = formData.eventData?.[fieldKey];
+                    const displayVal = (isJson && typeof val === 'object') ? JSON.stringify(val, null, 2) : (val || '');
+
+                    return (
+                      <div key={fieldKey} className={isJson ? "sm:col-span-2" : ""}>
+                        <Label>{schemaField.config?.display || fieldKey}</Label>
+                        {isJson ? (
+                          <textarea
+                            className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            value={displayVal}
+                            onChange={(e) => {
+                              let newVal: any = e.target.value;
+                              if (schemaField.type === 'json') {
+                                try { newVal = JSON.parse(newVal); } catch (err) { /* keep as string if incomplete json */ }
+                              }
+                              setFormData({
+                                ...formData,
+                                eventData: { ...(formData.eventData || {}), [fieldKey]: newVal }
+                              });
+                            }}
+                          />
+                        ) : (
+                          <Input
+                            type={schemaField.type === 'date' ? 'datetime-local' : 'text'}
+                            value={displayVal}
+                            onChange={(e) => setFormData({
+                              ...formData,
+                              eventData: { ...(formData.eventData || {}), [fieldKey]: e.target.value }
+                            })}
+                          />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
           </div>
           <div className="space-y-4">
             <div>
