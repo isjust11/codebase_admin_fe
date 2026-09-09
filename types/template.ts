@@ -15,7 +15,7 @@ export interface Template {
   thumbnailUrl?: string;
   htmlContent?: string;
   cssContent?: string;
-  variablesSchema?: TemplateVariable[];
+
   isPublished?: boolean;
   isPremium?: boolean;
   status?: 'DRAFT' | 'PENDING' | 'PUBLISHED' | 'REJECTED';

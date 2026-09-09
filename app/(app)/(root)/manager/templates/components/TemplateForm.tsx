@@ -30,13 +30,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 
-const DEFAULT_VARS: TemplateVariable[] = [
-  { key: 'brideName', label: 'Tên cô dâu', type: 'text', scope: 'event', required: true },
-  { key: 'groomName', label: 'Tên chú rể', type: 'text', scope: 'event', required: true },
-  { key: 'eventDate', label: 'Ngày sự kiện', type: 'date', scope: 'event', required: true },
-  { key: 'venue', label: 'Địa điểm', type: 'text', scope: 'event' },
-  { key: 'guestName', label: 'Tên khách', type: 'text', scope: 'guest', required: true },
-];
 
 const schema = (t: any) =>
   z.object({
@@ -52,13 +45,13 @@ export default function TemplateForm() {
   const params = useParams();
   const id = params.id?.toString();
   const canPublish = hasPermission('TEMPLATE_PUBLISH');
-  
+
   const [loading, setLoading] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState('DRAFT');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -68,8 +61,8 @@ export default function TemplateForm() {
     isPublished: false,
     isPremium: false,
   });
-  
-  const [variables, setVariables] = useState<TemplateVariable[]>(DEFAULT_VARS);
+
+  const [variables, setVariables] = useState<TemplateVariable[]>([]);
 
   const typeOptions: SelectOption[] = [
     { value: 'WEDDING', label: t('types.WEDDING') },
@@ -95,7 +88,16 @@ export default function TemplateForm() {
         isPremium: !!data.isPremium,
       });
       setStatus(data.status || (data.isPublished ? 'PUBLISHED' : 'DRAFT'));
-      setVariables(data.variablesSchema?.length ? data.variablesSchema : DEFAULT_VARS);
+      const schemaKeys = data.data ? Object.keys(data.data) : [];
+      let mergedVars: TemplateVariable[] = [];
+
+      if (schemaKeys.length > 0) {
+        mergedVars = schemaKeys.map((key) => {
+          const val = data.data![key];
+          return { key, defaultValue: val.value !== undefined ? val.value : val.defaul };
+        });
+      }
+      setVariables(mergedVars);
     } catch (_error) {
       toast.error(t('messages.loadError'));
     }
@@ -114,7 +116,7 @@ export default function TemplateForm() {
       toast.error(t('validation.validationError'));
       return;
     }
-    
+
     setLoading(true);
     try {
       let thumbnailUrl = formData.thumbnailUrl;
@@ -122,7 +124,7 @@ export default function TemplateForm() {
         const uploaded = await uploadFile(selectedFile);
         thumbnailUrl = uploaded.url || uploaded.publicRelativePath || thumbnailUrl;
       }
-      
+
       const payload = {
         name: formData.name,
         slug: formData.slug,
@@ -131,12 +133,11 @@ export default function TemplateForm() {
         description: formData.description,
         htmlContent: '', // Empty because we use React host now
         cssContent: '', // Empty because we use React host now
-        variablesSchema: variables.filter((v) => v.key.trim()),
         isPremium: formData.isPremium,
         editorMode: 'code' as const,
         ...(canPublish ? { isPublished: formData.isPublished } : {}),
       };
-      
+
       if (id) {
         await updateTemplate(id, payload);
         toast.success(t('messages.updateSuccess'));
@@ -197,23 +198,23 @@ export default function TemplateForm() {
     },
     ...(canSubmitReview
       ? [
-          {
-            icon: <Send className="w-4 h-4 mr-2" />,
-            onClick: handleSubmitReview,
-            title: t('submitReview'),
-            variant: 'outline' as const,
-          },
-        ]
+        {
+          icon: <Send className="w-4 h-4 mr-2" />,
+          onClick: handleSubmitReview,
+          title: t('submitReview'),
+          variant: 'outline' as const,
+        },
+      ]
       : []),
     ...(id
       ? [
-          {
-            icon: <Upload className="w-4 h-4 mr-2" />,
-            onClick: handleImportSchemaClick,
-            title: 'Import Schema',
-            variant: 'outline' as const,
-          },
-        ]
+        {
+          icon: <Upload className="w-4 h-4 mr-2" />,
+          onClick: handleImportSchemaClick,
+          title: 'Import Schema',
+          variant: 'outline' as const,
+        },
+      ]
       : []),
     {
       icon: <X className="w-4 h-4 mr-2" />,
@@ -242,7 +243,7 @@ export default function TemplateForm() {
               />
               {formErrors.name && <p className="text-sm text-red-500">{formErrors.name}</p>}
             </div>
-            
+
             <div>
               <Label>Slug (React Package Name)</Label>
               <Input
@@ -262,7 +263,7 @@ export default function TemplateForm() {
                 className="min-h-20"
               />
             </div>
-            
+
             {id && (
               <div className="flex items-center gap-2 text-sm">
                 <span className="text-gray-500">{t('status')}:</span>
@@ -277,7 +278,7 @@ export default function TemplateForm() {
                 </Badge>
               </div>
             )}
-            
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <Label>{t('type')}</Label>
@@ -295,7 +296,7 @@ export default function TemplateForm() {
                 />
               </div>
             </div>
-            
+
             <div className="flex items-center gap-6">
               {canPublish && (
                 <label className="flex items-center gap-2">
@@ -318,36 +319,27 @@ export default function TemplateForm() {
 
           <div className="space-y-4">
             <div className="mb-2 flex items-center justify-between">
-              <Label>{t('variables')}</Label>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() =>
-                  setVariables([...variables, { key: '', label: '', type: 'text', scope: 'event', required: false }])
-                }
-              >
-                <Plus className="mr-1 h-4 w-4" /> {t('addVariable')}
-              </Button>
+              <Label>
+                {t('variables')}
+                <span className="ml-2 text-xs font-normal text-gray-500">
+                  (Được tải tự động từ schema)
+                </span>
+              </Label>
             </div>
-            
+
             <div className="space-y-2 border rounded-xl p-4 bg-gray-50">
               {variables.map((variable, index) => (
                 <div key={`${variable.key}-${index}`} className="grid grid-cols-12 items-center gap-2">
                   <Input
-                    className="col-span-3"
+                    className="col-span-4 bg-gray-100"
                     placeholder="key"
                     value={variable.key}
-                    onChange={(e) => {
-                      const next = [...variables];
-                      next[index] = { ...variable, key: e.target.value };
-                      setVariables(next);
-                    }}
+                    disabled
                   />
                   <Input
-                    className="col-span-4"
+                    className="col-span-5"
                     placeholder={t('label')}
-                    value={variable.label || ''}
+                    value={variable.defaultValue || ''}
                     onChange={(e) => {
                       const next = [...variables];
                       next[index] = { ...variable, label: e.target.value };
@@ -366,19 +358,10 @@ export default function TemplateForm() {
                     <option value="event">event</option>
                     <option value="guest">guest</option>
                   </select>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="col-span-2 text-red-500"
-                    onClick={() => setVariables(variables.filter((_, i) => i !== index))}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
                 </div>
               ))}
               {variables.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">No variables defined</p>
+                <p className="text-sm text-gray-500 text-center py-4">Chưa có dữ liệu schema (Vui lòng Import Schema)</p>
               )}
             </div>
           </div>
