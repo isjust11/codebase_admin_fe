@@ -58,8 +58,12 @@ export default function EventForm() {
   useEffect(() => {
     // Load available templates
     getTemplates({ size: 100 }).then(res => {
-      setAllTemplates(res.data);
-      setTemplates(res.data.map((t: any) => ({ value: t.id, label: t.name })));
+      const items = res.data || [];
+      setAllTemplates(items);
+      setTemplates(items.map((t: any) => ({
+        value: t.id.toString(),
+        label: t.name
+      })));
     }).catch(console.error);
 
     if (id) {
@@ -82,6 +86,22 @@ export default function EventForm() {
       });
     } catch (_error) {
       toast.error('Could not load event data');
+    }
+  };
+
+  const handleDynamicImageUpload = async (file: File | null, onUploadSuccess: (url: string) => void) => {
+    if (!file) {
+      onUploadSuccess('');
+      return;
+    }
+    try {
+      toast.info('Uploading image...', { id: 'upload-image' });
+      const uploaded = await uploadFile(file);
+      const url = uploaded.url || uploaded.publicRelativePath || '';
+      onUploadSuccess(url);
+      toast.success('Image uploaded successfully', { id: 'upload-image' });
+    } catch (error) {
+      toast.error('Failed to upload image', { id: 'upload-image' });
     }
   };
 
@@ -214,7 +234,7 @@ export default function EventForm() {
                     if (initialData[fieldKey] === undefined && d.value !== undefined && d.value !== null) {
                       let val = d.value;
                       if (d.type === 'json' || d.type === 'textarea') {
-                        try { val = JSON.parse(val); } catch(e) {}
+                        try { val = JSON.parse(val); } catch (e) { }
                       }
                       initialData[fieldKey] = val;
                     }
@@ -240,20 +260,102 @@ export default function EventForm() {
                     ? selectedTemplate.data.map((d: any) => [d.fieldKey, { type: d.fieldType, config: d.config }])
                     : Object.entries(selectedTemplate.data)
                   ).map(([fieldKey, schemaField]: [string, any]) => {
-                    const isJson = schemaField.type === 'json' || schemaField.type === 'textarea';
+                    const isJson = schemaField.type?.toLowerCase() === 'json' || schemaField.type?.toLowerCase() === 'textarea';
+                    const isArray = schemaField.type?.toLowerCase() === 'array';
                     const val = formData.eventData?.[fieldKey];
+
+                    const fieldLabel = schemaField.labelVi || schemaField.labelEn || schemaField.config?.display || fieldKey;
+
+                    if (isArray) {
+                      const arrayItems = Array.isArray(val) ? val : [];
+                      return (
+                        <div key={fieldKey} className="sm:col-span-2 border rounded-xl p-5 bg-stone-50/50 space-y-4">
+                          <Label className="flex items-center gap-1 font-semibold text-base text-blue-900">
+                            {fieldLabel}
+                            {schemaField.required && <span className="text-red-500">*</span>}
+                          </Label>
+                          {schemaField.placeHolder && <p className="text-sm text-stone-500">{schemaField.placeHolder}</p>}
+
+                          <div className="space-y-4">
+                            {arrayItems.map((item, itemIdx) => (
+                              <div key={itemIdx} className="p-4 bg-white border rounded-lg shadow-sm relative group">
+                                <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <button type="button" onClick={() => {
+                                    const newArr = [...arrayItems];
+                                    newArr.splice(itemIdx, 1);
+                                    setFormData({ ...formData, eventData: { ...formData.eventData, [fieldKey]: newArr } });
+                                  }} className="text-red-500 hover:bg-red-50 rounded-md p-1.5 transition-colors" title="Xóa mục này">
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </div>
+                                <h4 className="text-sm font-medium mb-4 text-stone-400"># {itemIdx + 1}</h4>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                  {Object.entries(schemaField.itemSchema || {}).map(([subKey, subField]: [string, any]) => {
+                                    const subLabel = subField.labelVi || subField.labelEn || subKey;
+                                    return (
+                                      <div key={subKey}>
+                                        <Label className="text-xs mb-1.5 block text-stone-600">{subLabel}</Label>
+                                        {subField.type?.toLowerCase() === 'image' ? (
+                                          <ImageUpload
+                                            value={item[subKey] || ''}
+                                            onChange={(file) => {
+                                              handleDynamicImageUpload(Array.isArray(file) ? file[0] : file, (url) => {
+                                                const newArr = [...arrayItems];
+                                                newArr[itemIdx] = { ...newArr[itemIdx], [subKey]: url };
+                                                setFormData({ ...formData, eventData: { ...formData.eventData, [fieldKey]: newArr } });
+                                              });
+                                            }}
+                                          />
+                                        ) : (
+                                          <Input
+                                            className="h-9 text-sm bg-stone-50/30"
+                                            placeholder={subField.placeHolder || ''}
+                                            value={item[subKey] || ''}
+                                            onChange={(e) => {
+                                              const newArr = [...arrayItems];
+                                              newArr[itemIdx] = { ...newArr[itemIdx], [subKey]: e.target.value };
+                                              setFormData({ ...formData, eventData: { ...formData.eventData, [fieldKey]: newArr } });
+                                            }}
+                                          />
+                                        )}
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          <button
+                            type="button"
+                            className="mt-2 text-sm text-blue-600 hover:text-blue-800 font-medium px-3 py-1.5 bg-blue-50 rounded-md hover:bg-blue-100 transition-colors"
+                            onClick={() => {
+                              const emptyItem: Record<string, any> = {};
+                              Object.keys(schemaField.itemSchema || {}).forEach(k => emptyItem[k] = '');
+                              setFormData({ ...formData, eventData: { ...formData.eventData, [fieldKey]: [...arrayItems, emptyItem] } });
+                            }}
+                          >
+                            + Thêm {fieldLabel} mới
+                          </button>
+                        </div>
+                      );
+                    }
+
                     const displayVal = (isJson && typeof val === 'object') ? JSON.stringify(val, null, 2) : (val || '');
 
                     return (
                       <div key={fieldKey} className={isJson ? "sm:col-span-2" : ""}>
-                        <Label>{schemaField.config?.display || fieldKey}</Label>
+                        <Label className="flex items-center gap-1">
+                          {fieldLabel}
+                          {schemaField.required && <span className="text-red-500">*</span>}
+                        </Label>
                         {isJson ? (
                           <textarea
-                            className="flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                            className="mt-1 flex min-h-[120px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                             value={displayVal}
+                            placeholder={schemaField.placeHolder || ''}
                             onChange={(e) => {
                               let newVal: any = e.target.value;
-                              if (schemaField.type === 'json') {
+                              if (schemaField.type?.toLowerCase() === 'json') {
                                 try { newVal = JSON.parse(newVal); } catch (err) { /* keep as string if incomplete json */ }
                               }
                               setFormData({
@@ -262,10 +364,26 @@ export default function EventForm() {
                               });
                             }}
                           />
+                        ) : schemaField.type?.toLowerCase() === 'image' ? (
+                          <div className="mt-1">
+                            <ImageUpload
+                              value={displayVal}
+                              onChange={(file) => {
+                                handleDynamicImageUpload(Array.isArray(file) ? file[0] : file, (url) => {
+                                  setFormData({
+                                    ...formData,
+                                    eventData: { ...(formData.eventData || {}), [fieldKey]: url }
+                                  });
+                                });
+                              }}
+                            />
+                          </div>
                         ) : (
                           <Input
+                            className="mt-1"
                             type={schemaField.type === 'date' ? 'datetime-local' : 'text'}
                             value={displayVal}
+                            placeholder={schemaField.placeHolder || ''}
                             onChange={(e) => setFormData({
                               ...formData,
                               eventData: { ...(formData.eventData || {}), [fieldKey]: e.target.value }

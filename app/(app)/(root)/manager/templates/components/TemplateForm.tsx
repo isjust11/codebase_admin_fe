@@ -63,6 +63,7 @@ export default function TemplateForm() {
   });
 
   const [variables, setVariables] = useState<TemplateVariable[]>([]);
+  const [templateData, setTemplateData] = useState<Record<string, any>>({});
 
   const typeOptions: SelectOption[] = [
     { value: 'WEDDING', label: t('types.WEDDING') },
@@ -72,8 +73,26 @@ export default function TemplateForm() {
   ];
 
   useEffect(() => {
-    if (id) loadTemplate(id);
-  }, [id]);
+    if (id) {
+      loadTemplate(id);
+    }
+  }, [id, navigateTo]);
+
+  const handleDynamicImageUpload = async (file: File | null, onUploadSuccess: (url: string) => void) => {
+    if (!file) {
+      onUploadSuccess('');
+      return;
+    }
+    try {
+      toast.info('Uploading image...', { id: 'upload-image' });
+      const uploaded = await uploadFile(file);
+      const url = uploaded.url || uploaded.publicRelativePath || '';
+      onUploadSuccess(url);
+      toast.success('Image uploaded successfully', { id: 'upload-image' });
+    } catch (error) {
+      toast.error('Failed to upload image', { id: 'upload-image' });
+    }
+  };
 
   const loadTemplate = async (templateId: string) => {
     try {
@@ -94,10 +113,20 @@ export default function TemplateForm() {
       if (schemaKeys.length > 0) {
         mergedVars = schemaKeys.map((key) => {
           const val = data.data![key];
-          return { key, defaultValue: val.value !== undefined ? val.value : val.defaul };
+          return {
+            key,
+            defaultValue: val.value !== undefined ? val.value : val.defaul,
+            labelVi: val.labelVi,
+            labelEn: val.labelEn,
+            placeHolder: val.placeHolder,
+            required: val.required,
+            itemSchema: val.itemSchema,
+            type: val.type,
+          };
         });
       }
       setVariables(mergedVars);
+      setTemplateData(data.data || {});
     } catch (_error) {
       toast.error(t('messages.loadError'));
     }
@@ -125,6 +154,19 @@ export default function TemplateForm() {
         thumbnailUrl = uploaded.url || uploaded.publicRelativePath || thumbnailUrl;
       }
 
+      const updatedData = { ...templateData };
+      variables.forEach((v) => {
+        if (updatedData[v.key]) {
+          updatedData[v.key] = {
+            ...updatedData[v.key],
+            labelVi: v.labelVi,
+            labelEn: v.labelEn,
+            placeHolder: v.placeHolder,
+            value: v.defaultValue,
+          };
+        }
+      });
+
       const payload = {
         name: formData.name,
         slug: formData.slug,
@@ -135,6 +177,7 @@ export default function TemplateForm() {
         cssContent: '', // Empty because we use React host now
         isPremium: formData.isPremium,
         editorMode: 'code' as const,
+        data: Object.keys(updatedData).length > 0 ? updatedData : undefined,
         ...(canPublish ? { isPublished: formData.isPublished } : {}),
       };
 
@@ -327,39 +370,133 @@ export default function TemplateForm() {
               </Label>
             </div>
 
-            <div className="space-y-2 border rounded-xl p-4 bg-gray-50">
-              {variables.map((variable, index) => (
-                <div key={`${variable.key}-${index}`} className="grid grid-cols-12 items-center gap-2">
-                  <Input
-                    className="col-span-4 bg-gray-100"
-                    placeholder="key"
-                    value={variable.key}
-                    disabled
-                  />
-                  <Input
-                    className="col-span-5"
-                    placeholder={t('label')}
-                    value={variable.defaultValue || ''}
-                    onChange={(e) => {
-                      const next = [...variables];
-                      next[index] = { ...variable, label: e.target.value };
-                      setVariables(next);
-                    }}
-                  />
-                  <select
-                    className="col-span-3 h-9 rounded-md border px-2 text-sm bg-white"
-                    value={variable.scope || 'event'}
-                    onChange={(e) => {
-                      const next = [...variables];
-                      next[index] = { ...variable, scope: e.target.value as TemplateVariable['scope'] };
-                      setVariables(next);
-                    }}
-                  >
-                    <option value="event">event</option>
-                    <option value="guest">guest</option>
-                  </select>
-                </div>
-              ))}
+            <div className="space-y-3 border rounded-xl p-4 bg-gray-50 max-h-[500px] overflow-y-auto">
+              {variables.map((variable, index) => {
+                const isArray = variable.type?.toLowerCase() === 'array';
+                const isJson = !isArray && (variable.type?.toLowerCase() === 'json' || variable.type?.toLowerCase() === 'textarea' || variable.type?.toLowerCase() === 'text_array');
+                const fieldLabel = variable.labelVi || variable.labelEn || variable.key;
+                const displayVal = (isJson && typeof variable.defaultValue === 'object') ? JSON.stringify(variable.defaultValue, null, 2) : (variable.defaultValue || '');
+
+                return (
+                  <div key={`${variable.key}-${index}`} className="flex flex-col gap-2 p-3 bg-white border rounded-md">
+                    <Label className="flex items-center gap-1 font-semibold text-blue-600">
+                      {fieldLabel}
+                      {variable.required && <span className="text-red-500" title="Bắt buộc">*</span>}
+                      <span className="text-gray-400 font-normal text-xs ml-2">({variable.key})</span>
+                    </Label>
+                    
+                    {isArray ? (
+                      <div className="space-y-4 border rounded-md p-4 bg-white shadow-sm mt-2">
+                        {(Array.isArray(variable.defaultValue) ? variable.defaultValue : []).map((item: any, itemIdx: number) => (
+                          <div key={itemIdx} className="p-3 bg-stone-50 border rounded-md relative group">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const newArr = [...(Array.isArray(variable.defaultValue) ? variable.defaultValue : [])];
+                                newArr.splice(itemIdx, 1);
+                                const next = [...variables];
+                                next[index] = { ...variable, defaultValue: newArr };
+                                setVariables(next);
+                              }}
+                              className="absolute top-2 right-2 text-red-500 opacity-0 group-hover:opacity-100 p-1"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                            <div className="grid gap-3 sm:grid-cols-2">
+                              {Object.entries(variable.itemSchema || {}).map(([subKey, subField]: [string, any]) => (
+                                <div key={subKey}>
+                                  <Label className="text-xs mb-1 block">{subField.labelVi || subKey}</Label>
+                                  {subField.type?.toLowerCase() === 'image' ? (
+                                    <ImageUpload
+                                      value={item[subKey] || ''}
+                                      onChange={(file) => {
+                                        handleDynamicImageUpload(Array.isArray(file) ? file[0] : file, (url) => {
+                                          const newArr = [...(Array.isArray(variable.defaultValue) ? variable.defaultValue : [])];
+                                          newArr[itemIdx] = { ...newArr[itemIdx], [subKey]: url };
+                                          const next = [...variables];
+                                          next[index] = { ...variable, defaultValue: newArr };
+                                          setVariables(next);
+                                        });
+                                      }}
+                                    />
+                                  ) : (
+                                    <Input
+                                      className="h-8 text-sm"
+                                      value={item[subKey] || ''}
+                                      placeholder={subField.placeHolder || ''}
+                                      onChange={(e) => {
+                                        const newArr = [...(Array.isArray(variable.defaultValue) ? variable.defaultValue : [])];
+                                        newArr[itemIdx] = { ...newArr[itemIdx], [subKey]: e.target.value };
+                                        const next = [...variables];
+                                        next[index] = { ...variable, defaultValue: newArr };
+                                        setVariables(next);
+                                      }}
+                                    />
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                        <button
+                          type="button"
+                          className="text-sm text-blue-600 font-medium"
+                          onClick={() => {
+                            const newArr = [...(Array.isArray(variable.defaultValue) ? variable.defaultValue : [])];
+                            const emptyItem: Record<string, any> = {};
+                            Object.keys(variable.itemSchema || {}).forEach(k => emptyItem[k] = '');
+                            newArr.push(emptyItem);
+                            const next = [...variables];
+                            next[index] = { ...variable, defaultValue: newArr };
+                            setVariables(next);
+                          }}
+                        >
+                          + Thêm mục mới
+                        </button>
+                      </div>
+                    ) : isJson ? (
+                      <textarea
+                        className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        value={displayVal}
+                        placeholder={variable.placeHolder || ''}
+                        onChange={(e) => {
+                          let newVal: any = e.target.value;
+                          if (variable.type?.toLowerCase() === 'json' || variable.type?.toLowerCase() === 'text_array') {
+                            try { newVal = JSON.parse(newVal); } catch (err) { /* keep as string */ }
+                          }
+                          const next = [...variables];
+                          next[index] = { ...variable, defaultValue: newVal };
+                          setVariables(next);
+                        }}
+                      />
+                    ) : variable.type?.toLowerCase() === 'image' ? (
+                      <div className="mt-1">
+                        <ImageUpload
+                          value={displayVal}
+                          onChange={(file) => {
+                            handleDynamicImageUpload(Array.isArray(file) ? file[0] : file, (url) => {
+                              const next = [...variables];
+                              next[index] = { ...variable, defaultValue: url };
+                              setVariables(next);
+                            });
+                          }}
+                        />
+                      </div>
+                    ) : (
+                      <Input
+                        type={variable.type?.toLowerCase() === 'date' ? 'datetime-local' : 'text'}
+                        value={displayVal}
+                        placeholder={variable.placeHolder || ''}
+                        onChange={(e) => {
+                          const next = [...variables];
+                          next[index] = { ...variable, defaultValue: e.target.value };
+                          setVariables(next);
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })}
               {variables.length === 0 && (
                 <p className="text-sm text-gray-500 text-center py-4">Chưa có dữ liệu schema (Vui lòng Import Schema)</p>
               )}

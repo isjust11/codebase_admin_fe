@@ -115,7 +115,7 @@ const ArticleForm = () => {
     setArticleStatus(articleOption);
     setParentArticleTypeOptions(parentArticleTypeOption)
 
-    if(parentArticleTypeOption.length > 0) {
+    if (parentArticleTypeOption.length > 0) {
       selectArticleTypeOptions(parentArticleTypeOption[0].value);
     }
   }

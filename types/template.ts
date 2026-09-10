@@ -1,7 +1,11 @@
 export type TemplateVariable = {
   key: string;
   label?: string;
-  type?: 'text' | 'date' | 'image' | 'url' | 'richtext' | 'gallery' | 'map' | 'json';
+  labelVi?: string;
+  labelEn?: string;
+  placeHolder?: string;
+  itemSchema?: Record<string, any>;
+  type?: 'text' | 'date' | 'image' | 'url' | 'richtext' | 'gallery' | 'map' | 'json' | 'raw' | string;
   scope?: 'event' | 'guest' | 'system';
   required?: boolean;
   defaultValue?: any;
