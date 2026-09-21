@@ -1,5 +1,13 @@
+export type FieldConfig = {
+  display?: string;
+  color?: string;
+  font?: string;
+  size?: string;
+};
+
 export type TemplateVariable = {
   key: string;
+  id?: number;
   label?: string;
   labelVi?: string;
   labelEn?: string;
@@ -9,6 +17,21 @@ export type TemplateVariable = {
   scope?: 'event' | 'guest' | 'system';
   required?: boolean;
   defaultValue?: any;
+  config?: FieldConfig;
+};
+
+export type TemplateTheme = {
+  accent?: string;
+  accentSoft?: string;
+  ink?: string;
+  muted?: string;
+  bg?: string;
+  bgSoft?: string;
+  onAccent?: string;
+  fontDisplay?: string;
+  fontScript?: string;
+  fontBody?: string;
+  fontSans?: string;
 };
 
 export interface Template {

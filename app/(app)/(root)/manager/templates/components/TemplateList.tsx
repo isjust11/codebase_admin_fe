@@ -175,8 +175,26 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
       },
     },
     { accessorKey: 'name', header: t('name') },
-    { accessorKey: 'slug', header: 'Slug' },
+    {
+      accessorKey: 'slug',
+      header: t('packageSlug'),
+      cell: ({ row }) => (
+        <code className="rounded bg-stone-100 px-1.5 py-0.5 text-xs text-stone-700">
+          {row.original.slug || '—'}
+        </code>
+      ),
+    },
     { accessorKey: 'type', header: t('type') },
+    {
+      id: 'premium',
+      header: t('premium'),
+      cell: ({ row }) =>
+        row.original.isPremium ? (
+          <Badge variant="secondary">{t('premium')}</Badge>
+        ) : (
+          <span className="text-xs text-stone-400">—</span>
+        ),
+    },
     {
       accessorKey: 'status',
       header: t('status'),
