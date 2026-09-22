@@ -1911,6 +1911,70 @@
       "validationError": "Vui lòng kiểm tra lại thông tin"
     }
   },
+  "EventPage": {
+    "pageTitle": "Sự kiện",
+    "addEvent": "Tạo sự kiện",
+    "updateEvent": "Cập nhật sự kiện",
+    "step": "Bước",
+    "prevStep": "Quay lại",
+    "nextStep": "Tiếp tục",
+    "title": "Tên sự kiện",
+    "titlePlaceholder": "VD: Minh Anh & Hoàng Nam",
+    "slug": "Slug thiệp",
+    "slugHint": "Dùng cho link /invite/{slug} trên Host.",
+    "eventDate": "Ngày giờ",
+    "venue": "Địa điểm",
+    "venuePlaceholder": "Nhập địa điểm tổ chức",
+    "type": "Loại",
+    "status": "Trạng thái",
+    "cover": "Ảnh cover",
+    "template": "Mẫu thiệp",
+    "selected": "Đã chọn",
+    "emptyTemplates": "Chưa có template published. Hãy duyệt mẫu ở Templates trước.",
+    "emptySlots": "Template chưa có schema slots.",
+    "pickTemplateFirst": "Chọn template ở bước trước.",
+    "addItem": "Thêm",
+    "publicInvite": "Link thiệp công khai",
+    "manageGuests": "Quản lý khách mời",
+    "steps": {
+      "basic": "Thông tin",
+      "template": "Chọn mẫu",
+      "content": "Nội dung",
+      "review": "Xem lại",
+      "basicHint": "Tên, slug, ngày, địa điểm và cover — nền tảng để chia sẻ thiệp.",
+      "templateHint": "Chọn package React đã đăng ký trên Host (slug khớp TEMPLATE_REGISTRY).",
+      "contentHint": "Điền slots theo schema template. Preview bên phải cập nhật realtime.",
+      "reviewHint": "Kiểm tra rồi lưu. Sau đó có thể quản lý khách mời và QR."
+    },
+    "types": {
+      "WEDDING": "Cưới",
+      "EVENT": "Sự kiện",
+      "BIRTHDAY": "Sinh nhật",
+      "OTHER": "Khác"
+    },
+    "statuses": {
+      "DRAFT": "Nháp",
+      "PUBLISHED": "Đã xuất bản",
+      "CANCELLED": "Đã hủy",
+      "COMPLETED": "Hoàn thành"
+    },
+    "validation": {
+      "titleRequired": "Tên sự kiện là bắt buộc",
+      "slugRequired": "Slug là bắt buộc",
+      "templateRequired": "Vui lòng chọn template",
+      "validationError": "Vui lòng kiểm tra lại thông tin"
+    },
+    "messages": {
+      "loadError": "Không tải được sự kiện",
+      "createSuccess": "Đã tạo sự kiện",
+      "updateSuccess": "Đã cập nhật sự kiện",
+      "createError": "Không tạo được sự kiện",
+      "updateError": "Không cập nhật được sự kiện",
+      "uploading": "Đang tải ảnh...",
+      "uploadSuccess": "Tải ảnh thành công",
+      "uploadError": "Tải ảnh thất bại"
+    }
+  },
   "PublicInvite": {
     "rsvpTitle": "Xác nhận tham dự",
     "attending": "Sẽ tham dự",

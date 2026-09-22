@@ -1868,6 +1868,70 @@
       "validationError": "Please check the form"
     }
   },
+  "EventPage": {
+    "pageTitle": "Events",
+    "addEvent": "Create event",
+    "updateEvent": "Update event",
+    "step": "Step",
+    "prevStep": "Back",
+    "nextStep": "Continue",
+    "title": "Event title",
+    "titlePlaceholder": "e.g. Minh Anh & Hoang Nam",
+    "slug": "Invite slug",
+    "slugHint": "Used for Host link /invite/{slug}.",
+    "eventDate": "Date & time",
+    "venue": "Venue",
+    "venuePlaceholder": "Enter venue address",
+    "type": "Type",
+    "status": "Status",
+    "cover": "Cover image",
+    "template": "Template",
+    "selected": "Selected",
+    "emptyTemplates": "No published templates yet. Approve templates first.",
+    "emptySlots": "This template has no slot schema.",
+    "pickTemplateFirst": "Pick a template in the previous step.",
+    "addItem": "Add",
+    "publicInvite": "Public invite link",
+    "manageGuests": "Manage guests",
+    "steps": {
+      "basic": "Basics",
+      "template": "Template",
+      "content": "Content",
+      "review": "Review",
+      "basicHint": "Title, slug, date, venue and cover — foundation for sharing.",
+      "templateHint": "Pick a React package registered on the Host (slug must match TEMPLATE_REGISTRY).",
+      "contentHint": "Fill slots from the template schema. Right-side preview updates live.",
+      "reviewHint": "Check then save. Next you can manage guests and QR codes."
+    },
+    "types": {
+      "WEDDING": "Wedding",
+      "EVENT": "Event",
+      "BIRTHDAY": "Birthday",
+      "OTHER": "Other"
+    },
+    "statuses": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "CANCELLED": "Cancelled",
+      "COMPLETED": "Completed"
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "slugRequired": "Slug is required",
+      "templateRequired": "Please select a template",
+      "validationError": "Please check the form"
+    },
+    "messages": {
+      "loadError": "Could not load event",
+      "createSuccess": "Event created",
+      "updateSuccess": "Event updated",
+      "createError": "Failed to create event",
+      "updateError": "Failed to update event",
+      "uploading": "Uploading image...",
+      "uploadSuccess": "Image uploaded",
+      "uploadError": "Image upload failed"
+    }
+  },
   "PublicInvite": {
     "rsvpTitle": "RSVP",
     "attending": "Attending",

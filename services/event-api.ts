@@ -14,6 +14,8 @@ export interface EventDto {
   coverImageUrl?: string;
   eventData?: Record<string, any>;
   status?: EventStatus;
+  reactInviteUrl?: string | null;
+  invitationUrl?: string | null;
 }
 
 type EventQuery = {

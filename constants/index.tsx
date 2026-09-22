@@ -61,6 +61,7 @@ export const AppRoutes = {
     Events: '/manager/events',
     EventsCreate: '/manager/events/create',
     EventsUpdate: '/manager/events/update',
+    EventsGuests: '/manager/events',
   }
 }
 export const AppApi = {

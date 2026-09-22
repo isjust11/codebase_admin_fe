@@ -30,6 +30,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import LivePreviewPanel from '@/components/eventlab/LivePreviewPanel';
 
 const DEFAULT_THEME: TemplateTheme = {
   accent: '#ef4065',
@@ -253,6 +254,8 @@ export default function TemplateForm() {
     return updatedData;
   };
 
+  const previewData = useMemo(() => buildDataPayload(), [theme, variables, templateData]);
+
   const handleSubmit = async () => {
     const ok = await validateBasic();
     if (!ok) {
@@ -387,7 +390,9 @@ export default function TemplateForm() {
     <div>
       <input type="file" accept=".json" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
       <PageBreadcrumb pageTitle={id ? t('updateTemplate') : t('addTemplate')} />
-      <ComponentCard title={id ? t('updateTemplate') : t('addTemplate')} listAction={actions}>
+
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <ComponentCard title={id ? t('updateTemplate') : t('addTemplate')} listAction={actions}>
         {/* Step indicator */}
         <ol className="mb-8 grid gap-2 sm:grid-cols-4">
           {STEPS.map((s, index) => {
@@ -878,6 +883,18 @@ export default function TemplateForm() {
           )}
         </div>
       </ComponentCard>
+
+        <aside className="xl:sticky xl:top-4 xl:self-start">
+          <div className="rounded-xl border border-stone-200 bg-stone-50 p-4">
+            <LivePreviewPanel
+              templateId={formData.slug.trim() || 'wedding-basic'}
+              title={formData.name || 'Live preview'}
+              slug={formData.slug.trim() || 'preview'}
+              data={previewData}
+            />
+          </div>
+        </aside>
+      </div>
     </div>
   );
 }
