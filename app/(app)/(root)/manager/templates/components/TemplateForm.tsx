@@ -17,7 +17,7 @@ import { uploadFile } from '@/services/media-api';
 import ComponentCard from '@/components/common/ComponentCard';
 import PageBreadcrumb from '@/components/common/PageBreadCrumb';
 import { Action } from '@/types/actions';
-import { ChevronLeft, ChevronRight, Save, X, Send, Upload, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Save, X, Send, Upload, Check, Plus } from 'lucide-react';
 import { useLoading } from '@/contexts/LoadingContext';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
@@ -29,7 +29,7 @@ import { TemplateTheme, TemplateVariable } from '@/types/template';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { cn } from '@/lib/utils';
+import { cn, mergeImageUrl } from '@/lib/utils';
 import LivePreviewPanel from '@/components/eventlab/LivePreviewPanel';
 
 const DEFAULT_THEME: TemplateTheme = {
@@ -44,6 +44,11 @@ const DEFAULT_THEME: TemplateTheme = {
   fontScript: '"Pinyon Script", cursive',
   fontBody: '"Lora", Georgia, serif',
   fontSans: '"DM Sans", system-ui, sans-serif',
+  musicEnabled: true,
+  musicUrl: '',
+  effectConfetti: true,
+  effectPetals: true,
+  effectEnvelope: true,
 };
 
 const STEPS = [
@@ -52,6 +57,76 @@ const STEPS = [
   { id: 2, key: 'schema' },
   { id: 3, key: 'review' },
 ] as const;
+
+const SCHEMA_FIELD_TYPES = ['TEXT', 'DATE', 'IMAGE', 'URL', 'TEXT_ARRAY', 'ARRAY'] as const;
+
+function isAdminSchemaField(val: any): boolean {
+  const type = String(val?.type || '');
+  return type.length > 0 && type === type.toUpperCase();
+}
+
+function jsonSchemaFieldType(prop: any): string {
+  const slot = String(prop?.slot || '');
+  if (slot.startsWith('image.')) return 'IMAGE';
+  if (prop?.format === 'date-time') return 'DATE';
+  if (prop?.type === 'array') {
+    return prop.items?.type === 'object' ? 'ARRAY' : 'TEXT_ARRAY';
+  }
+  return 'TEXT';
+}
+
+function itemSchemaFromJsonItems(items: any): Record<string, any> | undefined {
+  const props = items?.properties;
+  if (!props || typeof props !== 'object') return undefined;
+  return Object.fromEntries(
+    Object.entries(props as Record<string, any>).map(([key, prop]) => [
+      key,
+      { type: jsonSchemaFieldType(prop), labelVi: key, labelEn: key },
+    ]),
+  );
+}
+
+function variablesFromSchemaJson(raw: unknown): TemplateVariable[] {
+  if (!raw || typeof raw !== 'object') return [];
+  const root = raw as Record<string, any>;
+  const source =
+    root.data && typeof root.data === 'object'
+      ? root.data
+      : root.properties && typeof root.properties === 'object'
+        ? root.properties
+        : root;
+
+  return Object.entries(source as Record<string, any>)
+    .filter(([key]) => key !== 'theme' && !key.startsWith('$'))
+    .map(([key, val]) => {
+      if (!val || typeof val !== 'object' || Array.isArray(val)) {
+        return { key, type: 'RAW', defaultValue: val, config: {} };
+      }
+      if (isAdminSchemaField(val)) {
+        return {
+          key,
+          defaultValue: val.value !== undefined ? val.value : val.defaul,
+          labelVi: val.labelVi,
+          labelEn: val.labelEn,
+          placeHolder: val.placeHolder,
+          required: !!val.required,
+          itemSchema: val.itemSchema,
+          type: String(val.type),
+          config: val.config || {},
+        };
+      }
+      const type = jsonSchemaFieldType(val);
+      return {
+        key,
+        type,
+        labelVi: key,
+        labelEn: key,
+        defaultValue: type === 'ARRAY' || type === 'TEXT_ARRAY' ? [] : '',
+        itemSchema: type === 'ARRAY' ? itemSchemaFromJsonItems(val.items) : undefined,
+        config: {},
+      };
+    });
+}
 
 const schema = (t: any) =>
   z.object({
@@ -95,6 +170,7 @@ export default function TemplateForm() {
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [status, setStatus] = useState('DRAFT');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const musicInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
     name: '',
@@ -110,6 +186,8 @@ export default function TemplateForm() {
   const [variables, setVariables] = useState<TemplateVariable[]>([]);
   const [templateData, setTemplateData] = useState<Record<string, any>>({});
   const [configOpenKey, setConfigOpenKey] = useState<string | null>(null);
+  const [showAddSchema, setShowAddSchema] = useState(false);
+  const [schemaDraft, setSchemaDraft] = useState({ key: '', labelVi: '', type: 'TEXT' });
 
   const typeOptions: SelectOption[] = [
     { value: 'WEDDING', label: t('types.WEDDING') },
@@ -317,19 +395,68 @@ export default function TemplateForm() {
 
   const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !id) return;
+    if (!file) return;
     try {
       setLoading(true);
-      await importSchema(id, file);
+      if (id) {
+        await importSchema(id, file);
+        toast.success(t('importSchemaSuccess'));
+        await loadTemplate(id);
+        setStep(2);
+        return;
+      }
+      const parsed = JSON.parse(await file.text());
+      const next = variablesFromSchemaJson(parsed);
+      if (!next.length) {
+        toast.error(t('importSchemaError'));
+        return;
+      }
+      const themeSource = parsed?.data?.theme ?? parsed?.theme;
+      if (themeSource) setTheme(parseThemeBlob(themeSource));
+      setTemplateData((prev) => ({ ...prev, ...(parsed?.data || {}) }));
+      setVariables(next);
+      setShowAddSchema(false);
       toast.success(t('importSchemaSuccess'));
-      await loadTemplate(id);
-      setStep(2);
     } catch {
       toast.error(t('importSchemaError'));
     } finally {
       setLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
+  };
+
+  const addSchemaField = () => {
+    const key = schemaDraft.key.trim();
+    if (!key) {
+      toast.error(t('schemaKeyRequired'));
+      return;
+    }
+    if (variables.some((variable) => variable.key === key)) {
+      toast.error(t('schemaKeyDuplicate'));
+      return;
+    }
+    const type = schemaDraft.type || 'TEXT';
+    const itemSchema =
+      type === 'ARRAY'
+        ? key === 'album'
+          ? { url: { type: 'IMAGE', labelVi: 'Ảnh', labelEn: 'Photo', placeHolder: 'https://...' } }
+          : {}
+        : undefined;
+    setVariables((prev) => [
+      ...prev,
+      {
+        key,
+        type,
+        labelVi: schemaDraft.labelVi.trim() || key,
+        labelEn: schemaDraft.labelVi.trim() || key,
+        defaultValue: type === 'ARRAY' || type === 'TEXT_ARRAY' ? [] : '',
+        itemSchema,
+        required: false,
+        config: {},
+      },
+    ]);
+    setSchemaDraft({ key: '', labelVi: '', type: 'TEXT' });
+    setShowAddSchema(false);
   };
 
   const updateVariable = (index: number, patch: Partial<TemplateVariable>) => {
@@ -588,6 +715,78 @@ export default function TemplateForm() {
                 </div>
               ))}
             </div>
+
+            <div className="space-y-4 rounded-xl border border-stone-200 bg-white p-4">
+              <div>
+                <Label className="text-base">{t('theme.musicTitle')}</Label>
+                <p className="mt-1 text-sm text-stone-500">{t('theme.musicHint')}</p>
+              </div>
+              <label className="flex items-center gap-2 text-sm">
+                <Switch
+                  checked={theme.musicEnabled !== false}
+                  onCheckedChange={(checked) => setTheme({ ...theme, musicEnabled: checked })}
+                />
+                {t('theme.musicEnabled')}
+              </label>
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  ref={musicInputRef}
+                  type="file"
+                  accept="audio/mpeg,audio/mp3,audio/wav,audio/mp4,audio/aac,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg"
+                  className="hidden"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    e.target.value = '';
+                    if (!file) return;
+                    try {
+                      toast.info(t('theme.musicUpload'), { id: 'upload-music' });
+                      const uploaded = await uploadFile(file);
+                      const url = uploaded.url || uploaded.publicRelativePath || '';
+                      setTheme((prev) => ({ ...prev, musicUrl: url, musicEnabled: true }));
+                      toast.success(t('theme.musicTitle'), { id: 'upload-music' });
+                    } catch {
+                      toast.error(t('theme.musicUpload'), { id: 'upload-music' });
+                    }
+                  }}
+                />
+                <Button type="button" variant="outline" onClick={() => musicInputRef.current?.click()}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  {t('theme.musicUpload')}
+                </Button>
+                {theme.musicUrl ? (
+                  <Button type="button" variant="ghost" onClick={() => setTheme({ ...theme, musicUrl: '' })}>
+                    {t('theme.musicClear')}
+                  </Button>
+                ) : null}
+              </div>
+              <Input
+                value={theme.musicUrl || ''}
+                placeholder="https://.../song.mp3"
+                onChange={(e) => setTheme({ ...theme, musicUrl: e.target.value })}
+              />
+              {theme.musicUrl ? (
+                <audio className="w-full" controls src={mergeImageUrl(theme.musicUrl)} />
+              ) : null}
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
+              <Label className="text-base">{t('theme.effectsTitle')}</Label>
+              {(
+                [
+                  ['effectConfetti', t('theme.effectConfetti')],
+                  ['effectPetals', t('theme.effectPetals')],
+                  ['effectEnvelope', t('theme.effectEnvelope')],
+                ] as const
+              ).map(([key, label]) => (
+                <label key={key} className="flex items-center gap-2 text-sm">
+                  <Switch
+                    checked={theme[key] !== false}
+                    onCheckedChange={(checked) => setTheme({ ...theme, [key]: checked })}
+                  />
+                  {label}
+                </label>
+              ))}
+            </div>
           </div>
         )}
 
@@ -599,13 +798,54 @@ export default function TemplateForm() {
                 <Label className="text-base">{t('variables')}</Label>
                 <p className="mt-1 text-sm text-stone-500">{t('steps.schemaHint')}</p>
               </div>
-              {id && (
+              <div className="flex flex-wrap gap-2">
+                <Button type="button" size="sm" onClick={() => setShowAddSchema((open) => !open)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  {t('addSchema')}
+                </Button>
                 <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()}>
                   <Upload className="mr-2 h-4 w-4" />
                   {t('importSchema')}
                 </Button>
-              )}
+              </div>
             </div>
+
+            {showAddSchema && (
+              <div className="grid gap-3 rounded-xl border border-stone-200 bg-white p-4 sm:grid-cols-[1fr_1fr_160px_auto] sm:items-end">
+                <div>
+                  <Label className="mb-1.5 block text-xs">{t('schemaKey')}</Label>
+                  <Input
+                    value={schemaDraft.key}
+                    placeholder="album"
+                    onChange={(e) => setSchemaDraft({ ...schemaDraft, key: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1.5 block text-xs">{t('schemaLabel')}</Label>
+                  <Input
+                    value={schemaDraft.labelVi}
+                    placeholder="Album ảnh"
+                    onChange={(e) => setSchemaDraft({ ...schemaDraft, labelVi: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1.5 block text-xs">{t('schemaType')}</Label>
+                  <Select
+                    options={SCHEMA_FIELD_TYPES.map((type) => ({ value: type, label: type }))}
+                    value={schemaDraft.type}
+                    onChange={(value) =>
+                      setSchemaDraft({
+                        ...schemaDraft,
+                        type: Array.isArray(value) ? value[0] : value,
+                      })
+                    }
+                  />
+                </div>
+                <Button type="button" onClick={addSchemaField}>
+                  {t('addSchema')}
+                </Button>
+              </div>
+            )}
 
             <div className="max-h-[560px] space-y-3 overflow-y-auto rounded-xl border border-stone-200 bg-stone-50 p-4">
               {variables.map((variable, index) => {
@@ -635,15 +875,28 @@ export default function TemplateForm() {
                           {variable.type ? ` · ${variable.type}` : ''}
                         </span>
                       </Label>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-7 text-xs"
-                        onClick={() => setConfigOpenKey(configOpen ? null : variable.key)}
-                      >
-                        {t('fieldConfig')}
-                      </Button>
+                      <div className="flex items-center gap-1">
+                        {!variable.id && (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-red-600"
+                            onClick={() => setVariables((prev) => prev.filter((_, i) => i !== index))}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs"
+                          onClick={() => setConfigOpenKey(configOpen ? null : variable.key)}
+                        >
+                          {t('fieldConfig')}
+                        </Button>
+                      </div>
                     </div>
 
                     {configOpen && (
@@ -803,7 +1056,13 @@ export default function TemplateForm() {
                 );
               })}
               {variables.length === 0 && (
-                <p className="py-8 text-center text-sm text-stone-500">{t('emptySchema')}</p>
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <p className="text-sm text-stone-500">{t('emptySchema')}</p>
+                  <Button type="button" onClick={() => setShowAddSchema(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    {t('addSchema')}
+                  </Button>
+                </div>
               )}
             </div>
           </div>

@@ -47,7 +47,7 @@ export default function EventShareDialog({ open, onOpenChange, event }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="max-h-[90vh] overflow-y-auto bg-white text-stone-900 sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Chia sẻ thiệp sự kiện</DialogTitle>
           <DialogDescription>

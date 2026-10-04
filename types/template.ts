@@ -32,6 +32,11 @@ export type TemplateTheme = {
   fontScript?: string;
   fontBody?: string;
   fontSans?: string;
+  musicEnabled?: boolean;
+  musicUrl?: string;
+  effectConfetti?: boolean;
+  effectPetals?: boolean;
+  effectEnvelope?: boolean;
 };
 
 export interface Template {
