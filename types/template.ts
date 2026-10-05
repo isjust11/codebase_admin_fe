@@ -37,6 +37,9 @@ export type TemplateTheme = {
   effectConfetti?: boolean;
   effectPetals?: boolean;
   effectEnvelope?: boolean;
+  colorMode?: 'light' | 'dark' | 'system';
+  autoScroll?: boolean;
+  autoScrollSpeed?: 'slow' | 'normal' | 'fast';
 };
 
 export interface Template {

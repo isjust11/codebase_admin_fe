@@ -49,6 +49,9 @@ const DEFAULT_THEME: TemplateTheme = {
   effectConfetti: true,
   effectPetals: true,
   effectEnvelope: true,
+  colorMode: 'light',
+  autoScroll: false,
+  autoScrollSpeed: 'normal',
 };
 
 const STEPS = [
@@ -624,21 +627,21 @@ export default function TemplateForm() {
             </div>
             <div className="flex flex-wrap items-center gap-6">
               {canPublish && (
-                <label className="flex items-center gap-2 text-sm">
+                <div className="flex items-center gap-2 text-sm">
                   <Switch
                     checked={formData.isPublished}
                     onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })}
                   />
                   {t('published')}
-                </label>
+                </div>
               )}
-              <label className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-sm">
                 <Switch
                   checked={formData.isPremium}
                   onCheckedChange={(checked) => setFormData({ ...formData, isPremium: checked })}
                 />
-                {t('premium')}
-              </label>
+                  {t('premium')}
+              </div>
             </div>
           </div>
         )}
@@ -721,13 +724,13 @@ export default function TemplateForm() {
                 <Label className="text-base">{t('theme.musicTitle')}</Label>
                 <p className="mt-1 text-sm text-stone-500">{t('theme.musicHint')}</p>
               </div>
-              <label className="flex items-center gap-2 text-sm">
+              <div className="flex items-center gap-2 text-sm">
                 <Switch
                   checked={theme.musicEnabled !== false}
                   onCheckedChange={(checked) => setTheme({ ...theme, musicEnabled: checked })}
                 />
                 {t('theme.musicEnabled')}
-              </label>
+              </div>
               <div className="flex flex-wrap items-center gap-2">
                 <input
                   ref={musicInputRef}
@@ -778,14 +781,68 @@ export default function TemplateForm() {
                   ['effectEnvelope', t('theme.effectEnvelope')],
                 ] as const
               ).map(([key, label]) => (
-                <label key={key} className="flex items-center gap-2 text-sm">
+                <div key={key} className="flex items-center gap-2 text-sm">
                   <Switch
                     checked={theme[key] !== false}
                     onCheckedChange={(checked) => setTheme({ ...theme, [key]: checked })}
                   />
                   {label}
-                </label>
+                </div>
               ))}
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
+              <div>
+                <Label className="text-base">{t('theme.colorModeTitle')}</Label>
+                <p className="mt-1 text-sm text-stone-500">{t('theme.colorModeHint')}</p>
+              </div>
+              <Select
+                options={[
+                  { value: 'light', label: t('theme.colorLight') },
+                  { value: 'dark', label: t('theme.colorDark') },
+                  { value: 'system', label: t('theme.colorSystem') },
+                ]}
+                value={theme.colorMode || 'light'}
+                onChange={(value) =>
+                  setTheme({
+                    ...theme,
+                    colorMode: (Array.isArray(value) ? value[0] : value) as TemplateTheme['colorMode'],
+                  })
+                }
+              />
+            </div>
+
+            <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
+              <div>
+                <Label className="text-base">{t('theme.autoScrollTitle')}</Label>
+                <p className="mt-1 text-sm text-stone-500">{t('theme.autoScrollHint')}</p>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Switch
+                  checked={theme.autoScroll === true}
+                  onCheckedChange={(checked) => setTheme({ ...theme, autoScroll: checked })}
+                />
+                {t('theme.autoScrollEnabled')}
+              </div>
+              {theme.autoScroll ? (
+                <div className="max-w-xs">
+                  <Label className="mb-1.5 block text-xs">{t('theme.autoScrollSpeed')}</Label>
+                  <Select
+                    options={[
+                      { value: 'slow', label: t('theme.speedSlow') },
+                      { value: 'normal', label: t('theme.speedNormal') },
+                      { value: 'fast', label: t('theme.speedFast') },
+                    ]}
+                    value={theme.autoScrollSpeed || 'normal'}
+                    onChange={(value) =>
+                      setTheme({
+                        ...theme,
+                        autoScrollSpeed: (Array.isArray(value) ? value[0] : value) as TemplateTheme['autoScrollSpeed'],
+                      })
+                    }
+                  />
+                </div>
+              ) : null}
             </div>
           </div>
         )}

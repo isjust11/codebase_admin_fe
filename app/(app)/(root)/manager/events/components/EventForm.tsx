@@ -84,6 +84,21 @@ function fieldValue(schemaField: any, eventVal: any) {
   return schemaField?.value ?? schemaField?.defaul ?? '';
 }
 
+function flattenTheme(raw: unknown): Record<string, unknown> {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return {};
+  const obj = raw as Record<string, any>;
+  if (obj.tokens && typeof obj.tokens === 'object') {
+    const { tokens, ...rest } = obj;
+    return { ...flattenTheme(tokens), ...rest };
+  }
+  if ((obj.type === 'THEME' || obj.type === 'RAW') && obj.value && typeof obj.value === 'object') {
+    const { type: _type, id: _id, value, ...rest } = obj;
+    return { ...flattenTheme(value), ...rest };
+  }
+  const { type: _type, id: _id, ...rest } = obj;
+  return rest;
+}
+
 /** Flatten eventData for Host live preview (ConfigurableField shape). */
 function toPreviewData(
   eventData: Record<string, any> | undefined,
@@ -109,7 +124,11 @@ function toPreviewData(
     }
   }
 
-  if (eventData?.theme) out.theme = eventData.theme;
+  const templateTheme = flattenTheme(templateData && typeof templateData === 'object' ? (templateData as any).theme : undefined);
+  const eventTheme = flattenTheme(eventData?.theme);
+  if (Object.keys(templateTheme).length || Object.keys(eventTheme).length) {
+    out.theme = { ...templateTheme, ...eventTheme };
+  }
   return out;
 }
 
