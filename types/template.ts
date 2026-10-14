@@ -40,6 +40,7 @@ export type TemplateTheme = {
   colorMode?: 'light' | 'dark' | 'system';
   autoScroll?: boolean;
   autoScrollSpeed?: 'slow' | 'normal' | 'fast';
+  [key: string]: string | boolean | undefined;
 };
 
 export interface Template {

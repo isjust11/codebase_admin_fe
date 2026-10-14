@@ -31,6 +31,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn, mergeImageUrl } from '@/lib/utils';
 import LivePreviewPanel from '@/components/eventlab/LivePreviewPanel';
+import { getActiveInviteEffects } from '@/services/manager-api';
+import { InviteEffect } from '@/types/invite-effect';
 
 const DEFAULT_THEME: TemplateTheme = {
   accent: '#ef4065',
@@ -186,6 +188,7 @@ export default function TemplateForm() {
   });
 
   const [theme, setTheme] = useState<TemplateTheme>({ ...DEFAULT_THEME });
+  const [effectCatalog, setEffectCatalog] = useState<InviteEffect[] | null>(null);
   const [variables, setVariables] = useState<TemplateVariable[]>([]);
   const [templateData, setTemplateData] = useState<Record<string, any>>({});
   const [configOpenKey, setConfigOpenKey] = useState<string | null>(null);
@@ -211,6 +214,30 @@ export default function TemplateForm() {
 
   useEffect(() => {
     if (id) loadTemplate(id);
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getActiveInviteEffects()
+      .then((list) => {
+        if (cancelled) return;
+        setEffectCatalog(list);
+        if (!id && list.length) {
+          setTheme((prev) => {
+            const next = { ...prev };
+            list.forEach((effect) => {
+              next[effect.themeKey] = effect.defaultEnabled;
+            });
+            return next;
+          });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setEffectCatalog([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   const handleDynamicImageUpload = async (file: File | null, onUploadSuccess: (url: string) => void) => {
@@ -719,9 +746,10 @@ export default function TemplateForm() {
               ))}
             </div>
 
+            {(!effectCatalog?.length || effectCatalog.some((effect) => effect.slug === 'music')) && (
             <div className="space-y-4 rounded-xl border border-stone-200 bg-white p-4">
               <div>
-                <Label className="text-base">{t('theme.musicTitle')}</Label>
+                <Label className="text-base">{effectCatalog?.find((effect) => effect.slug === 'music')?.name || t('theme.musicTitle')}</Label>
                 <p className="mt-1 text-sm text-stone-500">{t('theme.musicHint')}</p>
               </div>
               <div className="flex items-center gap-2 text-sm">
@@ -771,22 +799,24 @@ export default function TemplateForm() {
                 <audio className="w-full" controls src={mergeImageUrl(theme.musicUrl)} />
               ) : null}
             </div>
+            )}
 
             <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
               <Label className="text-base">{t('theme.effectsTitle')}</Label>
-              {(
-                [
-                  ['effectConfetti', t('theme.effectConfetti')],
-                  ['effectPetals', t('theme.effectPetals')],
-                  ['effectEnvelope', t('theme.effectEnvelope')],
-                ] as const
-              ).map(([key, label]) => (
-                <div key={key} className="flex items-center gap-2 text-sm">
+              {(effectCatalog && effectCatalog.length
+                ? effectCatalog.filter((effect) => effect.kind === 'burst' || effect.kind === 'ambient' || effect.kind === 'gate')
+                : [
+                    { slug: 'confetti', themeKey: 'effectConfetti', name: t('theme.effectConfetti'), defaultEnabled: true },
+                    { slug: 'petals', themeKey: 'effectPetals', name: t('theme.effectPetals'), defaultEnabled: true },
+                    { slug: 'envelope', themeKey: 'effectEnvelope', name: t('theme.effectEnvelope'), defaultEnabled: true },
+                  ]
+              ).map((effect) => (
+                <div key={effect.slug} className="flex items-center gap-2 text-sm">
                   <Switch
-                    checked={theme[key] !== false}
-                    onCheckedChange={(checked) => setTheme({ ...theme, [key]: checked })}
+                    checked={effect.defaultEnabled ? theme[effect.themeKey] !== false : theme[effect.themeKey] === true}
+                    onCheckedChange={(checked) => setTheme({ ...theme, [effect.themeKey]: checked })}
                   />
-                  {label}
+                  {effect.name}
                 </div>
               ))}
             </div>
@@ -812,9 +842,10 @@ export default function TemplateForm() {
               />
             </div>
 
+            {(!effectCatalog?.length || effectCatalog.some((effect) => effect.slug === 'auto-scroll')) && (
             <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
               <div>
-                <Label className="text-base">{t('theme.autoScrollTitle')}</Label>
+                <Label className="text-base">{effectCatalog?.find((effect) => effect.slug === 'auto-scroll')?.name || t('theme.autoScrollTitle')}</Label>
                 <p className="mt-1 text-sm text-stone-500">{t('theme.autoScrollHint')}</p>
               </div>
               <div className="flex items-center gap-2 text-sm">
@@ -844,6 +875,7 @@ export default function TemplateForm() {
                 </div>
               ) : null}
             </div>
+            )}
           </div>
         )}
 

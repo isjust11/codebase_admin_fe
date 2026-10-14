@@ -9,6 +9,7 @@ import { Feature } from '@/types/feature';
 import { Category } from '@/types/category';
 import { DataSource, DataSourceTypeOption } from '@/types/data-source';
 import { Disease } from '@/types/disease';
+import { InviteEffect } from '@/types/invite-effect';
 
 
 // todo: api manager fooditem
@@ -458,6 +459,34 @@ export const deleteDataSource = async (id: string): Promise<void> => {
     console.error('Error deleting data source:', _error);
     throw _error;
   }
+};
+
+export const getInviteEffects = async (params?: {
+  page?: number;
+  size?: number;
+  search?: string;
+}): Promise<{ data: InviteEffect[]; total: number; page: number; size: number; totalPages: number }> => {
+  const response = await axiosInstance.get('/invite-effects', { params });
+  return response.data ?? { data: [], total: 0, page: 1, size: 10, totalPages: 0 };
+};
+
+export const getActiveInviteEffects = async (): Promise<InviteEffect[]> => {
+  const response = await axiosInstance.get('/invite-effects/active');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
+export const createInviteEffect = async (data: Partial<InviteEffect>): Promise<InviteEffect> => {
+  const response = await axiosInstance.post('/invite-effects', data);
+  return response.data;
+};
+
+export const updateInviteEffect = async (id: string, data: Partial<InviteEffect>): Promise<InviteEffect> => {
+  const response = await axiosInstance.put(`/invite-effects/${id}`, data);
+  return response.data;
+};
+
+export const deleteInviteEffect = async (id: string): Promise<void> => {
+  await axiosInstance.delete(`/invite-effects/${id}`);
 };
 
 export const getDataSourceTypes = async (): Promise<DataSourceTypeOption[]> => {

@@ -58,6 +58,7 @@ export const AppRoutes = {
     TemplatesStudioCreate: '/manager/templates/studio/create',
     TemplatesStudioUpdate: '/manager/templates/studio/update',
     TemplatesMine: '/manager/templates/mine',
+    Effects: '/manager/effects',
     Events: '/manager/events',
     EventsCreate: '/manager/events/create',
     EventsUpdate: '/manager/events/update',
