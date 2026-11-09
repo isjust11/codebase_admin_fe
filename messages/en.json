@@ -138,12 +138,22 @@
   },
   "VerifyEmail": {
     "title": "Verify Email",
-    "description": "Please click the button below to verify your email",
+    "description": "Enter the PIN code sent to {email}",
     "verifyEmailSuccess": "Email verified successfully",
-    "verifyEmailButton": "Verify Email",
+    "verifyEmailButton": "Verify",
+    "verifying": "Verifying...",
+    "pinPlaceholder": "PIN code",
+    "notReceived": "Didn't receive the code?",
+    "resendButton": "Resend PIN",
+    "resending": "Sending...",
+    "missingEmail": "No email to verify was found. Please register again.",
+    "backToRegister": "Back to sign up",
     "messages": {
       "verifyEmailError": "Error verifying email: ",
-      "verifyEmailSuccess": "Email verified successfully"
+      "verifyEmailSuccess": "Email verified successfully",
+      "pinInvalidLength": "PIN must be {length} digits",
+      "resendSuccess": "PIN resent to {email}",
+      "resendError": "Error resending PIN: "
     }
   },
   "RegisterPage": {
@@ -1905,7 +1915,7 @@
     "title": "Event title",
     "titlePlaceholder": "e.g. Minh Anh & Hoang Nam",
     "slug": "Invite slug",
-    "slugHint": "Used for Host link /invite/{slug}.",
+    "slugHint": "Generated automatically from the event title; used for Host link /invite/{slug}.",
     "eventDate": "Date & time",
     "venue": "Venue",
     "venuePlaceholder": "Enter venue address",

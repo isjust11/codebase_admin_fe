@@ -98,6 +98,16 @@ export const verifyEmail = async (token: string): Promise<AuthResponse> => {
   }
 };
 
+export const verifyPin = async (email: string, pin: string): Promise<{ code: string; message: string }> => {
+  const response = await axiosInstance.post(AppApi.Auth.VerifyPin, { email, pin });
+  return response.data;
+};
+
+export const resendPin = async (email: string): Promise<{ code: string; message: string }> => {
+  const response = await axiosInstance.post(AppApi.Auth.ResendPin, { email });
+  return response.data;
+};
+
 export const forgotPassword = async (username: string): Promise<any> => {
   try {
     const response = await axiosInstance.get(`${AppApi.Auth.ForgotPassword}?username=${username}`);

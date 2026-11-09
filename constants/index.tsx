@@ -16,7 +16,7 @@ export const AppRoutes = {
     Register: '/register',
     ForgotPassword: '/auth/forgot-password',
     ResetPassword: '/auth/reset-password',
-    VerifyEmail: '/auth/verify-email',
+    VerifyEmail: '/verify-email',
     // RefreshToken: '/auth/refresh-token',
     ResendEmail: '/auth/resend-email',
     ValidateToken: '/auth/validate-token',
@@ -75,6 +75,8 @@ export const AppApi = {
     RefreshToken: '/auth/refresh-token',
     ResendEmail: '/auth/resend-email',
     ValidateToken: '/auth/validate-token',
+    VerifyPin: '/auth/verify-pin',
+    ResendPin: '/auth/resend-pin',
   },
 }
 export const AppCategoryCode = {

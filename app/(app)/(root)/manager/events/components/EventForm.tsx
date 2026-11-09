@@ -233,27 +233,17 @@ export default function EventForm() {
     }
   };
 
-  const ensureSlug = () => {
-    if (!formData.slug?.trim() && formData.title) {
-      const next = slugify(formData.title, { lower: true, strict: true });
-      setFormData((prev) => ({ ...prev, slug: next }));
-      return next;
-    }
-    return formData.slug?.trim() || '';
-  };
+  // Slug được backend sinh từ title (không nhập tay); đây chỉ là bản xem trước.
+  const slugPreview = slugify(formData.title || '', { lower: true, strict: true, locale: 'vi' });
 
   const validateBasic = () => {
     const errors: Record<string, string> = {};
     if (!formData.title?.trim()) errors.title = t('validation.titleRequired');
-    const slug = formData.slug?.trim() || slugify(formData.title || '', { lower: true, strict: true });
-    if (!slug) errors.slug = t('validation.slugRequired');
+    else if (!slugPreview) errors.title = t('validation.slugRequired');
     setFormErrors(errors);
     if (Object.keys(errors).length) {
       toast.error(t('validation.validationError'));
       return false;
-    }
-    if (!formData.slug?.trim() && slug) {
-      setFormData((prev) => ({ ...prev, slug }));
     }
     return true;
   };
@@ -327,9 +317,9 @@ export default function EventForm() {
         coverImageUrl = uploaded.url || uploaded.publicRelativePath || coverImageUrl;
       }
 
+      const { slug: _slug, ...rest } = formData;
       const payload = {
-        ...formData,
-        slug: formData.slug?.trim() || ensureSlug(),
+        ...rest,
         coverImageUrl,
         eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : undefined,
       };
@@ -416,28 +406,28 @@ export default function EventForm() {
             <div className="grid max-w-3xl gap-5">
               <p className="text-sm text-stone-500">{t('steps.basicHint')}</p>
               <div>
-                <Label>{t('title')}</Label>
+                <Label className="mb-1.5">{t('title')}</Label>
                 <Input
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  onBlur={() => ensureSlug()}
                   placeholder={t('titlePlaceholder')}
                 />
                 {formErrors.title && <p className="mt-1 text-sm text-red-500">{formErrors.title}</p>}
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label>{t('slug')}</Label>
+                  <Label className="mb-1.5">{t('slug')}</Label>
                   <Input
-                    value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
+                    value={slugPreview}
+                    readOnly
+                    disabled
+                    className="font-mono"
                     placeholder="minh-anh-hoang-nam"
                   />
-                  <p className="mt-1 text-xs text-stone-500">{t('slugHint')}</p>
-                  {formErrors.slug && <p className="mt-1 text-sm text-red-500">{formErrors.slug}</p>}
+                  <p className="mt-1 text-xs text-stone-500">{t('slugHint', { slug: slugPreview || 'slug' })}</p>
                 </div>
                 <div>
-                  <Label>{t('eventDate')}</Label>
+                  <Label className="mb-1.5">{t('eventDate')}</Label>
                   <Input
                     type="datetime-local"
                     value={formData.eventDate}
@@ -446,7 +436,7 @@ export default function EventForm() {
                 </div>
               </div>
               <div>
-                <Label>{t('venue')}</Label>
+                <Label className="mb-1.5">{t('venue')}</Label>
                 <Input
                   value={formData.venue}
                   onChange={(e) => setFormData({ ...formData, venue: e.target.value })}
@@ -455,7 +445,7 @@ export default function EventForm() {
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <Label>{t('type')}</Label>
+                  <Label className="mb-1.5">{t('type')}</Label>
                   <Select
                     options={typeOptions}
                     value={formData.type as string}
@@ -468,7 +458,7 @@ export default function EventForm() {
                   />
                 </div>
                 <div>
-                  <Label>{t('status')}</Label>
+                  <Label className="mb-1.5">{t('status')}</Label>
                   <Select
                     options={statusOptions}
                     value={formData.status as string}
@@ -482,7 +472,7 @@ export default function EventForm() {
                 </div>
               </div>
               <div>
-                <Label>{t('cover')}</Label>
+                <Label className="mb-1.5">{t('cover')}</Label>
                 <ImageUpload
                   value={formData.coverImageUrl}
                   onChange={(file) => setSelectedFile(Array.isArray(file) ? file[0] : file)}
@@ -719,7 +709,7 @@ export default function EventForm() {
                 </div>
                 <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
                   <span className="text-sm text-stone-500">{t('slug')}</span>
-                  <span className="font-mono text-sm sm:col-span-2">{formData.slug || '—'}</span>
+                  <span className="font-mono text-sm sm:col-span-2">{slugPreview || '—'}</span>
                 </div>
                 <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
                   <span className="flex items-center gap-1 text-sm text-stone-500">

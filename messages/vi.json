@@ -130,13 +130,23 @@
   },
   "VerifyEmail": {
     "title": "Xác thực Email",
-    "description": "Vui lòng nhấn nút bên dưới để xác thực email của bạn",
+    "description": "Nhập mã PIN đã được gửi tới {email}",
     "verifyEmailSuccess": "Email đã được xác thực thành công",
     "verifyEmailError": "Lỗi khi xác thực email: ",
-    "verifyEmailButton": "Xác thực Email",
+    "verifyEmailButton": "Xác thực",
+    "verifying": "Đang xác thực...",
+    "pinPlaceholder": "Mã PIN",
+    "notReceived": "Chưa nhận được mã?",
+    "resendButton": "Gửi lại mã PIN",
+    "resending": "Đang gửi...",
+    "missingEmail": "Không tìm thấy email cần xác thực. Vui lòng đăng ký lại.",
+    "backToRegister": "Quay lại trang đăng ký",
     "messages": {
       "verifyEmailError": "Lỗi khi xác thực email: ",
-      "verifyEmailSuccess": "Email đã được xác thực thành công"
+      "verifyEmailSuccess": "Email đã được xác thực thành công",
+      "pinInvalidLength": "Mã PIN phải gồm {length} chữ số",
+      "resendSuccess": "Đã gửi lại mã PIN tới {email}",
+      "resendError": "Lỗi gửi lại mã PIN: "
     }
   },
   "RegisterPage": {
@@ -1948,7 +1958,7 @@
     "title": "Tên sự kiện",
     "titlePlaceholder": "VD: Minh Anh & Hoàng Nam",
     "slug": "Slug thiệp",
-    "slugHint": "Dùng cho link /invite/{slug} trên Host.",
+    "slugHint": "Tự động tạo từ tên sự kiện, dùng cho link /invite/{slug} trên Host.",
     "eventDate": "Ngày giờ",
     "venue": "Địa điểm",
     "venuePlaceholder": "Nhập địa điểm tổ chức",

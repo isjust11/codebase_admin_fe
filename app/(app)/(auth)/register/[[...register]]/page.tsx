@@ -17,7 +17,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import Link from 'next/link';
-import { register, resendEmail } from '@/services/auth-api';
+import { register } from '@/services/auth-api';
+import { AppRoutes } from '@/constants';
 import { RegisterCode, RegisterResultDto } from '@/types/dto/RegisterResultDto';
 import { useTranslations } from 'next-intl';
 import { SITE } from '@/config/config';
@@ -26,7 +27,6 @@ export default function RegisterPage() {
   const t = useTranslations("RegisterPage");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  const [isSendEmail, setIsSendEmail] = useState(false);
 
   // Schéma de validation với các key đa ngôn ngữ
   const formSchema = z.object({
@@ -63,8 +63,8 @@ export default function RegisterPage() {
         email: values.email || undefined
       });
       if (response.code === RegisterCode.Ok) {
-        setIsSendEmail(true);
         toast.success(t('messages.emailSent', { email: values.email }));
+        router.push(`${AppRoutes.Auth.VerifyEmail}?email=${encodeURIComponent(values.email)}`);
       } else if (response.code === RegisterCode.AccountValidated) {
         toast.info(response.message);
         router.push('/login');
@@ -85,34 +85,10 @@ export default function RegisterPage() {
     }
   };
 
-  const handleResendEmail = async () => {
-    setIsLoading(true);
-    try {
-      await resendEmail(form.getValues('email') || '');
-      setIsSendEmail(true);
-      toast.success(t('messages.emailSent', { email: form.getValues('email') }));
-    } catch (error: any) {
-      toast.error(t('messages.resendEmailError', { message: error.response.data.message }));
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   return (
     <div className="flex flex-col flex-1 lg:w-1/2 w-full overflow-y-auto no-scrollbar">
       <div className="flex flex-col justify-center flex-1 w-full max-w-md mx-auto">
-        {isSendEmail ? (
-          <div className="text-center">
-            <h1 className="text-2xl font-bold">{t('emailSentTitle')}</h1>
-            <p className="text-gray-500 mt-2">
-              {t('emailSentDescription')}
-            </p>
-            <Button disabled={isLoading} onClick={handleResendEmail} className="mt-4 w-full bg-fuchsia-700 text-white">
-              {isLoading ? t('sendingEmail') : t('resendEmailButton')}
-            </Button>
-          </div>
-        ) : (
-          <>
+        <>
             <div className="mb-5 sm:mb-8">
               <h1 className="mb-2 font-semibold text-fuchsia-800 text-title-sm dark:text-white/90 sm:text-title-md">{t('registerTitle')}</h1>
               <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -220,8 +196,7 @@ export default function RegisterPage() {
                 </Link>
               </p>
             </div>
-          </>
-        )}
+        </>
       </div>
     </div>
   );
