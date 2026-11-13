@@ -475,6 +475,12 @@ export const getActiveInviteEffects = async (): Promise<InviteEffect[]> => {
   return Array.isArray(response.data) ? response.data : [];
 };
 
+/** Active catalog without the invite-effect permission, for event owners customising their own invite. */
+export const getPublicInviteEffects = async (): Promise<InviteEffect[]> => {
+  const response = await axiosInstance.get('/public/effects');
+  return Array.isArray(response.data) ? response.data : [];
+};
+
 export const createInviteEffect = async (data: Partial<InviteEffect>): Promise<InviteEffect> => {
   const response = await axiosInstance.post('/invite-effects', data);
   return response.data;

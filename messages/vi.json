@@ -2010,6 +2010,36 @@
       "uploading": "Đang tải ảnh...",
       "uploadSuccess": "Tải ảnh thành công",
       "uploadError": "Tải ảnh thất bại"
+    },
+    "effects": {
+      "title": "Hiệu ứng & âm nhạc",
+      "hint": "Chỉ áp dụng cho sự kiện này. Mục để \"Theo mẫu\" tự cập nhật khi mẫu gốc thay đổi.",
+      "follow": "Theo mẫu",
+      "on": "Bật",
+      "off": "Tắt",
+      "reset": "Khôi phục theo mẫu",
+      "music": "Nhạc nền",
+      "musicUpload": "Tải nhạc riêng",
+      "musicUploading": "Đang tải nhạc...",
+      "musicUploaded": "Đã tải nhạc lên",
+      "musicUploadError": "Tải nhạc thất bại",
+      "musicUseTemplate": "Dùng nhạc của mẫu",
+      "musicOwn": "Sự kiện này dùng bản nhạc riêng.",
+      "musicFromTemplate": "Đang dùng nhạc của mẫu. Nhập link hoặc tải nhạc để thay.",
+      "musicNone": "Mẫu chưa có nhạc. Nhập link hoặc tải nhạc lên.",
+      "autoScroll": "Tự cuộn",
+      "autoScrollSpeed": "Tốc độ",
+      "speeds": {
+        "slow": "Chậm",
+        "normal": "Vừa",
+        "fast": "Nhanh"
+      },
+      "fallback": {
+        "envelope": "Mở thiệp (cổng cửa / phong bì)",
+        "confetti": "Pháo giấy",
+        "petals": "Cánh hoa rơi",
+        "hearts": "Trái tim bay"
+      }
     }
   },
   "PublicInvite": {

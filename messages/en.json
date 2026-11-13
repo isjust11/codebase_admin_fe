@@ -1967,6 +1967,36 @@
       "uploading": "Uploading image...",
       "uploadSuccess": "Image uploaded",
       "uploadError": "Image upload failed"
+    },
+    "effects": {
+      "title": "Effects & music",
+      "hint": "Applies to this event only. Items left on \"Template\" follow later changes to the template.",
+      "follow": "Template",
+      "on": "On",
+      "off": "Off",
+      "reset": "Reset to template",
+      "music": "Background music",
+      "musicUpload": "Upload own music",
+      "musicUploading": "Uploading music...",
+      "musicUploaded": "Music uploaded",
+      "musicUploadError": "Music upload failed",
+      "musicUseTemplate": "Use template music",
+      "musicOwn": "This event uses its own track.",
+      "musicFromTemplate": "Using the template track. Paste a link or upload to replace it.",
+      "musicNone": "The template has no track. Paste a link or upload one.",
+      "autoScroll": "Auto-scroll",
+      "autoScrollSpeed": "Speed",
+      "speeds": {
+        "slow": "Slow",
+        "normal": "Normal",
+        "fast": "Fast"
+      },
+      "fallback": {
+        "envelope": "Opening (doors / envelope)",
+        "confetti": "Confetti",
+        "petals": "Falling petals",
+        "hearts": "Floating hearts"
+      }
     }
   },
   "PublicInvite": {

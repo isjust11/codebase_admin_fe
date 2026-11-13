@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -30,6 +30,9 @@ import ImageUpload from '@/components/ui/ImageUpload';
 import { AppRoutes } from '@/constants';
 import Select, { SelectOption } from '@/components/form/Select';
 import { getTemplates } from '@/services/template-api';
+import { getPublicInviteEffects } from '@/services/manager-api';
+import type { InviteEffect } from '@/types/invite-effect';
+import EventEffectsPanel from './EventEffectsPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn, mergeImageUrl } from '@/lib/utils';
@@ -99,6 +102,33 @@ function flattenTheme(raw: unknown): Record<string, unknown> {
   return rest;
 }
 
+/** Template theme from either the list shape (`data.theme`) or raw template_data rows, with string JSON parsed. */
+function readTemplateTheme(data: TemplateItem['data']): Record<string, unknown> {
+  if (!data) return {};
+  let raw: any = Array.isArray(data)
+    ? data.find((row: any) => row?.fieldKey === 'theme' || row?.fieldType === 'THEME')
+    : (data as Record<string, any>).theme;
+  if (raw && typeof raw === 'object' && 'fieldKey' in raw) raw = raw.value;
+  if (raw && typeof raw === 'object' && typeof raw.value === 'string') raw = raw.value;
+  if (typeof raw === 'string') {
+    try {
+      raw = JSON.parse(raw);
+    } catch {
+      return {};
+    }
+  }
+  return flattenTheme(raw);
+}
+
+/** Keep only the keys an event really changes, so everything else keeps following the template. */
+function themeOverrides(eventTheme: Record<string, unknown>, templateTheme: Record<string, unknown>) {
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(eventTheme)) {
+    if (JSON.stringify(value) !== JSON.stringify(templateTheme[key])) out[key] = value;
+  }
+  return out;
+}
+
 /** Flatten eventData for Host live preview (ConfigurableField shape). */
 function toPreviewData(
   eventData: Record<string, any> | undefined,
@@ -124,7 +154,7 @@ function toPreviewData(
     }
   }
 
-  const templateTheme = flattenTheme(templateData && typeof templateData === 'object' ? (templateData as any).theme : undefined);
+  const templateTheme = readTemplateTheme(templateData);
   const eventTheme = flattenTheme(eventData?.theme);
   if (Object.keys(templateTheme).length || Object.keys(eventTheme).length) {
     out.theme = { ...templateTheme, ...eventTheme };
@@ -144,6 +174,9 @@ export default function EventForm() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [allTemplates, setAllTemplates] = useState<TemplateItem[]>([]);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [effectCatalog, setEffectCatalog] = useState<InviteEffect[]>([]);
+  /** Events saved before overrides existed carry a full copy of the template theme; trim it once on load. */
+  const pendingThemeTrim = useRef(false);
 
   const [formData, setFormData] = useState<EventDto>({
     title: '',
@@ -180,13 +213,29 @@ export default function EventForm() {
         setAllTemplates(items);
       })
       .catch(console.error);
+    getPublicInviteEffects().then(setEffectCatalog).catch(console.error);
 
     if (id) loadEvent(id);
   }, [id]);
 
+  // The public landing links "Dùng mẫu này" here as `?template=<slug>`.
+  const presetTemplate = useRef<string | null>(null);
+  useEffect(() => {
+    if (!id) presetTemplate.current = new URLSearchParams(window.location.search).get('template');
+  }, [id]);
+  useEffect(() => {
+    const slug = presetTemplate.current;
+    if (!slug || !allTemplates.length || formData.templateId) return;
+    presetTemplate.current = null;
+    const match = allTemplates.find((tpl) => tpl.slug === slug);
+    if (match) applyTemplate(String(match.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allTemplates]);
+
   const loadEvent = async (eventId: string) => {
     try {
       const data = await getEvent(eventId);
+      pendingThemeTrim.current = true;
       setFormData({
         title: data.title,
         slug: data.slug || '',
@@ -204,6 +253,15 @@ export default function EventForm() {
   };
 
   const selectedTemplate = allTemplates.find((tpl) => String(tpl.id) === String(formData.templateId));
+  const templateTheme = useMemo(() => readTemplateTheme(selectedTemplate?.data), [selectedTemplate]);
+  const eventTheme = useMemo(() => flattenTheme(formData.eventData?.theme), [formData.eventData]);
+
+  useEffect(() => {
+    if (!pendingThemeTrim.current || !selectedTemplate || !formData.eventData?.theme) return;
+    pendingThemeTrim.current = false;
+    setEventTheme(themeOverrides(flattenTheme(formData.eventData.theme), templateTheme));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTemplate, formData.eventData, templateTheme]);
 
   const previewData = useMemo(
     () =>
@@ -279,15 +337,20 @@ export default function EventForm() {
       }
     });
 
-    if (template?.data && typeof template.data === 'object' && !Array.isArray(template.data) && (template.data as any).theme) {
-      initialData.theme = (template.data as any).theme;
-    }
-
     setFormData({
       ...formData,
       templateId,
       type: (template?.type as EventDto['type']) || formData.type,
       eventData: initialData,
+    });
+  };
+
+  const setEventTheme = (next: Record<string, unknown>) => {
+    setFormData((prev) => {
+      const eventData = { ...(prev.eventData || {}) };
+      if (Object.keys(next).length) eventData.theme = next;
+      else delete eventData.theme;
+      return { ...prev, eventData };
     });
   };
 
@@ -544,6 +607,14 @@ export default function EventForm() {
           {step === 2 && (
             <div className="space-y-4">
               <p className="text-sm text-stone-500">{t('steps.contentHint')}</p>
+              {selectedTemplate ? (
+                <EventEffectsPanel
+                  catalog={effectCatalog}
+                  templateTheme={templateTheme}
+                  overrides={eventTheme}
+                  onChange={setEventTheme}
+                />
+              ) : null}
               {!selectedTemplate ? (
                 <p className="text-sm text-amber-700">{t('pickTemplateFirst')}</p>
               ) : fieldEntries.length === 0 ? (
