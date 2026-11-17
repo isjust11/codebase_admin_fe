@@ -143,25 +143,23 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
 
   const getResourceDisplayName = (resourceKey: string) => {
     const resourceNames: { [key: string]: string } = {
-      user: t('user'),
-      role: t('role'),
-      permission: t('permission'),
-      feature: t('feature'),
-      article: t('article'),
-      category: t('category'),
-      order: t('order'),
-      payment: t('payment'),
-      reservation: t('reservation'),
-      table: t('table'),
-      exam: t('exam'),
-      question: t('question'),
-      media: t('media'),
-      notification: t('notification'),
-      history: t('history'),
-      food_item: t('foodItem'),
-      data_source: t('dataSource'),
+      USER: t('user'),
+      ROLE: t('role'),
+      PERMISSION: t('permission'),
+      FEATURE: t('feature'),
+      ARTICLE: t('article'),
+      CATEGORY: t('category'),
+      MEDIA: t('media'),
+      NOTIFICATION: t('notification'),
+      CATEGORY_TYPE: t('category'),
+      STATIC_PAGE: 'STATIC_PAGE',
+      TEMPLATE: 'TEMPLATE',
+      EVENT: 'EVENT',
+      GUEST: 'GUEST',
+      CONTACT: 'CONTACT',
     };
-    return resourceNames[resourceKey] || resourceKey;
+    const normalized = resourceKey?.toUpperCase?.() ?? resourceKey;
+    return resourceNames[normalized] || resourceKey;
   };
 
   const getActionDisplayName = (actionKey: string) => {
@@ -251,7 +249,7 @@ const PermissionManager = forwardRef<{ refresh: () => void }, { ref: React.RefOb
           </SelectTrigger>
           <SelectContent className='bg-white dark:bg-gray-800 max-h-[300px] overflow-y-auto'>
             {Object.entries(resources).map(([key, value]) => (
-              <SelectItem key={key} value={value} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
+              <SelectItem key={key} value={key} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
                 {getResourceDisplayName(value)}
               </SelectItem>
             ))}

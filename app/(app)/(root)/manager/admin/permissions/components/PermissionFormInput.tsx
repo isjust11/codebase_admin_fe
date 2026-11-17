@@ -20,7 +20,7 @@ import {
   getPermissionActions, 
   getPermissionTemplates 
 } from '@/services/auth-api';
-import { useEffect, useState, forwardRef, useImperativeHandle } from 'react';
+import { useEffect, useState, forwardRef, useImperativeHandle, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 
 const formSchema = z.object({
@@ -58,7 +58,7 @@ interface PermissionTemplate {
   }[];
 }
 
-const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFormInputProps>(({ permission, onCancel, onFormChange, isView = false, onAddAction }, ref) => {
+const PermissionFormInput = forwardRef<{ validate: () => Promise<boolean> }, PermissionFormInputProps>(({ permission, onCancel, onFormChange, isView = false, onAddAction }, ref) => {
   const t = useTranslations('PermissionsPage');
   const [resources, setResources] = useState<Resource>({});
   const [actions, setActions] = useState<Action>({});
@@ -66,6 +66,8 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
   const [selectedResource, setSelectedResource] = useState<string>('');
   const [selectedActions, setSelectedActions] = useState<string[]>([]);
   const [isTemplateMode, setIsTemplateMode] = useState(false);
+  const onFormChangeRef = useRef(onFormChange);
+  onFormChangeRef.current = onFormChange;
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -94,13 +96,13 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
     }
   }, [permission]);
 
-  // Watch form changes and notify parent
+  // Watch form changes and notify parent (ref avoids re-subscribe → setState loop)
   useEffect(() => {
     const subscription = form.watch((value) => {
-      onFormChange(value as z.infer<typeof formSchema>);
+      onFormChangeRef.current(value as z.infer<typeof formSchema>);
     });
     return () => subscription.unsubscribe();
-  }, [form, onFormChange]);
+  }, [form]);
 
   useEffect(() => {
     if (permission) {
@@ -114,7 +116,7 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
         isActive: permission.isActive ?? false,
       });
     }
-  }, [permission]);
+  }, [permission, form]);
 
   const fetchConstants = async () => {
     try {
@@ -175,24 +177,23 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
 
   const getResourceDisplayName = (resourceKey: string) => {
     const resourceNames: { [key: string]: string } = {
-      user: 'Người dùng',
-      role: 'Vai trò',
-      permission: 'Quyền',
-      feature: 'Tính năng',
-      article: 'Bài viết',
-      category: 'Danh mục',
-      order: 'Đơn hàng',
-      payment: 'Thanh toán',
-      reservation: 'Đặt bàn',
-      table: 'Bàn',
-      exam: 'Bài thi',
-      question: 'Câu hỏi',
-      media: 'Media',
-      notification: 'Thông báo',
-      history: 'Lịch sử',
-      food_item: 'Món ăn',
+      USER: 'Người dùng',
+      ROLE: 'Vai trò',
+      PERMISSION: 'Quyền',
+      FEATURE: 'Tính năng',
+      ARTICLE: 'Bài viết',
+      CATEGORY: 'Danh mục',
+      CATEGORY_TYPE: 'Loại danh mục',
+      MEDIA: 'Media',
+      NOTIFICATION: 'Thông báo',
+      STATIC_PAGE: 'Trang tĩnh',
+      TEMPLATE: 'Template',
+      EVENT: 'Sự kiện',
+      GUEST: 'Khách mời',
+      CONTACT: 'Danh bạ',
     };
-    return resourceNames[resourceKey] || resourceKey;
+    const normalized = resourceKey?.toUpperCase?.() ?? resourceKey;
+    return resourceNames[normalized] || resourceKey;
   };
 
   const getActionDisplayName = (actionKey: string) => {
@@ -216,10 +217,7 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
   };
 
   useImperativeHandle(ref, () => ({
-    validate: () => {
-      form.trigger();
-      return form.formState.isValid;
-    }
+    validate: async () => form.trigger(),
   }));
 
   return (
@@ -298,7 +296,7 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
                   </FormControl>
                   <SelectContent className='bg-white dark:bg-gray-800'>
                     {Object.entries(resources).map(([key, value]) => (
-                      <SelectItem key={key} value={value} className='hover:bg-gray-100 dark:hover:bg-gray-700' >
+                      <SelectItem key={key} value={key} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
                         {getResourceDisplayName(value)}
                       </SelectItem>
                     ))}
@@ -333,7 +331,7 @@ const PermissionFormInput = forwardRef<{ validate: () => boolean }, PermissionFo
                   </FormControl>
                   <SelectContent className='bg-white dark:bg-gray-800'>
                     {Object.entries(actions).map(([key, value]) => (
-                      <SelectItem key={key} value={value} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
+                      <SelectItem key={key} value={key} className='hover:bg-gray-100 dark:hover:bg-gray-700'>
                         {getActionDisplayName(value)}
                       </SelectItem>
                     ))}

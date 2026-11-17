@@ -218,7 +218,7 @@ const AppSidebar: React.FC = () => {
   ) => (
     <ul className="flex flex-col gap-4">
       {navItems.map((nav, index) => (
-        <li key={nav.name}>
+        <li key={`${menuTypeCode}-${nav.path ?? nav.name}-${index}`}>
           {nav.subItems && nav.subItems.length > 0 ? (
             <button
               onClick={() => handleSubmenuToggle(index, menuTypeCode)}
@@ -290,8 +290,8 @@ const AppSidebar: React.FC = () => {
               }}
             >
               <ul className="mt-2 space-y-1 ml-9">
-                {nav.subItems.map((subItem) => (
-                  <li key={subItem.name}>
+                {nav.subItems.map((subItem, subIndex) => (
+                  <li key={`${menuTypeCode}-${subItem.path ?? subItem.name}-${subIndex}`}>
                     <div
                       onClick={() => {
                         if (subItem.path) {

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import ComponentCard from '@/components/common/ComponentCard';
@@ -27,7 +27,11 @@ const PermissionForm = ({ isView = false }: PermissionFormProps) => {
   const id = params.id as string;
 
   const title = isView ? t('permissionDetail') : (id ? t('updatePermission') : t('addPermissionNew'));
-  const formRef = useRef<{ validate: () => boolean }>(null);
+  const formRef = useRef<{ validate: () => Promise<boolean> }>(null);
+  const handleFormChange = useCallback((values: any) => {
+    setFormValues(values);
+  }, []);
+
   useEffect(() => {
     if (id) {
       setIsEditing(true);
@@ -46,7 +50,8 @@ const PermissionForm = ({ isView = false }: PermissionFormProps) => {
   };
 
   const handleSubmit = async () => {
-    if (!formRef.current?.validate()) {
+    const isValid = await formRef.current?.validate();
+    if (!isValid) {
       toast.error(t('fillRequiredFields'));
       return;
     }
@@ -116,7 +121,7 @@ const PermissionForm = ({ isView = false }: PermissionFormProps) => {
                   ref={formRef}
                   permission={permission} 
                   onCancel={() => {}} 
-                  onFormChange={(values: any) => setFormValues(values)}
+                  onFormChange={handleFormChange}
                   isView={isView}
                 />
               </div>
