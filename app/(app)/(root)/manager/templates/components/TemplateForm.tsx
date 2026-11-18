@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState, useRef, ChangeEvent } from 'react';
+import { useEffect, useMemo, useState, useRef, ChangeEvent, type ReactNode } from 'react';
 import { useParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -33,6 +33,92 @@ import { cn, mergeImageUrl } from '@/lib/utils';
 import LivePreviewPanel from '@/components/eventlab/LivePreviewPanel';
 import { getActiveInviteEffects } from '@/services/manager-api';
 import { InviteEffect } from '@/types/invite-effect';
+import {
+  MATERIAL_THEME_PRESETS,
+  matchMaterialPresetId,
+} from './material-theme-presets';
+
+/** Label sits above control with consistent vertical gap. */
+function FormField({
+  label,
+  htmlFor,
+  hint,
+  error,
+  required,
+  compact,
+  className,
+  children,
+}: {
+  label?: ReactNode;
+  htmlFor?: string;
+  hint?: ReactNode;
+  error?: string;
+  required?: boolean;
+  compact?: boolean;
+  className?: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className={cn(compact ? 'space-y-1.5' : 'space-y-2', className)}>
+      {label != null ? (
+        <Label
+          htmlFor={htmlFor}
+          className={cn(
+            'block w-full text-stone-700',
+            compact ? 'text-xs font-medium' : 'text-sm font-medium',
+          )}
+        >
+          {label}
+          {required ? <span className="ml-0.5 text-red-500">*</span> : null}
+        </Label>
+      ) : null}
+      {children}
+      {hint ? <p className="text-xs leading-relaxed text-stone-500">{hint}</p> : null}
+      {error ? <p className="text-sm text-red-500">{error}</p> : null}
+    </div>
+  );
+}
+
+function FormSection({
+  title,
+  hint,
+  children,
+  className,
+}: {
+  title?: ReactNode;
+  hint?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={cn('space-y-4 rounded-xl border border-stone-200 bg-white p-5', className)}>
+      {title != null || hint != null ? (
+        <header className="space-y-1 border-b border-stone-100 pb-3">
+          {title != null ? <h3 className="text-sm font-semibold text-stone-900">{title}</h3> : null}
+          {hint != null ? <p className="text-sm text-stone-500">{hint}</p> : null}
+        </header>
+      ) : null}
+      {children}
+    </section>
+  );
+}
+
+function SwitchRow({
+  checked,
+  onCheckedChange,
+  label,
+}: {
+  checked: boolean;
+  onCheckedChange: (checked: boolean) => void;
+  label: ReactNode;
+}) {
+  return (
+    <div className="flex items-center gap-3 rounded-lg border border-stone-200 bg-stone-50/80 px-3 py-2.5 text-sm text-stone-700">
+      <Switch checked={checked} onCheckedChange={onCheckedChange} />
+      <span className="leading-snug">{label}</span>
+    </div>
+  );
+}
 
 const DEFAULT_THEME: TemplateTheme = {
   accent: '#ef4065',
@@ -108,6 +194,10 @@ function variablesFromSchemaJson(raw: unknown): TemplateVariable[] {
         return { key, type: 'RAW', defaultValue: val, config: {} };
       }
       if (isAdminSchemaField(val)) {
+        const enabled =
+          typeof val.enabled === 'boolean'
+            ? val.enabled
+            : val.config?.display !== '0' && val.config?.display !== 'false';
         return {
           key,
           defaultValue: val.value !== undefined ? val.value : val.defaul,
@@ -117,7 +207,10 @@ function variablesFromSchemaJson(raw: unknown): TemplateVariable[] {
           required: !!val.required,
           itemSchema: val.itemSchema,
           type: String(val.type),
-          config: val.config || {},
+          config: {
+            ...(val.config || {}),
+            display: enabled ? '1' : '0',
+          },
         };
       }
       const type = jsonSchemaFieldType(val);
@@ -133,10 +226,17 @@ function variablesFromSchemaJson(raw: unknown): TemplateVariable[] {
     });
 }
 
+const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
 const schema = (t: any) =>
   z.object({
-    name: z.string().min(2, t('validation.nameRequired')),
-    slug: z.string().min(2, t('validation.slugRequired')),
+    name: z.string().trim().min(2, t('validation.nameRequired')),
+    slug: z
+      .string()
+      .trim()
+      .min(2, t('validation.slugRequired'))
+      .regex(SLUG_PATTERN, t('validation.slugInvalid')),
+    type: z.string().trim().min(1, t('validation.typeRequired')),
   });
 
 function parseThemeBlob(raw: unknown): TemplateTheme {
@@ -307,30 +407,95 @@ export default function TemplateForm() {
 
   const listDestination = () => (canPublish ? AppRoutes.Manager.Templates : AppRoutes.Manager.TemplatesMine);
 
+  const failValidation = (errors: Record<string, string>, toastKey = 'validation.validationError') => {
+    setFormErrors(errors);
+    toast.error(t(toastKey as any));
+    return false;
+  };
+
   const validateBasic = async () => {
-    const parsed = await schema(t).safeParseAsync({ name: formData.name, slug: formData.slug });
+    const parsed = await schema(t).safeParseAsync({
+      name: formData.name,
+      slug: formData.slug,
+      type: formData.type,
+    });
     if (!parsed.success) {
       const errors: Record<string, string> = {};
       parsed.error.issues.forEach((issue) => {
-        errors[String(issue.path[0])] = issue.message;
+        const key = String(issue.path[0]);
+        if (!errors[key]) errors[key] = issue.message;
       });
-      setFormErrors(errors);
-      toast.error(t('validation.validationError'));
-      return false;
+      return failValidation(errors);
     }
     setFormErrors({});
     return true;
   };
 
-  const goNext = async () => {
-    if (step === 0) {
-      const ok = await validateBasic();
-      if (!ok) return;
+  const validateTheme = () => {
+    const errors: Record<string, string> = {};
+    if (!String(theme.accent || '').trim()) {
+      errors.accent = t('validation.accentRequired');
     }
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    if (Object.keys(errors).length) return failValidation(errors);
+    setFormErrors({});
+    return true;
   };
 
-  const goPrev = () => setStep((s) => Math.max(s - 1, 0));
+  const isEmptySample = (value: unknown) => {
+    if (value == null) return true;
+    if (Array.isArray(value)) return value.length === 0;
+    if (typeof value === 'object') return Object.keys(value as object).length === 0;
+    return String(value).trim() === '';
+  };
+
+  const validateSchema = () => {
+    if (!variables.length) {
+      return failValidation({}, 'validation.schemaRequired');
+    }
+    const missingRequired = variables.some((variable) => {
+      if (!variable.required) return false;
+      if (variable.config?.display === '0' || variable.config?.display === 'false') return false;
+      return isEmptySample(variable.defaultValue);
+    });
+    if (missingRequired) {
+      return failValidation({}, 'validation.requiredFieldsEmpty');
+    }
+    setFormErrors({});
+    return true;
+  };
+
+  const validateStep = async (stepIndex: number) => {
+    if (stepIndex === 0) return validateBasic();
+    if (stepIndex === 1) return validateTheme();
+    if (stepIndex === 2) return validateSchema();
+    return true;
+  };
+
+  const goToStep = async (target: number) => {
+    const next = Math.max(0, Math.min(target, STEPS.length - 1));
+    if (next === step) return;
+    if (next < step) {
+      setStep(next);
+      return;
+    }
+    for (let i = step; i < next; i += 1) {
+      const ok = await validateStep(i);
+      if (!ok) {
+        setStep(i);
+        return;
+      }
+    }
+    setFormErrors({});
+    setStep(next);
+  };
+
+  const goNext = async () => {
+    await goToStep(step + 1);
+  };
+
+  const goPrev = () => {
+    void goToStep(step - 1);
+  };
 
   const buildDataPayload = () => {
     const updatedData: Record<string, any> = { ...templateData };
@@ -365,10 +530,12 @@ export default function TemplateForm() {
   const previewData = useMemo(() => buildDataPayload(), [theme, variables, templateData]);
 
   const handleSubmit = async () => {
-    const ok = await validateBasic();
-    if (!ok) {
-      setStep(0);
-      return;
+    for (let i = 0; i < STEPS.length - 1; i += 1) {
+      const ok = await validateStep(i);
+      if (!ok) {
+        setStep(i);
+        return;
+      }
     }
 
     setLoading(true);
@@ -515,16 +682,6 @@ export default function TemplateForm() {
       title: tUtils('save'),
       isLoading: loading,
     },
-    ...(canSubmitReview
-      ? [
-          {
-            icon: <Send className="w-4 h-4 mr-2" />,
-            onClick: handleSubmitReview,
-            title: t('submitReview'),
-            variant: 'outline' as const,
-          },
-        ]
-      : []),
     ...(id
       ? [
           {
@@ -559,7 +716,7 @@ export default function TemplateForm() {
               <li key={s.id}>
                 <button
                   type="button"
-                  onClick={() => setStep(index)}
+                  onClick={() => void goToStep(index)}
                   className={cn(
                     'flex w-full items-center gap-3 rounded-lg border px-3 py-3 text-left transition-colors',
                     active && 'border-stone-900 bg-stone-900 text-white',
@@ -591,85 +748,114 @@ export default function TemplateForm() {
 
         {/* Step 1 — Basic */}
         {step === 0 && (
-          <div className="grid max-w-3xl gap-5">
+          <div className="mx-auto grid gap-6">
             <p className="text-sm text-stone-500">{t('steps.basicHint')}</p>
-            <div>
-              <Label>{t('name')}</Label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder={t('namePlaceholder')}
-              />
-              {formErrors.name && <p className="mt-1 text-sm text-red-500">{formErrors.name}</p>}
-            </div>
-            <div>
-              <Label>{t('slug')}</Label>
-              <Input
-                value={formData.slug}
-                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                placeholder="wedding-basic"
-              />
-              <p className="mt-1 text-xs text-stone-500">{t('slugHint')}</p>
-              {formErrors.slug && <p className="mt-1 text-sm text-red-500">{formErrors.slug}</p>}
-            </div>
-            <div>
-              <Label>{t('description')}</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder={t('descriptionPlaceholder')}
-                className="min-h-24"
-              />
-            </div>
-            {id && (
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-stone-500">{t('status')}:</span>
-                <Badge variant={status === 'PUBLISHED' ? 'default' : 'secondary'}>
-                  {status === 'PENDING'
-                    ? t('pending')
-                    : status === 'PUBLISHED'
-                      ? t('published')
-                      : status === 'REJECTED'
-                        ? t('rejected')
-                        : t('draft')}
-                </Badge>
-              </div>
-            )}
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <Label>{t('type')}</Label>
-                <Select
-                  options={typeOptions}
-                  value={formData.type}
-                  onChange={(value) => setFormData({ ...formData, type: Array.isArray(value) ? value[0] : value })}
-                />
-              </div>
-              <div>
-                <Label>{t('thumbnail')}</Label>
-                <ImageUpload
-                  value={formData.thumbnailUrl}
-                  onChange={(file) => setSelectedFile(Array.isArray(file) ? file[0] : file)}
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-6">
-              {canPublish && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Switch
-                    checked={formData.isPublished}
-                    onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })}
+
+            <FormSection title={t('steps.basic')}>
+              <div className="grid gap-5">
+                <FormField label={t('name')} htmlFor="template-name" error={formErrors.name} required>
+                  <Input
+                    id="template-name"
+                    value={formData.name}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value });
+                      setFormErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.name;
+                        return next;
+                      });
+                    }}
+                    placeholder={t('namePlaceholder')}
                   />
-                  {t('published')}
+                </FormField>
+
+                <FormField
+                  label={t('slug')}
+                  htmlFor="template-slug"
+                  hint={t('slugHint')}
+                  error={formErrors.slug}
+                  required
+                >
+                  <Input
+                    id="template-slug"
+                    value={formData.slug}
+                    onChange={(e) => {
+                      setFormData({ ...formData, slug: e.target.value });
+                      setFormErrors((prev) => {
+                        const next = { ...prev };
+                        delete next.slug;
+                        return next;
+                      });
+                    }}
+                    placeholder="wedding-basic"
+                  />
+                </FormField>
+
+                <FormField label={t('description')} htmlFor="template-description">
+                  <Textarea
+                    id="template-description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder={t('descriptionPlaceholder')}
+                    className="min-h-24"
+                  />
+                </FormField>
+
+                {id ? (
+                  <FormField label={t('status')}>
+                    <div>
+                      <Badge variant={status === 'PUBLISHED' ? 'default' : 'secondary'}>
+                        {status === 'PENDING'
+                          ? t('pending')
+                          : status === 'PUBLISHED'
+                            ? t('published')
+                            : status === 'REJECTED'
+                              ? t('rejected')
+                              : t('draft')}
+                      </Badge>
+                    </div>
+                  </FormField>
+                ) : null}
+
+                <div className="grid gap-5 sm:grid-cols-2">
+                  <FormField label={t('type')} error={formErrors.type} required>
+                    <Select
+                      options={typeOptions}
+                      value={formData.type}
+                      onChange={(value) => {
+                        setFormData({ ...formData, type: Array.isArray(value) ? value[0] : value });
+                        setFormErrors((prev) => {
+                          const next = { ...prev };
+                          delete next.type;
+                          return next;
+                        });
+                      }}
+                    />
+                  </FormField>
+                  <FormField label={t('thumbnail')}>
+                    <ImageUpload
+                      value={formData.thumbnailUrl}
+                      onChange={(file) => setSelectedFile(Array.isArray(file) ? file[0] : file)}
+                    />
+                  </FormField>
                 </div>
-              )}
-              <div className="flex items-center gap-2 text-sm">
-                <Switch
-                  checked={formData.isPremium}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isPremium: checked })}
-                />
-                  {t('premium')}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {canPublish ? (
+                    <SwitchRow
+                      checked={formData.isPublished}
+                      onCheckedChange={(checked) => setFormData({ ...formData, isPublished: checked })}
+                      label={t('published')}
+                    />
+                  ) : null}
+                  <SwitchRow
+                    checked={formData.isPremium}
+                    onCheckedChange={(checked) => setFormData({ ...formData, isPremium: checked })}
+                    label={t('premium')}
+                  />
+                </div>
               </div>
-            </div>
+            </FormSection>
           </div>
         )}
 
@@ -677,6 +863,7 @@ export default function TemplateForm() {
         {step === 1 && (
           <div className="space-y-6">
             <p className="text-sm text-stone-500">{t('steps.themeHint')}</p>
+
             <div
               className="rounded-xl border border-stone-200 p-5"
               style={{
@@ -696,136 +883,229 @@ export default function TemplateForm() {
                 RSVP
               </button>
             </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {(
-                [
-                  ['accent', t('theme.accent')],
-                  ['accentSoft', t('theme.accentSoft')],
-                  ['ink', t('theme.ink')],
-                  ['muted', t('theme.muted')],
-                  ['bg', t('theme.bg')],
-                  ['bgSoft', t('theme.bgSoft')],
-                  ['onAccent', t('theme.onAccent')],
-                ] as const
-              ).map(([key, label]) => (
-                <div key={key}>
-                  <Label className="mb-1.5 block">{label}</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="color"
-                      className="h-10 w-14 cursor-pointer p-1"
-                      value={theme[key] || '#000000'}
-                      onChange={(e) => setTheme({ ...theme, [key]: e.target.value })}
-                    />
+
+            <FormSection title={t('steps.theme')}>
+              <div className="space-y-3">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-stone-700">{t('theme.materialPresets')}</p>
+                  <p className="text-xs text-stone-500">{t('theme.materialPresetsHint')}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
+                  {MATERIAL_THEME_PRESETS.map((preset) => {
+                    const active = matchMaterialPresetId(theme) === preset.id;
+                    return (
+                      <button
+                        key={preset.id}
+                        type="button"
+                        title={t(`theme.presets.${preset.labelKey}` as any)}
+                        onClick={() => {
+                          setTheme((prev) => ({ ...prev, ...preset.colors }));
+                          setFormErrors((prev) => {
+                            const next = { ...prev };
+                            delete next.accent;
+                            return next;
+                          });
+                        }}
+                        className={cn(
+                          'flex flex-col items-stretch gap-2 rounded-lg border px-2.5 py-2.5 text-left transition-colors',
+                          active
+                            ? 'border-stone-900 bg-stone-900 text-white'
+                            : 'border-stone-200 bg-white text-stone-700 hover:border-stone-300 hover:bg-stone-50',
+                        )}
+                      >
+                        <span className="flex items-center gap-1.5" aria-hidden="true">
+                          <span
+                            className="h-5 w-5 shrink-0 rounded-full border border-black/10 shadow-sm"
+                            style={{ background: preset.colors.accent }}
+                          />
+                          <span
+                            className="h-5 flex-1 rounded-sm border border-black/5"
+                            style={{
+                              background: `linear-gradient(90deg, ${preset.colors.bg}, ${preset.colors.accentSoft}, ${preset.colors.ink})`,
+                            }}
+                          />
+                        </span>
+                        <span className="truncate text-[11px] font-medium leading-tight">
+                          {t(`theme.presets.${preset.labelKey}` as any)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                {(
+                  [
+                    ['accent', t('theme.accent')],
+                    ['accentSoft', t('theme.accentSoft')],
+                    ['ink', t('theme.ink')],
+                    ['muted', t('theme.muted')],
+                    ['bg', t('theme.bg')],
+                    ['bgSoft', t('theme.bgSoft')],
+                    ['onAccent', t('theme.onAccent')],
+                  ] as const
+                ).map(([key, label]) => (
+                  <FormField
+                    key={key}
+                    label={label}
+                    error={key === 'accent' ? formErrors.accent : undefined}
+                    required={key === 'accent'}
+                  >
+                    <div className="flex gap-2">
+                      <Input
+                        type="color"
+                        className="h-10 w-14 shrink-0 cursor-pointer p-1"
+                        value={theme[key] || '#000000'}
+                        onChange={(e) => {
+                          setTheme({ ...theme, [key]: e.target.value });
+                          if (key === 'accent') {
+                            setFormErrors((prev) => {
+                              const next = { ...prev };
+                              delete next.accent;
+                              return next;
+                            });
+                          }
+                        }}
+                      />
+                      <Input
+                        value={theme[key] || ''}
+                        onChange={(e) => {
+                          setTheme({ ...theme, [key]: e.target.value });
+                          if (key === 'accent') {
+                            setFormErrors((prev) => {
+                              const next = { ...prev };
+                              delete next.accent;
+                              return next;
+                            });
+                          }
+                        }}
+                        placeholder="#ef4065"
+                      />
+                    </div>
+                  </FormField>
+                ))}
+              </div>
+
+              <div className="grid gap-5 sm:grid-cols-2">
+                {(
+                  [
+                    ['fontDisplay', t('theme.fontDisplay')],
+                    ['fontScript', t('theme.fontScript')],
+                    ['fontBody', t('theme.fontBody')],
+                    ['fontSans', t('theme.fontSans')],
+                  ] as const
+                ).map(([key, label]) => (
+                  <FormField key={key} label={label}>
                     <Input
                       value={theme[key] || ''}
                       onChange={(e) => setTheme({ ...theme, [key]: e.target.value })}
-                      placeholder="#ef4065"
+                      placeholder='"Gloock", serif'
                     />
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2">
-              {(
-                [
-                  ['fontDisplay', t('theme.fontDisplay')],
-                  ['fontScript', t('theme.fontScript')],
-                  ['fontBody', t('theme.fontBody')],
-                  ['fontSans', t('theme.fontSans')],
-                ] as const
-              ).map(([key, label]) => (
-                <div key={key}>
-                  <Label className="mb-1.5 block">{label}</Label>
-                  <Input
-                    value={theme[key] || ''}
-                    onChange={(e) => setTheme({ ...theme, [key]: e.target.value })}
-                    placeholder='"Gloock", serif'
-                  />
-                </div>
-              ))}
-            </div>
+                  </FormField>
+                ))}
+              </div>
+            </FormSection>
 
             {(!effectCatalog?.length || effectCatalog.some((effect) => effect.slug === 'music')) && (
-            <div className="space-y-4 rounded-xl border border-stone-200 bg-white p-4">
-              <div>
-                <Label className="text-base">{effectCatalog?.find((effect) => effect.slug === 'music')?.name || t('theme.musicTitle')}</Label>
-                <p className="mt-1 text-sm text-stone-500">{t('theme.musicHint')}</p>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Switch
+              <FormSection
+                title={
+                  effectCatalog?.find((effect) => effect.slug === 'music')?.name || t('theme.musicTitle')
+                }
+                hint={t('theme.musicHint')}
+              >
+                <SwitchRow
                   checked={theme.musicEnabled !== false}
                   onCheckedChange={(checked) => setTheme({ ...theme, musicEnabled: checked })}
+                  label={t('theme.musicEnabled')}
                 />
-                {t('theme.musicEnabled')}
-              </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <input
-                  ref={musicInputRef}
-                  type="file"
-                  accept="audio/mpeg,audio/mp3,audio/wav,audio/mp4,audio/aac,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg"
-                  className="hidden"
-                  onChange={async (e) => {
-                    const file = e.target.files?.[0];
-                    e.target.value = '';
-                    if (!file) return;
-                    try {
-                      toast.info(t('theme.musicUpload'), { id: 'upload-music' });
-                      const uploaded = await uploadFile(file);
-                      const url = uploaded.url || uploaded.publicRelativePath || '';
-                      setTheme((prev) => ({ ...prev, musicUrl: url, musicEnabled: true }));
-                      toast.success(t('theme.musicTitle'), { id: 'upload-music' });
-                    } catch {
-                      toast.error(t('theme.musicUpload'), { id: 'upload-music' });
-                    }
-                  }}
-                />
-                <Button type="button" variant="outline" onClick={() => musicInputRef.current?.click()}>
-                  <Upload className="mr-2 h-4 w-4" />
-                  {t('theme.musicUpload')}
-                </Button>
-                {theme.musicUrl ? (
-                  <Button type="button" variant="ghost" onClick={() => setTheme({ ...theme, musicUrl: '' })}>
-                    {t('theme.musicClear')}
-                  </Button>
-                ) : null}
-              </div>
-              <Input
-                value={theme.musicUrl || ''}
-                placeholder="https://.../song.mp3"
-                onChange={(e) => setTheme({ ...theme, musicUrl: e.target.value })}
-              />
-              {theme.musicUrl ? (
-                <audio className="w-full" controls src={mergeImageUrl(theme.musicUrl)} />
-              ) : null}
-            </div>
+                <FormField label={t('theme.musicUpload')}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <input
+                      ref={musicInputRef}
+                      type="file"
+                      accept="audio/mpeg,audio/mp3,audio/wav,audio/mp4,audio/aac,audio/ogg,.mp3,.wav,.m4a,.aac,.ogg"
+                      className="hidden"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        e.target.value = '';
+                        if (!file) return;
+                        try {
+                          toast.info(t('theme.musicUpload'), { id: 'upload-music' });
+                          const uploaded = await uploadFile(file);
+                          const url = uploaded.url || uploaded.publicRelativePath || '';
+                          setTheme((prev) => ({ ...prev, musicUrl: url, musicEnabled: true }));
+                          toast.success(t('theme.musicTitle'), { id: 'upload-music' });
+                        } catch {
+                          toast.error(t('theme.musicUpload'), { id: 'upload-music' });
+                        }
+                      }}
+                    />
+                    <Button type="button" variant="outline" onClick={() => musicInputRef.current?.click()}>
+                      <Upload className="mr-2 h-4 w-4" />
+                      {t('theme.musicUpload')}
+                    </Button>
+                    {theme.musicUrl ? (
+                      <Button type="button" variant="ghost" onClick={() => setTheme({ ...theme, musicUrl: '' })}>
+                        {t('theme.musicClear')}
+                      </Button>
+                    ) : null}
+                  </div>
+                </FormField>
+                <FormField label="URL">
+                  <Input
+                    value={theme.musicUrl || ''}
+                    placeholder="https://.../song.mp3"
+                    onChange={(e) => setTheme({ ...theme, musicUrl: e.target.value })}
+                  />
+                </FormField>
+                {theme.musicUrl ? <audio className="w-full" controls src={mergeImageUrl(theme.musicUrl)} /> : null}
+              </FormSection>
             )}
 
-            <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
-              <Label className="text-base">{t('theme.effectsTitle')}</Label>
-              {(effectCatalog && effectCatalog.length
-                ? effectCatalog.filter((effect) => effect.kind === 'burst' || effect.kind === 'ambient' || effect.kind === 'gate')
-                : [
-                    { slug: 'confetti', themeKey: 'effectConfetti', name: t('theme.effectConfetti'), defaultEnabled: true },
-                    { slug: 'petals', themeKey: 'effectPetals', name: t('theme.effectPetals'), defaultEnabled: true },
-                    { slug: 'envelope', themeKey: 'effectEnvelope', name: t('theme.effectEnvelope'), defaultEnabled: true },
-                  ]
-              ).map((effect) => (
-                <div key={effect.slug} className="flex items-center gap-2 text-sm">
-                  <Switch
-                    checked={effect.defaultEnabled ? theme[effect.themeKey] !== false : theme[effect.themeKey] === true}
+            <FormSection title={t('theme.effectsTitle')}>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(effectCatalog && effectCatalog.length
+                  ? effectCatalog.filter(
+                      (effect) =>
+                        effect.kind === 'burst' || effect.kind === 'ambient' || effect.kind === 'gate',
+                    )
+                  : [
+                      {
+                        slug: 'confetti',
+                        themeKey: 'effectConfetti',
+                        name: t('theme.effectConfetti'),
+                        defaultEnabled: true,
+                      },
+                      {
+                        slug: 'petals',
+                        themeKey: 'effectPetals',
+                        name: t('theme.effectPetals'),
+                        defaultEnabled: true,
+                      },
+                      {
+                        slug: 'envelope',
+                        themeKey: 'effectEnvelope',
+                        name: t('theme.effectEnvelope'),
+                        defaultEnabled: true,
+                      },
+                    ]
+                ).map((effect) => (
+                  <SwitchRow
+                    key={effect.slug}
+                    checked={
+                      effect.defaultEnabled
+                        ? theme[effect.themeKey] !== false
+                        : theme[effect.themeKey] === true
+                    }
                     onCheckedChange={(checked) => setTheme({ ...theme, [effect.themeKey]: checked })}
+                    label={effect.name}
                   />
-                  {effect.name}
-                </div>
-              ))}
-            </div>
-
-            <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
-              <div>
-                <Label className="text-base">{t('theme.colorModeTitle')}</Label>
-                <p className="mt-1 text-sm text-stone-500">{t('theme.colorModeHint')}</p>
+                ))}
               </div>
+            </FormSection>
+
+            <FormSection title={t('theme.colorModeTitle')} hint={t('theme.colorModeHint')}>
               <Select
                 options={[
                   { value: 'light', label: t('theme.colorLight') },
@@ -840,52 +1120,51 @@ export default function TemplateForm() {
                   })
                 }
               />
-            </div>
+            </FormSection>
 
             {(!effectCatalog?.length || effectCatalog.some((effect) => effect.slug === 'auto-scroll')) && (
-            <div className="space-y-3 rounded-xl border border-stone-200 bg-white p-4">
-              <div>
-                <Label className="text-base">{effectCatalog?.find((effect) => effect.slug === 'auto-scroll')?.name || t('theme.autoScrollTitle')}</Label>
-                <p className="mt-1 text-sm text-stone-500">{t('theme.autoScrollHint')}</p>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Switch
+              <FormSection
+                title={
+                  effectCatalog?.find((effect) => effect.slug === 'auto-scroll')?.name ||
+                  t('theme.autoScrollTitle')
+                }
+                hint={t('theme.autoScrollHint')}
+              >
+                <SwitchRow
                   checked={theme.autoScroll === true}
                   onCheckedChange={(checked) => setTheme({ ...theme, autoScroll: checked })}
+                  label={t('theme.autoScrollEnabled')}
                 />
-                {t('theme.autoScrollEnabled')}
-              </div>
-              {theme.autoScroll ? (
-                <div className="max-w-xs">
-                  <Label className="mb-1.5 block text-xs">{t('theme.autoScrollSpeed')}</Label>
-                  <Select
-                    options={[
-                      { value: 'slow', label: t('theme.speedSlow') },
-                      { value: 'normal', label: t('theme.speedNormal') },
-                      { value: 'fast', label: t('theme.speedFast') },
-                    ]}
-                    value={theme.autoScrollSpeed || 'normal'}
-                    onChange={(value) =>
-                      setTheme({
-                        ...theme,
-                        autoScrollSpeed: (Array.isArray(value) ? value[0] : value) as TemplateTheme['autoScrollSpeed'],
-                      })
-                    }
-                  />
-                </div>
-              ) : null}
-            </div>
+                {theme.autoScroll ? (
+                  <FormField label={t('theme.autoScrollSpeed')} className="max-w-xs">
+                    <Select
+                      options={[
+                        { value: 'slow', label: t('theme.speedSlow') },
+                        { value: 'normal', label: t('theme.speedNormal') },
+                        { value: 'fast', label: t('theme.speedFast') },
+                      ]}
+                      value={theme.autoScrollSpeed || 'normal'}
+                      onChange={(value) =>
+                        setTheme({
+                          ...theme,
+                          autoScrollSpeed: (Array.isArray(value) ? value[0] : value) as TemplateTheme['autoScrollSpeed'],
+                        })
+                      }
+                    />
+                  </FormField>
+                ) : null}
+              </FormSection>
             )}
           </div>
         )}
 
         {/* Step 3 — Schema / slots */}
         {step === 2 && (
-          <div className="space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <Label className="text-base">{t('variables')}</Label>
-                <p className="mt-1 text-sm text-stone-500">{t('steps.schemaHint')}</p>
+          <div className="space-y-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-stone-900">{t('variables')}</h3>
+                <p className="text-sm text-stone-500">{t('steps.schemaHint')}</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button type="button" size="sm" onClick={() => setShowAddSchema((open) => !open)}>
@@ -900,43 +1179,42 @@ export default function TemplateForm() {
             </div>
 
             {showAddSchema && (
-              <div className="grid gap-3 rounded-xl border border-stone-200 bg-white p-4 sm:grid-cols-[1fr_1fr_160px_auto] sm:items-end">
-                <div>
-                  <Label className="mb-1.5 block text-xs">{t('schemaKey')}</Label>
-                  <Input
-                    value={schemaDraft.key}
-                    placeholder="album"
-                    onChange={(e) => setSchemaDraft({ ...schemaDraft, key: e.target.value })}
-                  />
+              <FormSection title={t('addSchema')}>
+                <div className="grid gap-5 sm:grid-cols-[1fr_1fr_160px_auto] sm:items-end">
+                  <FormField label={t('schemaKey')} compact>
+                    <Input
+                      value={schemaDraft.key}
+                      placeholder="album"
+                      onChange={(e) => setSchemaDraft({ ...schemaDraft, key: e.target.value })}
+                    />
+                  </FormField>
+                  <FormField label={t('schemaLabel')} compact>
+                    <Input
+                      value={schemaDraft.labelVi}
+                      placeholder="Album ảnh"
+                      onChange={(e) => setSchemaDraft({ ...schemaDraft, labelVi: e.target.value })}
+                    />
+                  </FormField>
+                  <FormField label={t('schemaType')} compact>
+                    <Select
+                      options={SCHEMA_FIELD_TYPES.map((type) => ({ value: type, label: type }))}
+                      value={schemaDraft.type}
+                      onChange={(value) =>
+                        setSchemaDraft({
+                          ...schemaDraft,
+                          type: Array.isArray(value) ? value[0] : value,
+                        })
+                      }
+                    />
+                  </FormField>
+                  <Button type="button" onClick={addSchemaField}>
+                    {t('addSchema')}
+                  </Button>
                 </div>
-                <div>
-                  <Label className="mb-1.5 block text-xs">{t('schemaLabel')}</Label>
-                  <Input
-                    value={schemaDraft.labelVi}
-                    placeholder="Album ảnh"
-                    onChange={(e) => setSchemaDraft({ ...schemaDraft, labelVi: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <Label className="mb-1.5 block text-xs">{t('schemaType')}</Label>
-                  <Select
-                    options={SCHEMA_FIELD_TYPES.map((type) => ({ value: type, label: type }))}
-                    value={schemaDraft.type}
-                    onChange={(value) =>
-                      setSchemaDraft({
-                        ...schemaDraft,
-                        type: Array.isArray(value) ? value[0] : value,
-                      })
-                    }
-                  />
-                </div>
-                <Button type="button" onClick={addSchemaField}>
-                  {t('addSchema')}
-                </Button>
-              </div>
+              </FormSection>
             )}
 
-            <div className="max-h-[560px] space-y-3 overflow-y-auto rounded-xl border border-stone-200 bg-stone-50 p-4">
+            <div className="max-h-[560px] space-y-4 overflow-y-auto rounded-xl border border-stone-200 bg-stone-50/80 p-4">
               {variables.map((variable, index) => {
                 const isArray = variable.type?.toLowerCase() === 'array';
                 const isJson =
@@ -953,24 +1231,29 @@ export default function TemplateForm() {
                 const configOpen = configOpenKey === variable.key;
 
                 return (
-                  <div key={`${variable.key}-${index}`} className="rounded-lg border border-stone-200 bg-white p-3">
-                    <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-                      <Label className="flex items-center gap-1 font-semibold text-stone-800">
-                        {fieldLabel}
-                        {variable.required && <span className="text-red-500">*</span>}
-                        <span className="ml-2 text-xs font-normal text-stone-400">
+                  <div
+                    key={`${variable.key}-${index}`}
+                    className="space-y-3 rounded-xl border border-stone-200 bg-white p-4 shadow-sm"
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-stone-100 pb-3">
+                      <div className="min-w-0 space-y-1">
+                        <Label className="text-sm font-semibold text-stone-800">
+                          {fieldLabel}
+                          {variable.required ? <span className="ml-0.5 text-red-500">*</span> : null}
+                        </Label>
+                        <p className="truncate text-xs text-stone-400">
                           {variable.key}
                           {variable.id != null ? ` · #${variable.id}` : ''}
                           {variable.type ? ` · ${variable.type}` : ''}
-                        </span>
-                      </Label>
+                        </p>
+                      </div>
                       <div className="flex items-center gap-1">
                         {!variable.id && (
                           <Button
                             type="button"
                             size="sm"
                             variant="ghost"
-                            className="h-7 text-xs text-red-600"
+                            className="h-8 text-xs text-red-600"
                             onClick={() => setVariables((prev) => prev.filter((_, i) => i !== index))}
                           >
                             <X className="h-3.5 w-3.5" />
@@ -979,8 +1262,8 @@ export default function TemplateForm() {
                         <Button
                           type="button"
                           size="sm"
-                          variant="ghost"
-                          className="h-7 text-xs"
+                          variant="outline"
+                          className="h-8 text-xs"
                           onClick={() => setConfigOpenKey(configOpen ? null : variable.key)}
                         >
                           {t('fieldConfig')}
@@ -989,141 +1272,163 @@ export default function TemplateForm() {
                     </div>
 
                     {configOpen && (
-                      <div className="mb-3 grid gap-3 rounded-md border border-dashed border-stone-200 bg-stone-50 p-3 sm:grid-cols-2 lg:grid-cols-4">
-                        <div>
-                          <Label className="text-xs">{t('theme.accent')} (color)</Label>
+                      <div className="grid gap-4 rounded-lg border border-dashed border-stone-200 bg-stone-50 p-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <FormField label={`${t('theme.accent')} (color)`} compact>
                           <Input
                             value={variable.config?.color || ''}
                             placeholder="#ef4065"
                             onChange={(e) => updateVariableConfig(index, { color: e.target.value })}
                           />
-                        </div>
-                        <div>
-                          <Label className="text-xs">{t('theme.fontDisplay')} (font)</Label>
+                        </FormField>
+                        <FormField label={`${t('theme.fontDisplay')} (font)`} compact>
                           <Input
                             value={variable.config?.font || ''}
                             placeholder='"Gloock", serif'
                             onChange={(e) => updateVariableConfig(index, { font: e.target.value })}
                           />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Size</Label>
+                        </FormField>
+                        <FormField label="Size" compact>
                           <Input
                             value={variable.config?.size || ''}
                             placeholder="24"
                             onChange={(e) => updateVariableConfig(index, { size: e.target.value })}
                           />
-                        </div>
-                        <div>
-                          <Label className="text-xs">Display</Label>
+                        </FormField>
+                        <FormField label="Display" compact>
                           <Select
                             options={[
                               { value: '1', label: t('visible') },
                               { value: '0', label: t('hidden') },
                             ]}
-                            value={variable.config?.display === '0' || variable.config?.display === 'false' ? '0' : '1'}
+                            value={
+                              variable.config?.display === '0' || variable.config?.display === 'false'
+                                ? '0'
+                                : '1'
+                            }
                             onChange={(value) =>
                               updateVariableConfig(index, {
                                 display: Array.isArray(value) ? value[0] : value,
                               })
                             }
                           />
-                        </div>
+                        </FormField>
                       </div>
                     )}
 
-                    {isArray ? (
-                      <div className="mt-2 space-y-3 rounded-md border p-3">
-                        {(Array.isArray(variable.defaultValue) ? variable.defaultValue : []).map(
-                          (item: any, itemIdx: number) => (
-                            <div key={itemIdx} className="relative rounded-md border bg-stone-50 p-3">
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  const newArr = [...(Array.isArray(variable.defaultValue) ? variable.defaultValue : [])];
-                                  newArr.splice(itemIdx, 1);
-                                  updateVariable(index, { defaultValue: newArr });
-                                }}
-                                className="absolute right-2 top-2 text-red-500"
-                              >
-                                <X className="h-4 w-4" />
-                              </button>
-                              <div className="grid gap-3 sm:grid-cols-2">
-                                {Object.entries(variable.itemSchema || {}).map(([subKey, subField]: [string, any]) => (
-                                  <div key={subKey}>
-                                    <Label className="mb-1 block text-xs">{subField.labelVi || subKey}</Label>
-                                    {subField.type?.toLowerCase() === 'image' ? (
-                                      <ImageUpload
-                                        value={item[subKey] || ''}
-                                        onChange={(file) => {
-                                          handleDynamicImageUpload(Array.isArray(file) ? file[0] : file, (url) => {
-                                            const newArr = [
-                                              ...(Array.isArray(variable.defaultValue) ? variable.defaultValue : []),
-                                            ];
-                                            newArr[itemIdx] = { ...newArr[itemIdx], [subKey]: url };
-                                            updateVariable(index, { defaultValue: newArr });
-                                          });
-                                        }}
-                                      />
-                                    ) : (
-                                      <Input
-                                        className="h-8 text-sm"
-                                        value={item[subKey] || ''}
-                                        placeholder={subField.placeHolder || ''}
-                                        onChange={(e) => {
-                                          const newArr = [
-                                            ...(Array.isArray(variable.defaultValue) ? variable.defaultValue : []),
-                                          ];
-                                          newArr[itemIdx] = { ...newArr[itemIdx], [subKey]: e.target.value };
-                                          updateVariable(index, { defaultValue: newArr });
-                                        }}
-                                      />
-                                    )}
-                                  </div>
-                                ))}
+                    <div className="space-y-2">
+                      {isArray ? (
+                        <div className="space-y-3 rounded-lg border border-stone-200 p-3">
+                          {(Array.isArray(variable.defaultValue) ? variable.defaultValue : []).map(
+                            (item: any, itemIdx: number) => (
+                              <div key={itemIdx} className="relative rounded-lg border bg-stone-50 p-4 pr-10">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    const newArr = [
+                                      ...(Array.isArray(variable.defaultValue) ? variable.defaultValue : []),
+                                    ];
+                                    newArr.splice(itemIdx, 1);
+                                    updateVariable(index, { defaultValue: newArr });
+                                  }}
+                                  className="absolute right-3 top-3 text-red-500"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                                <div className="grid gap-4 sm:grid-cols-2">
+                                  {Object.entries(variable.itemSchema || {}).map(
+                                    ([subKey, subField]: [string, any]) => (
+                                      <FormField
+                                        key={subKey}
+                                        label={subField.labelVi || subKey}
+                                        compact
+                                      >
+                                        {subField.type?.toLowerCase() === 'image' ? (
+                                          <ImageUpload
+                                            value={item[subKey] || ''}
+                                            onChange={(file) => {
+                                              handleDynamicImageUpload(
+                                                Array.isArray(file) ? file[0] : file,
+                                                (url) => {
+                                                  const newArr = [
+                                                    ...(Array.isArray(variable.defaultValue)
+                                                      ? variable.defaultValue
+                                                      : []),
+                                                  ];
+                                                  newArr[itemIdx] = {
+                                                    ...newArr[itemIdx],
+                                                    [subKey]: url,
+                                                  };
+                                                  updateVariable(index, { defaultValue: newArr });
+                                                },
+                                              );
+                                            }}
+                                          />
+                                        ) : (
+                                          <Input
+                                            className="h-9 text-sm"
+                                            value={item[subKey] || ''}
+                                            placeholder={subField.placeHolder || ''}
+                                            onChange={(e) => {
+                                              const newArr = [
+                                                ...(Array.isArray(variable.defaultValue)
+                                                  ? variable.defaultValue
+                                                  : []),
+                                              ];
+                                              newArr[itemIdx] = {
+                                                ...newArr[itemIdx],
+                                                [subKey]: e.target.value,
+                                              };
+                                              updateVariable(index, { defaultValue: newArr });
+                                            }}
+                                          />
+                                        )}
+                                      </FormField>
+                                    ),
+                                  )}
+                                </div>
                               </div>
-                            </div>
-                          ),
-                        )}
-                        <button
-                          type="button"
-                          className="text-sm font-medium text-stone-700"
-                          onClick={() => {
-                            const newArr = [...(Array.isArray(variable.defaultValue) ? variable.defaultValue : [])];
-                            const emptyItem: Record<string, any> = {};
-                            Object.keys(variable.itemSchema || {}).forEach((k) => {
-                              emptyItem[k] = '';
-                            });
-                            newArr.push(emptyItem);
-                            updateVariable(index, { defaultValue: newArr });
-                          }}
-                        >
-                          + {t('addItem')}
-                        </button>
-                      </div>
-                    ) : isJson ? (
-                      <textarea
-                        className="mt-1 flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                        value={displayVal}
-                        placeholder={variable.placeHolder || ''}
-                        onChange={(e) => {
-                          let newVal: any = e.target.value;
-                          if (
-                            variable.type?.toLowerCase() === 'json' ||
-                            variable.type?.toLowerCase() === 'text_array' ||
-                            variable.type?.toLowerCase() === 'raw'
-                          ) {
-                            try {
-                              newVal = JSON.parse(newVal);
-                            } catch {
-                              /* keep string while typing */
+                            ),
+                          )}
+                          <button
+                            type="button"
+                            className="text-sm font-medium text-stone-700 hover:text-stone-900"
+                            onClick={() => {
+                              const newArr = [
+                                ...(Array.isArray(variable.defaultValue) ? variable.defaultValue : []),
+                              ];
+                              const emptyItem: Record<string, any> = {};
+                              Object.keys(variable.itemSchema || {}).forEach((k) => {
+                                emptyItem[k] = '';
+                              });
+                              newArr.push(emptyItem);
+                              updateVariable(index, { defaultValue: newArr });
+                            }}
+                          >
+                            + {t('addItem')}
+                          </button>
+                        </div>
+                      ) : isJson ? (
+                        <textarea
+                          className="flex min-h-[100px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                          value={displayVal}
+                          placeholder={variable.placeHolder || ''}
+                          onChange={(e) => {
+                            let newVal: any = e.target.value;
+                            if (
+                              variable.type?.toLowerCase() === 'json' ||
+                              variable.type?.toLowerCase() === 'text_array' ||
+                              variable.type?.toLowerCase() === 'raw'
+                            ) {
+                              try {
+                                newVal = JSON.parse(newVal);
+                              } catch {
+                                /* keep string while typing */
+                              }
                             }
-                          }
-                          updateVariable(index, { defaultValue: newVal });
-                        }}
-                      />
-                    ) : variable.type?.toLowerCase() === 'image' ? (
-                      <div className="mt-1">
+                            updateVariable(index, { defaultValue: newVal });
+                          }}
+                        />
+                      ) : variable.type?.toLowerCase() === 'image' ? (
                         <ImageUpload
                           value={String(displayVal || '')}
                           onChange={(file) => {
@@ -1132,20 +1437,20 @@ export default function TemplateForm() {
                             });
                           }}
                         />
-                      </div>
-                    ) : (
-                      <Input
-                        type={variable.type?.toLowerCase() === 'date' ? 'datetime-local' : 'text'}
-                        value={String(displayVal ?? '')}
-                        placeholder={variable.placeHolder || ''}
-                        onChange={(e) => updateVariable(index, { defaultValue: e.target.value })}
-                      />
-                    )}
+                      ) : (
+                        <Input
+                          type={variable.type?.toLowerCase() === 'date' ? 'datetime-local' : 'text'}
+                          value={String(displayVal ?? '')}
+                          placeholder={variable.placeHolder || ''}
+                          onChange={(e) => updateVariable(index, { defaultValue: e.target.value })}
+                        />
+                      )}
+                    </div>
                   </div>
                 );
               })}
               {variables.length === 0 && (
-                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                <div className="flex flex-col items-center gap-3 py-10 text-center">
                   <p className="text-sm text-stone-500">{t('emptySchema')}</p>
                   <Button type="button" onClick={() => setShowAddSchema(true)}>
                     <Plus className="mr-2 h-4 w-4" />
@@ -1159,60 +1464,50 @@ export default function TemplateForm() {
 
         {/* Step 4 — Review */}
         {step === 3 && (
-          <div className="grid max-w-3xl gap-4">
+          <div className="mx-auto grid max-w-3xl gap-5">
             <p className="text-sm text-stone-500">{t('steps.reviewHint')}</p>
-            <div className="rounded-xl border border-stone-200 divide-y">
-              <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
-                <span className="text-sm text-stone-500">{t('name')}</span>
-                <span className="sm:col-span-2 text-sm font-medium">{formData.name || '—'}</span>
-              </div>
-              <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
-                <span className="text-sm text-stone-500">{t('slug')}</span>
-                <span className="sm:col-span-2 font-mono text-sm">{formData.slug || '—'}</span>
-              </div>
-              <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
-                <span className="text-sm text-stone-500">{t('type')}</span>
-                <span className="sm:col-span-2 text-sm">
-                  {typeOptions.find((o) => o.value === formData.type)?.label || formData.type}
-                </span>
-              </div>
-              <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
-                <span className="text-sm text-stone-500">{t('steps.theme')}</span>
-                <span className="sm:col-span-2 flex items-center gap-2 text-sm">
-                  <span
-                    className="inline-block h-4 w-4 rounded-full border"
-                    style={{ background: theme.accent }}
-                  />
-                  {theme.accent} · {theme.fontDisplay}
-                </span>
-              </div>
-              <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
-                <span className="text-sm text-stone-500">{t('variables')}</span>
-                <span className="sm:col-span-2 text-sm">
-                  {t('fieldCount', { count: variables.length })}
-                </span>
-              </div>
-              <div className="grid gap-1 px-4 py-3 sm:grid-cols-3">
-                <span className="text-sm text-stone-500">{t('premium')}</span>
-                <span className="sm:col-span-2 text-sm">{formData.isPremium ? 'Yes' : 'No'}</span>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={handleSubmit} disabled={loading}>
-                <Save className="mr-2 h-4 w-4" />
-                {tUtils('save')}
-              </Button>
-              {canSubmitReview && (
-                <Button type="button" variant="outline" onClick={handleSubmitReview}>
-                  <Send className="mr-2 h-4 w-4" />
-                  {t('submitReview')}
-                </Button>
-              )}
-            </div>
+            <FormSection title={t('steps.review')}>
+              <dl className="divide-y divide-stone-100 rounded-lg border border-stone-200">
+                <div className="grid gap-1 px-4 py-3.5 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm text-stone-500">{t('name')}</dt>
+                  <dd className="sm:col-span-2 text-sm font-medium text-stone-900">{formData.name || '—'}</dd>
+                </div>
+                <div className="grid gap-1 px-4 py-3.5 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm text-stone-500">{t('slug')}</dt>
+                  <dd className="sm:col-span-2 font-mono text-sm text-stone-900">{formData.slug || '—'}</dd>
+                </div>
+                <div className="grid gap-1 px-4 py-3.5 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm text-stone-500">{t('type')}</dt>
+                  <dd className="sm:col-span-2 text-sm text-stone-900">
+                    {typeOptions.find((o) => o.value === formData.type)?.label || formData.type}
+                  </dd>
+                </div>
+                <div className="grid gap-1 px-4 py-3.5 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm text-stone-500">{t('steps.theme')}</dt>
+                  <dd className="sm:col-span-2 flex items-center gap-2 text-sm text-stone-900">
+                    <span
+                      className="inline-block h-4 w-4 rounded-full border"
+                      style={{ background: theme.accent }}
+                    />
+                    {theme.accent} · {theme.fontDisplay}
+                  </dd>
+                </div>
+                <div className="grid gap-1 px-4 py-3.5 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm text-stone-500">{t('variables')}</dt>
+                  <dd className="sm:col-span-2 text-sm text-stone-900">
+                    {t('fieldCount', { count: variables.length })}
+                  </dd>
+                </div>
+                <div className="grid gap-1 px-4 py-3.5 sm:grid-cols-3 sm:gap-4">
+                  <dt className="text-sm text-stone-500">{t('premium')}</dt>
+                  <dd className="sm:col-span-2 text-sm text-stone-900">{formData.isPremium ? 'Yes' : 'No'}</dd>
+                </div>
+              </dl>
+            </FormSection>
           </div>
         )}
 
-        {/* Nav */}
+        {/* Nav — Save only on last step; header already has Save / Submit review anytime */}
         <div className="mt-8 flex items-center justify-between border-t border-stone-200 pt-4">
           <Button type="button" variant="outline" disabled={step === 0} onClick={goPrev}>
             <ChevronLeft className="mr-1 h-4 w-4" />
@@ -1224,10 +1519,18 @@ export default function TemplateForm() {
               <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           ) : (
-            <Button type="button" onClick={handleSubmit} disabled={loading}>
-              <Save className="mr-2 h-4 w-4" />
-              {tUtils('save')}
-            </Button>
+            <div className="flex flex-wrap items-center gap-2">
+              {canSubmitReview ? (
+                <Button type="button" variant="outline" onClick={handleSubmitReview}>
+                  <Send className="mr-2 h-4 w-4" />
+                  {t('submitReview')}
+                </Button>
+              ) : null}
+              <Button type="button" onClick={handleSubmit} disabled={loading}>
+                <Save className="mr-2 h-4 w-4" />
+                {tUtils('save')}
+              </Button>
+            </div>
           )}
         </div>
       </ComponentCard>

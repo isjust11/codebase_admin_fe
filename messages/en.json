@@ -1836,6 +1836,24 @@
       "bg": "Background",
       "bgSoft": "Background soft",
       "onAccent": "On accent",
+      "materialPresets": "Material color palettes",
+      "materialPresetsHint": "Pick a hue to fill accent / ink / backgrounds. You can still tweak each token below.",
+      "presets": {
+        "pink": "Pink",
+        "red": "Red",
+        "deepOrange": "Deep Orange",
+        "amber": "Amber",
+        "green": "Green",
+        "teal": "Teal",
+        "cyan": "Cyan",
+        "blue": "Blue",
+        "indigo": "Indigo",
+        "purple": "Purple",
+        "deepPurple": "Deep Purple",
+        "brown": "Brown",
+        "blueGrey": "Blue Grey",
+        "grey": "Grey"
+      },
       "fontDisplay": "Display font",
       "fontScript": "Script font",
       "fontBody": "Body font",
@@ -1901,8 +1919,13 @@
     "validation": {
       "nameRequired": "Name is required",
       "slugRequired": "Package slug is required",
+      "slugInvalid": "Slug may only contain lowercase letters, numbers, and hyphens",
+      "typeRequired": "Template type is required",
+      "accentRequired": "Accent color is required",
+      "schemaRequired": "Add at least one schema field",
+      "requiredFieldsEmpty": "Some required fields are missing sample values",
       "htmlRequired": "HTML is required",
-      "validationError": "Please check the form"
+      "validationError": "Please fix the form before continuing"
     }
   },
   "EventPage": {

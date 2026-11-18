@@ -1879,6 +1879,24 @@
       "bg": "Background",
       "bgSoft": "Background soft",
       "onAccent": "Chữ trên accent",
+      "materialPresets": "Bảng màu Material",
+      "materialPresetsHint": "Chọn một tông màu để điền sẵn accent / ink / nền. Vẫn có thể chỉnh từng token bên dưới.",
+      "presets": {
+        "pink": "Pink",
+        "red": "Red",
+        "deepOrange": "Deep Orange",
+        "amber": "Amber",
+        "green": "Green",
+        "teal": "Teal",
+        "cyan": "Cyan",
+        "blue": "Blue",
+        "indigo": "Indigo",
+        "purple": "Purple",
+        "deepPurple": "Deep Purple",
+        "brown": "Brown",
+        "blueGrey": "Blue Grey",
+        "grey": "Grey"
+      },
       "fontDisplay": "Font display",
       "fontScript": "Font script",
       "fontBody": "Font body",
@@ -1944,8 +1962,13 @@
     "validation": {
       "nameRequired": "Tên mẫu không được để trống",
       "slugRequired": "Slug package là bắt buộc",
+      "slugInvalid": "Slug chỉ gồm chữ thường, số và dấu gạch ngang",
+      "typeRequired": "Loại mẫu là bắt buộc",
+      "accentRequired": "Màu accent là bắt buộc",
+      "schemaRequired": "Cần ít nhất một field trong schema",
+      "requiredFieldsEmpty": "Một số field bắt buộc chưa có giá trị mẫu",
       "htmlRequired": "HTML không được để trống",
-      "validationError": "Vui lòng kiểm tra lại thông tin"
+      "validationError": "Vui lòng kiểm tra lại thông tin trước khi sang bước tiếp theo"
     }
   },
   "EventPage": {

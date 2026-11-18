@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Plus, Pencil, Trash, MoreHorizontal, ImageOff, Eye, Check, XCircle, Send } from 'lucide-react';
+import { Plus, Pencil, Trash, MoreHorizontal, ImageOff, Eye, Check, XCircle, Send, EyeOff } from 'lucide-react';
 import {
   deleteTemplate,
   getMyTemplates,
@@ -25,7 +25,7 @@ import { Action } from '@/types/actions';
 import { Template } from '@/types/template';
 import { useTranslations } from 'next-intl';
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
-import { Badge } from '@/components/ui/badge';
+import Badge from '@/components/ui/badge/Badge';
 import { AppRoutes } from '@/constants';
 import { useAuth } from '@/contexts/AuthContext';
 import { useSearchParams } from 'next/navigation';
@@ -86,8 +86,11 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
       await deleteTemplate(id);
       fetchTemplates(pageIndex, pageSize, search, status);
       toast.success(t('messages.deleteSuccess'));
+      setIsOpen(false);
     } catch (_error) {
       toast.error(t('messages.deleteError'));
+    } finally {
+      setIsOpen(false);
     }
   };
 
@@ -190,9 +193,9 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
       header: t('premium'),
       cell: ({ row }) =>
         row.original.isPremium ? (
-          <Badge variant="secondary">{t('premium')}</Badge>
+          <Badge variant='light' color="primary">{t('premium')}</Badge>
         ) : (
-          <span className="text-xs text-stone-400">—</span>
+          <Badge variant='light' color="info">—</Badge>
         ),
     },
     {
@@ -201,7 +204,7 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
       cell: ({ row }) => {
         const value = row.original.status || (row.original.isPublished ? 'PUBLISHED' : 'DRAFT');
         return (
-          <Badge variant={value === 'PUBLISHED' ? 'default' : 'secondary'}>{statusLabel(value)}</Badge>
+          <Badge variant='light' color={value === 'PUBLISHED' ? 'success' : 'info'}>{statusLabel(value)}</Badge>
         );
       },
     },
@@ -227,7 +230,7 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
               </DropdownMenuItem>
               {value === 'PUBLISHED' && item.id && (
                 <DropdownMenuItem
-                  className="flex flex-start px-4 py-2 cursor-pointer"
+                  className="flex flex-start px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-300"
                   onClick={() => window.open(`/template-preview/${item.id}`, '_blank')}
                 >
                   <Eye className="mr-2 h-4 w-4" /> {t('publicPreview')}
@@ -235,7 +238,7 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
               )}
               {(value === 'DRAFT' || value === 'REJECTED') && (
                 <DropdownMenuItem
-                  className="flex flex-start px-4 py-2 cursor-pointer"
+                  className="flex flex-start px-4 py-2 text-gray-500 cursor-pointer hover:bg-gray-300"
                   onClick={() => handleSubmit(item)}
                 >
                   <Send className="mr-2 h-4 w-4" /> {t('submitReview')}
@@ -243,7 +246,7 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
               )}
               {canApprove && value === 'PENDING' && (
                 <DropdownMenuItem
-                  className="flex flex-start px-4 py-2 cursor-pointer text-green-600"
+                  className="flex flex-start px-4 py-2 text-green-600 cursor-pointer hover:bg-green-300"
                   onClick={() => handleApprove(item)}
                 >
                   <Check className="mr-2 h-4 w-4" /> {t('approve')}
@@ -251,7 +254,7 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
               )}
               {canReject && value === 'PENDING' && (
                 <DropdownMenuItem
-                  className="flex flex-start px-4 py-2 cursor-pointer text-orange-600"
+                  className="flex flex-start px-4 py-2 cursor-pointer text-orange-600 hover:bg-orange-300"
                   onClick={() => handleReject(item)}
                 >
                   <XCircle className="mr-2 h-4 w-4" /> {t('reject')}
@@ -259,10 +262,10 @@ export default function TemplateList({ mine = false }: { mine?: boolean }) {
               )}
               {canPublish && (
                 <DropdownMenuItem
-                  className="flex flex-start px-4 py-2 cursor-pointer"
+                  className="flex flex-start px-4 py-2 cursor-pointer hover:bg-yellow-200 text-yellow-600"
                   onClick={() => handlePublish(item)}
                 >
-                  <Eye className="mr-2 h-4 w-4" /> {item.isPublished ? t('unpublish') : t('publish')}
+                  <EyeOff className="mr-2 h-4 w-4" /> {item.isPublished ? t('unpublish') : t('publish')}
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem
