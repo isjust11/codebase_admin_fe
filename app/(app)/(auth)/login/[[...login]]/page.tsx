@@ -102,13 +102,13 @@ export default function LoginPage() {
   };
 
   const handleGoogleLogin = async () => {
-    // await loginWithGoogle();
-    window.location.href = `${apiUrl}/auth/google`;
+    const redirect = encodeURIComponent(window.location.origin);
+    window.location.href = `${apiUrl}/auth/google?redirect=${redirect}`;
   };
 
   const handleFacebookLogin = async () => {
-    // await loginWithFacebook();
-    window.location.href = `${apiUrl}/auth/facebook`;
+    const redirect = encodeURIComponent(window.location.origin);
+    window.location.href = `${apiUrl}/auth/facebook?redirect=${redirect}`;
   };
 
   return (

@@ -136,6 +136,7 @@ const DEFAULT_THEME: TemplateTheme = {
   musicUrl: '',
   effectConfetti: true,
   effectPetals: true,
+  effectHearts: true,
   effectEnvelope: true,
   colorMode: 'light',
   autoScroll: false,
@@ -243,21 +244,25 @@ function parseThemeBlob(raw: unknown): TemplateTheme {
   if (!raw) return { ...DEFAULT_THEME };
   if (typeof raw === 'string') {
     try {
-      return { ...DEFAULT_THEME, ...JSON.parse(raw) };
+      return parseThemeBlob(JSON.parse(raw));
     } catch {
       return { ...DEFAULT_THEME };
     }
   }
-  if (typeof raw === 'object' && raw !== null) {
-    const obj = raw as Record<string, any>;
-    if (obj.type === 'RAW' || obj.type === 'THEME') {
-      const value = obj.value ?? obj.defaul;
-      if (value && typeof value === 'object') return { ...DEFAULT_THEME, ...value };
-      return { ...DEFAULT_THEME };
-    }
-    return { ...DEFAULT_THEME, ...obj };
+  if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) {
+    return { ...DEFAULT_THEME };
   }
-  return { ...DEFAULT_THEME };
+  const obj = raw as Record<string, any>;
+  // Nest stores `{ tokens, css }` or admin field `{ type: 'THEME', value }`.
+  if (obj.type === 'RAW' || obj.type === 'THEME') {
+    return parseThemeBlob(obj.value ?? obj.defaul);
+  }
+  if (obj.tokens && typeof obj.tokens === 'object' && !Array.isArray(obj.tokens)) {
+    const { tokens, css: _css, type: _type, id: _id, value: _value, defaul: _defaul, ...siblings } = obj;
+    return { ...DEFAULT_THEME, ...parseThemeBlob(tokens), ...siblings };
+  }
+  const { css: _css, type: _type, id: _id, tokens: _tokens, ...flat } = obj;
+  return { ...DEFAULT_THEME, ...flat };
 }
 
 export default function TemplateForm() {
@@ -1081,6 +1086,12 @@ export default function TemplateForm() {
                         slug: 'petals',
                         themeKey: 'effectPetals',
                         name: t('theme.effectPetals'),
+                        defaultEnabled: true,
+                      },
+                      {
+                        slug: 'hearts',
+                        themeKey: 'effectHearts',
+                        name: t('theme.effectHearts'),
                         defaultEnabled: true,
                       },
                       {

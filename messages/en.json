@@ -1866,6 +1866,7 @@
       "effectsTitle": "Effects",
       "effectConfetti": "Confetti when the invite opens",
       "effectPetals": "Floating petals",
+      "effectHearts": "Floating hearts",
       "effectEnvelope": "Animated envelope",
       "colorModeTitle": "Light / dark",
       "colorModeHint": "Default when a guest opens the invite. They can still switch on the card.",
