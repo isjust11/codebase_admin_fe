@@ -21,7 +21,7 @@ import { ChevronLeft, ChevronRight, Save, X, Send, Upload, Check, Plus } from 'l
 import { useLoading } from '@/contexts/LoadingContext';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
-import { AppRoutes } from '@/constants';
+import { AppCategoryCode, AppRoutes } from '@/constants';
 import { z } from 'zod';
 import Select, { SelectOption } from '@/components/form/Select';
 import { Switch } from '@/components/ui/switch';
@@ -31,8 +31,9 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn, mergeImageUrl } from '@/lib/utils';
 import LivePreviewPanel from '@/components/eventlab/LivePreviewPanel';
-import { getActiveInviteEffects } from '@/services/manager-api';
+import { getActiveInviteEffects, getCategoriesByType } from '@/services/manager-api';
 import { InviteEffect } from '@/types/invite-effect';
+import { Category } from '@/types/category';
 import {
   MATERIAL_THEME_PRESETS,
   matchMaterialPresetId,
@@ -299,13 +300,12 @@ export default function TemplateForm() {
   const [configOpenKey, setConfigOpenKey] = useState<string | null>(null);
   const [showAddSchema, setShowAddSchema] = useState(false);
   const [schemaDraft, setSchemaDraft] = useState({ key: '', labelVi: '', type: 'TEXT' });
-
-  const typeOptions: SelectOption[] = [
+  const [typeOptions, setTypeOptions] = useState<SelectOption[]>([
     { value: 'WEDDING', label: t('types.WEDDING') },
     { value: 'EVENT', label: t('types.EVENT') },
     { value: 'BIRTHDAY', label: t('types.BIRTHDAY') },
     { value: 'OTHER', label: t('types.OTHER') },
-  ];
+  ]);
 
   const stepLabels = useMemo(
     () => [
@@ -320,6 +320,25 @@ export default function TemplateForm() {
   useEffect(() => {
     if (id) loadTemplate(id);
   }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCategoriesByType(AppCategoryCode.TemplateType.code)
+      .then((cats: Category[]) => {
+        if (cancelled) return;
+        const active = (cats || []).filter((c) => c.isActive !== false && c.code);
+        if (!active.length) return;
+        setTypeOptions(active.map((c) => ({ value: c.code, label: c.name })));
+        setFormData((prev) => {
+          if (active.some((c) => c.code === prev.type)) return prev;
+          return { ...prev, type: active[0].code };
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;

@@ -144,7 +144,8 @@ export type SystemAssetSubfolder =
   | 'icons'
   | 'banners'
   | 'placeholders'
-  | 'general';
+  | 'general'
+  | 'music';
 
 /**
  * Upload tài nguyên dùng chung của hệ thống (svg category, banner, icon...).

@@ -27,11 +27,12 @@ import {
 import { useLoading } from '@/contexts/LoadingContext';
 import { useTranslations } from 'next-intl';
 import ImageUpload from '@/components/ui/ImageUpload';
-import { AppRoutes } from '@/constants';
+import { AppCategoryCode, AppRoutes } from '@/constants';
 import Select, { SelectOption } from '@/components/form/Select';
 import { getTemplates } from '@/services/template-api';
-import { getPublicInviteEffects } from '@/services/manager-api';
+import { getCategoriesByType, getPublicInviteEffects } from '@/services/manager-api';
 import type { InviteEffect } from '@/types/invite-effect';
+import type { Category } from '@/types/category';
 import EventEffectsPanel from './EventEffectsPanel';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -190,12 +191,12 @@ export default function EventForm() {
     eventData: {},
   });
 
-  const typeOptions: SelectOption[] = [
+  const [typeOptions, setTypeOptions] = useState<SelectOption[]>([
     { value: 'WEDDING', label: t('types.WEDDING') },
     { value: 'EVENT', label: t('types.EVENT') },
     { value: 'BIRTHDAY', label: t('types.BIRTHDAY') },
     { value: 'OTHER', label: t('types.OTHER') },
-  ];
+  ]);
 
   const statusOptions: SelectOption[] = [
     { value: 'DRAFT', label: t('statuses.DRAFT') },
@@ -207,6 +208,18 @@ export default function EventForm() {
   const stepLabels = [t('steps.basic'), t('steps.template'), t('steps.content'), t('steps.review')];
 
   useEffect(() => {
+    getCategoriesByType(AppCategoryCode.TemplateType.code)
+      .then((cats: Category[]) => {
+        const active = (cats || []).filter((c) => c.isActive !== false && c.code);
+        if (!active.length) return;
+        setTypeOptions(active.map((c) => ({ value: c.code, label: c.name })));
+        setFormData((prev) => {
+          if (active.some((c) => c.code === prev.type)) return prev;
+          return { ...prev, type: active[0].code as EventDto['type'] };
+        });
+      })
+      .catch(() => undefined);
+
     getTemplates({ size: 100 })
       .then((res) => {
         const items = (res.data || []) as TemplateItem[];

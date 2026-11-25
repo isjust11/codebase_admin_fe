@@ -1,7 +1,7 @@
 import { axiosInstance } from '@/lib/axios';
 
 export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'CANCELLED' | 'COMPLETED';
-export type TemplateType = 'WEDDING' | 'EVENT' | 'BIRTHDAY' | 'OTHER';
+export type TemplateType = string;
 
 export interface EventDto {
   id?: number | string;

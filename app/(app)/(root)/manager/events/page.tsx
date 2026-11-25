@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import {
   Plus,
   Pencil,
@@ -11,6 +12,10 @@ import {
   Share2,
   QrCode,
   Users,
+  LayoutGrid,
+  List,
+  Calendar,
+  MapPin,
 } from 'lucide-react';
 import { deleteEvent, getEvents, EventDto } from '@/services/event-api';
 import { reactInviteUrl } from '@/services/event-guest-api';
@@ -26,7 +31,7 @@ import {
   DropdownMenuItem,
 } from '@/components/ui/dropdown-menu';
 import { ColumnDef } from '@tanstack/react-table';
-import { mergeImageUrl } from '@/lib/utils';
+import { cn, mergeImageUrl } from '@/lib/utils';
 import Image from 'next/image';
 import { Action } from '@/types/actions';
 import { AlertDialogUtils } from '@/components/AlertDialogUtils';
@@ -34,17 +39,23 @@ import { Badge } from '@/components/ui/badge';
 import { AppRoutes } from '@/constants';
 import EventShareDialog from './components/EventShareDialog';
 
+type ViewMode = 'list' | 'grid';
+
 export default function EventList() {
   const [events, setEvents] = useState<EventDto[]>([]);
   const [pageCount, setPageCount] = useState(0);
   const [pageIndex, setPageIndex] = useState(0);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12);
   const [search, setSearch] = useState('');
+  const [gridSearch, setGridSearch] = useState('');
+  const [view, setView] = useState<ViewMode>('grid');
   const [loading, setLoading] = useState(true);
   const { navigateTo } = useLoading();
   const [isOpen, setIsOpen] = useState(false);
   const [selected, setSelected] = useState<EventDto | null>(null);
   const [shareEvent, setShareEvent] = useState<EventDto | null>(null);
+
+  const activeSearch = view === 'grid' ? gridSearch : search;
 
   const fetchEvents = async (page: number, size: number, searchValue: string) => {
     setLoading(true);
@@ -62,14 +73,15 @@ export default function EventList() {
   };
 
   useEffect(() => {
-    fetchEvents(pageIndex, pageSize, search);
-  }, [pageIndex, pageSize, search]);
+    fetchEvents(pageIndex, pageSize, activeSearch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIndex, pageSize, search, gridSearch, view]);
 
   const handleDelete = async (id: string | number | undefined) => {
     if (!id) return;
     try {
       await deleteEvent(String(id));
-      fetchEvents(pageIndex, pageSize, search);
+      fetchEvents(pageIndex, pageSize, activeSearch);
       toast.success('Event deleted successfully');
     } catch {
       toast.error('Failed to delete event');
@@ -98,6 +110,45 @@ export default function EventList() {
     }
     setShareEvent(item);
   };
+
+  const renderItemActions = (item: EventDto) => (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <MoreHorizontal className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="rounded-xs bg-white shadow-sm">
+        <DropdownMenuItem
+          className="cursor-pointer px-4 py-2 text-blue-500 hover:bg-blue-300"
+          onClick={() => navigateTo(`${AppRoutes.Manager.EventsUpdate}/${item.id}`)}
+        >
+          <Pencil className="mr-2 h-4 w-4" /> Edit
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer px-4 py-2" onClick={() => openShare(item)}>
+          <Share2 className="mr-2 h-4 w-4" /> Chia sẻ link + QR
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer px-4 py-2"
+          onClick={() => navigateTo(`${AppRoutes.Manager.Events}/${item.id}/guests`)}
+        >
+          <Users className="mr-2 h-4 w-4" /> Quản lý khách mời
+        </DropdownMenuItem>
+        <DropdownMenuItem className="cursor-pointer px-4 py-2" onClick={() => openShare(item)}>
+          <QrCode className="mr-2 h-4 w-4" /> Mã QR thiệp
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          className="cursor-pointer px-4 py-2 text-red-600 hover:bg-red-300"
+          onClick={() => {
+            setSelected(item);
+            setIsOpen(true);
+          }}
+        >
+          <Trash className="mr-2 h-4 w-4" /> Delete
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
 
   const columns: ColumnDef<EventDto>[] = [
     {
@@ -183,53 +234,7 @@ export default function EventList() {
     {
       id: 'actions',
       header: 'Actions',
-      cell: ({ row }) => {
-        const item = row.original;
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="rounded-xs bg-white shadow-sm">
-              <DropdownMenuItem
-                className="cursor-pointer px-4 py-2 text-blue-500 hover:bg-blue-300"
-                onClick={() => navigateTo(`${AppRoutes.Manager.EventsUpdate}/${item.id}`)}
-              >
-                <Pencil className="mr-2 h-4 w-4" /> Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer px-4 py-2"
-                onClick={() => openShare(item)}
-              >
-                <Share2 className="mr-2 h-4 w-4" /> Chia sẻ link + QR
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer px-4 py-2"
-                onClick={() => navigateTo(`${AppRoutes.Manager.Events}/${item.id}/guests`)}
-              >
-                <Users className="mr-2 h-4 w-4" /> Quản lý khách mời
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer px-4 py-2"
-                onClick={() => openShare(item)}
-              >
-                <QrCode className="mr-2 h-4 w-4" /> Mã QR thiệp
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                className="cursor-pointer px-4 py-2 text-red-600 hover:bg-red-300"
-                onClick={() => {
-                  setSelected(item);
-                  setIsOpen(true);
-                }}
-              >
-                <Trash className="mr-2 h-4 w-4" /> Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        );
-      },
+      cell: ({ row }) => renderItemActions(row.original),
     },
   ];
 
@@ -256,11 +261,45 @@ export default function EventList() {
       </div>
       <div className="space-y-6">
         <ComponentCard title="Events" listAction={lstActions}>
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+            <p className="text-sm text-stone-500">Grid giúp xem cover và mở chia sẻ / khách mời nhanh hơn.</p>
+            <div className="inline-flex rounded-lg border border-stone-200 bg-stone-50 p-0.5">
+              <button
+                type="button"
+                onClick={() => {
+                  setView('grid');
+                  setPageSize(12);
+                  setPageIndex(0);
+                }}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition',
+                  view === 'grid' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800',
+                )}
+              >
+                <LayoutGrid className="h-3.5 w-3.5" /> Grid
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setView('list');
+                  setPageSize(10);
+                  setPageIndex(0);
+                }}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium transition',
+                  view === 'list' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-500 hover:text-stone-800',
+                )}
+              >
+                <List className="h-3.5 w-3.5" /> Danh sách
+              </button>
+            </div>
+          </div>
+
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <span className="text-gray-500">Loading...</span>
             </div>
-          ) : (
+          ) : view === 'list' ? (
             <DataTable
               columns={columns}
               data={events}
@@ -272,6 +311,169 @@ export default function EventList() {
               onSearchChange={setSearch}
               manualPagination={true}
             />
+          ) : (
+            <div className="space-y-4">
+              <div className="flex flex-wrap items-center gap-2">
+                <Input
+                  value={gridSearch}
+                  onChange={(e) => {
+                    setPageIndex(0);
+                    setGridSearch(e.target.value);
+                  }}
+                  placeholder="Tìm theo tiêu đề, slug…"
+                  className="max-w-sm"
+                />
+                <select
+                  className="h-10 rounded-md border border-stone-200 bg-white px-3 text-sm"
+                  value={pageSize}
+                  onChange={(e) => {
+                    setPageIndex(0);
+                    setPageSize(Number(e.target.value) || 12);
+                  }}
+                >
+                  {[12, 24, 36].map((n) => (
+                    <option key={n} value={n}>
+                      {n} / trang
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {events.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-stone-200 bg-stone-50 px-6 py-16 text-center text-sm text-stone-500">
+                  Chưa có sự kiện nào phù hợp.
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                  {events.map((item) => {
+                    const value = item.status || 'DRAFT';
+                    const invite = item.reactInviteUrl || reactInviteUrl(item.slug);
+                    return (
+                      <div
+                        key={String(item.id)}
+                        className="group flex flex-col overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm transition hover:border-stone-300"
+                      >
+                        <button
+                          type="button"
+                          className="relative aspect-[4/3] w-full overflow-hidden bg-stone-100"
+                          onClick={() => navigateTo(`${AppRoutes.Manager.EventsUpdate}/${item.id}`)}
+                        >
+                          {item.coverImageUrl ? (
+                            <Image
+                              src={mergeImageUrl(item.coverImageUrl)}
+                              alt={item.title}
+                              fill
+                              unoptimized
+                              className="object-cover transition duration-300 group-hover:scale-[1.03]"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-stone-400">
+                              <ImageOff className="h-10 w-10" />
+                            </div>
+                          )}
+                          <div className="absolute left-3 top-3">
+                            <Badge
+                              variant={
+                                value === 'PUBLISHED'
+                                  ? 'default'
+                                  : value === 'COMPLETED'
+                                    ? 'secondary'
+                                    : 'outline'
+                              }
+                              className="bg-white/90 backdrop-blur"
+                            >
+                              {statusLabel(value)}
+                            </Badge>
+                          </div>
+                        </button>
+
+                        <div className="flex flex-1 flex-col gap-2 p-4">
+                          <div className="flex items-start justify-between gap-2">
+                            <button
+                              type="button"
+                              className="min-w-0 text-left"
+                              onClick={() => navigateTo(`${AppRoutes.Manager.EventsUpdate}/${item.id}`)}
+                            >
+                              <div className="line-clamp-1 font-semibold text-stone-900">{item.title}</div>
+                              {item.slug ? (
+                                <code className="mt-0.5 block truncate text-xs text-stone-500">{item.slug}</code>
+                              ) : null}
+                            </button>
+                            {renderItemActions(item)}
+                          </div>
+
+                          <div className="space-y-1 text-xs text-stone-500">
+                            {item.eventDate ? (
+                              <div className="flex items-center gap-1.5">
+                                <Calendar className="h-3.5 w-3.5 shrink-0" />
+                                <span>{new Date(item.eventDate).toLocaleDateString()}</span>
+                              </div>
+                            ) : null}
+                            {item.venue ? (
+                              <div className="flex items-center gap-1.5">
+                                <MapPin className="h-3.5 w-3.5 shrink-0" />
+                                <span className="line-clamp-1">{item.venue}</span>
+                              </div>
+                            ) : null}
+                            {item.type ? <div className="text-stone-400">{item.type}</div> : null}
+                          </div>
+
+                          <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => openShare(item)}
+                              disabled={!invite}
+                            >
+                              <Share2 className="mr-1.5 h-3.5 w-3.5" /> Share
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => navigateTo(`${AppRoutes.Manager.Events}/${item.id}/guests`)}
+                            >
+                              <Users className="mr-1.5 h-3.5 w-3.5" /> Khách
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {pageCount > 1 ? (
+                <div className="flex items-center justify-between gap-2 pt-2">
+                  <p className="text-xs text-stone-500">
+                    Trang {pageIndex + 1} / {pageCount}
+                  </p>
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={pageIndex <= 0}
+                      onClick={() => setPageIndex((p) => Math.max(0, p - 1))}
+                    >
+                      Trước
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={pageIndex >= pageCount - 1}
+                      onClick={() => setPageIndex((p) => Math.min(pageCount - 1, p + 1))}
+                    >
+                      Sau
+                    </Button>
+                  </div>
+                </div>
+              ) : null}
+            </div>
           )}
         </ComponentCard>
 

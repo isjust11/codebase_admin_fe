@@ -10,6 +10,7 @@ import { Category } from '@/types/category';
 import { DataSource, DataSourceTypeOption } from '@/types/data-source';
 import { Disease } from '@/types/disease';
 import { InviteEffect } from '@/types/invite-effect';
+import { MusicLibraryTrack } from '@/types/music-library';
 
 
 // todo: api manager fooditem
@@ -493,6 +494,49 @@ export const updateInviteEffect = async (id: string, data: Partial<InviteEffect>
 
 export const deleteInviteEffect = async (id: string): Promise<void> => {
   await axiosInstance.delete(`/invite-effects/${id}`);
+};
+
+export const getMusicLibraryTracks = async (params?: {
+  page?: number;
+  size?: number;
+  search?: string;
+}): Promise<{ data: MusicLibraryTrack[]; total: number; page: number; size: number; totalPages: number }> => {
+  const response = await axiosInstance.get('/music-library', { params });
+  return response.data ?? { data: [], total: 0, page: 1, size: 10, totalPages: 0 };
+};
+
+export const createMusicLibraryTrack = async (data: Partial<MusicLibraryTrack>): Promise<MusicLibraryTrack> => {
+  const response = await axiosInstance.post('/music-library', data);
+  return response.data;
+};
+
+export const updateMusicLibraryTrack = async (
+  id: string,
+  data: Partial<MusicLibraryTrack>,
+): Promise<MusicLibraryTrack> => {
+  const response = await axiosInstance.put(`/music-library/${id}`, data);
+  return response.data;
+};
+
+export const deleteMusicLibraryTrack = async (id: string): Promise<void> => {
+  await axiosInstance.delete(`/music-library/${id}`);
+};
+
+export const uploadMusicLibraryTrack = async (
+  file: File,
+  meta: Partial<Pick<MusicLibraryTrack, 'slug' | 'name' | 'mood' | 'sortOrder' | 'isActive'>> = {},
+): Promise<MusicLibraryTrack> => {
+  const form = new FormData();
+  form.append('file', file);
+  if (meta.slug) form.append('slug', meta.slug);
+  if (meta.name) form.append('name', meta.name);
+  if (meta.mood) form.append('mood', meta.mood);
+  if (meta.sortOrder != null) form.append('sortOrder', String(meta.sortOrder));
+  if (meta.isActive != null) form.append('isActive', String(meta.isActive));
+  const response = await axiosInstance.post('/music-library/upload', form, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
 };
 
 export const getDataSourceTypes = async (): Promise<DataSourceTypeOption[]> => {

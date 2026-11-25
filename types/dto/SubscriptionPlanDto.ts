@@ -6,11 +6,18 @@ export interface CreateSubscriptionPlanDto {
   description?: string;
   nameEn: string;
   descriptionEn?: string;
+  features?: string;
+  featuresEn?: string;
   storageLimitBytes?: number;
   ttsLimitPerPeriod?: number;
   convertLimitPerPeriod?: number;
+  shareLimitPerPeriod?: number;
+  downloadLimitPerPeriod?: number;
   periodType?: string;
   price?: number;
+  discountPrice?: number;
+  isLifetime?: boolean;
+  isPopular?: boolean;
   sortOrder?: number;
   isActive?: boolean;
 }
@@ -20,11 +27,18 @@ export interface UpdateSubscriptionPlanDto {
   description?: string;
   nameEn?: string;
   descriptionEn?: string;
+  features?: string;
+  featuresEn?: string;
   storageLimitBytes?: number;
   ttsLimitPerPeriod?: number;
   convertLimitPerPeriod?: number;
+  shareLimitPerPeriod?: number;
+  downloadLimitPerPeriod?: number;
   periodType?: string;
   price?: number;
+  discountPrice?: number;
+  isLifetime?: boolean;
+  isPopular?: boolean;
   sortOrder?: number;
   isActive?: boolean;
 }

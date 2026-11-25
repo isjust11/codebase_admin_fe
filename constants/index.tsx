@@ -145,4 +145,8 @@ export const AppCategoryCode = {
     code: 'BOOK_CATEGORY',
     name: 'Danh mục sách',
   },
+  TemplateType: {
+    code: 'TEMPLATE_TYPE',
+    name: 'Loại mẫu thiệp / sự kiện',
+  },
 }
